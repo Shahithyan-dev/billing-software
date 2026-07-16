@@ -76,8 +76,9 @@ export const POS = () => {
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = subtotal > 0 ? Math.min(20, subtotal) : 0;
-  const tax = (subtotal - discount) * 0.05; 
-  const rawTotal = subtotal - discount + tax;
+  const acCharge = (orderType === 'Dine-In' && acType === 'AC') ? (subtotal - discount) * 0.02 : 0;
+  const tax = (subtotal - discount + acCharge) * 0.05; 
+  const rawTotal = subtotal - discount + acCharge + tax;
   const total = Math.round(rawTotal);
   const roundOff = total - rawTotal;
 
@@ -319,6 +320,12 @@ export const POS = () => {
                  <span>Discount</span>
                  <span className="text-green-600 font-bold">- ₹{discount.toFixed(2)}</span>
                </div>
+               {acCharge > 0 && (
+                 <div className="flex justify-between text-sm font-medium text-muted-foreground">
+                   <span>AC Charge (2%)</span>
+                   <span className="text-[#2c332c] font-bold">₹{acCharge.toFixed(2)}</span>
+                 </div>
+               )}
                <div className="flex justify-between text-sm font-medium text-muted-foreground border-b border-[#e3e3df] pb-4">
                  <span>CGST (5%)</span>
                  <span className="text-[#2c332c] font-bold">₹{tax.toFixed(2)}</span>
@@ -446,6 +453,13 @@ export const POS = () => {
           <span>Total Qty: {cart.reduce((s, i) => s + i.quantity, 0)}</span>
           <span>Sub Total {(subtotal - discount).toFixed(2)}</span>
         </div>
+        
+        {acCharge > 0 && (
+          <div className="flex justify-between text-[13px] mb-2 px-1">
+            <span>AC Charge (2%)</span>
+            <span>{acCharge.toFixed(2)}</span>
+          </div>
+        )}
         
         <div className="text-[13px] px-1 mb-2">
           <p>Net Total [inclusive of GST]</p>
