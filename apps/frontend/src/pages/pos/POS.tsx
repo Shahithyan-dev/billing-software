@@ -42,6 +42,21 @@ export const POS = () => {
 
   const [isMenuManagerOpen, setIsMenuManagerOpen] = useState(false);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  
+  const [restaurantData, setRestaurantData] = useState(RESTAURANT_DETAILS);
+
+  React.useEffect(() => {
+    // In a multi-tenant SaaS, this fetches the restaurant based on the logged-in user.
+    fetch('http://localhost:5001/api/v1/restaurants')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data && data.data.length > 0) {
+          // Use the first restaurant found
+          setRestaurantData(data.data[0]);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const [cart, setCart] = useState<(MenuItem & { quantity: number })[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -406,10 +421,11 @@ export const POS = () => {
       </style>
       <div className="hidden print:block w-full text-black font-mono text-[13px] p-2 bg-white leading-tight">
         <div className="text-center mb-3">
-          <h1 className="font-serif text-2xl font-normal leading-none tracking-wide">{RESTAURANT_DETAILS.name}</h1>
-          <p className="font-serif text-[13px] italic mt-1">{RESTAURANT_DETAILS.tagline}</p>
-          <p className="text-[13px] mt-1.5">MOB : {RESTAURANT_DETAILS.phone}</p>
-          <p className="text-[13px]">GSTIN:{RESTAURANT_DETAILS.gstin}</p>
+          <h1 className="font-serif text-2xl font-normal leading-none tracking-wide">{restaurantData.name}</h1>
+          <p className="font-serif text-[13px] italic mt-1">{restaurantData.tagline}</p>
+          <p className="text-[13px] mt-1.5">MOB : {restaurantData.phone}</p>
+          <p className="text-[13px]">GSTIN:{restaurantData.gstin}</p>
+          {restaurantData.fssai && <p className="text-[13px]">FSSAI:{restaurantData.fssai}</p>}
         </div>
         
         <div className="border border-black rounded-md p-1.5 mb-2 text-xs leading-relaxed">

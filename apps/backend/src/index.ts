@@ -4,14 +4,14 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { PrismaClient } from '@restaurant-os/database';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
 
-export const prisma = new PrismaClient();
+// mongoose handles connections internally
 
 export const io = new Server(httpServer, {
   cors: {
@@ -45,8 +45,8 @@ const PORT = process.env.PORT || 5001;
 
 httpServer.listen(PORT, async () => {
   try {
-    await prisma.$connect();
-    console.log(`[Database] Connected to MongoDB via Prisma`);
+    await mongoose.connect(process.env.DATABASE_URL as string);
+    console.log(`[Database] Connected to MongoDB via Mongoose`);
     console.log(`[Server] Core POS Server running on port ${PORT}`);
   } catch (error) {
     console.error(`[Database Error] Connection failed:`, error);
