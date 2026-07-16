@@ -23,8 +23,8 @@ export const Login = () => {
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 md:p-12 ml-0 md:ml-12 border border-[#e3e3df]">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-[#4a7b47]/10 rounded-full flex items-center justify-center mb-4">
-            <ChefHat className="w-8 h-8 text-[#4a7b47]" />
+          <div className="w-16 h-16 bg-[#4a7b47]/10 rounded-full flex items-center justify-center mb-4 overflow-hidden p-1.5">
+            <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-black text-[#2c332c] mb-2 tracking-tight">ServeWell</h1>
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center">

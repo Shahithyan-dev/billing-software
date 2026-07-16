@@ -15,8 +15,6 @@ import { Reservations } from './pages/reservations/Reservations';
 import { Security } from './pages/security/Security';
 import { Settings } from './pages/settings/Settings';
 
-import { Login } from './pages/auth/Login';
-
 // Placeholder Pages
 const NotFound = () => <div className="p-4"><h1 className="text-2xl font-bold text-destructive">404 - Not Found</h1></div>;
 
@@ -24,9 +22,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/login" replace />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="pos" element={<POS />} />
           <Route path="kitchen" element={<Kitchen />} />

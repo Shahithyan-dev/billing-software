@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { 
   LayoutDashboard, 
@@ -12,12 +12,11 @@ import {
   Activity,
   Cpu,
   PackageOpen,
-  Bell,
   Menu,
   ChevronDown
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ className = "w-64 hidden md:flex" }: { className?: string }) => {
   const menuItems = [
     { name: 'POS', icon: ShoppingCart, path: '/pos' },
     { name: 'Kitchen', icon: ChefHat, path: '/kitchen' },
@@ -32,10 +31,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-card border-r border-border h-screen flex flex-col hidden md:flex z-20">
+    <aside className={`bg-card border-r border-border h-screen flex-col z-50 ${className}`}>
       <div className="h-20 flex items-center px-6 gap-3 pt-4">
-        <div className="w-10 h-10 bg-[#4a7b47]/10 rounded-full flex items-center justify-center">
-          <ChefHat className="w-6 h-6 text-[#4a7b47]" />
+        <div className="w-10 h-10 bg-[#4a7b47]/10 rounded-full flex items-center justify-center overflow-hidden p-1">
+          <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-xl font-black tracking-tight text-[#2c332c]">ServeWell</h1>
       </div>
@@ -70,34 +69,41 @@ const Sidebar = () => {
 };
 
 export const MainLayout = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="flex h-screen print:h-auto print:min-h-0 bg-background text-foreground overflow-hidden print:overflow-visible">
+    <div className="flex h-screen print:h-auto print:min-h-0 bg-background text-foreground overflow-hidden print:overflow-visible relative">
       <div className="print:hidden h-full flex">
         <Sidebar />
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="absolute top-0 left-0 bottom-0 w-64 bg-white" onClick={e => e.stopPropagation()}>
+            <Sidebar className="w-full flex" />
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible bg-background">
-        <header className="h-20 bg-transparent flex items-center justify-between px-8 z-10 pt-4 print:hidden">
+        <header className="h-20 bg-transparent flex items-center justify-between px-4 md:px-8 z-10 pt-4 print:hidden">
           <div className="flex items-center gap-4">
-            <button className="p-2 text-muted-foreground hover:bg-white rounded-lg hover:shadow-sm transition-all md:hidden">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-muted-foreground hover:bg-white rounded-lg hover:shadow-sm transition-all md:hidden"
+            >
               <Menu className="w-6 h-6" />
             </button>
             <div className="hidden md:flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-border">
-               <ChefHat className="w-5 h-5 text-[#4a7b47]" />
+               <img src="/logo.png" alt="ServeWell" className="w-5 h-5 object-contain" />
                <span className="font-bold text-[#2c332c]">ServeWell</span>
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-border text-sm font-medium text-muted-foreground cursor-pointer hover:bg-gray-50">
+            <div className="hidden md:flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-border text-sm font-medium text-muted-foreground">
               <Calendar className="w-4 h-4" />
-              May 23, 2024
-              <ChevronDown className="w-4 h-4 ml-1" />
-            </div>
-            <div className="relative cursor-pointer">
-              <Bell className="w-6 h-6 text-muted-foreground" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white font-bold border-2 border-background">4</div>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden cursor-pointer">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Admin" className="w-full h-full object-cover" />
+              {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
         </header>
