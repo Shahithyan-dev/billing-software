@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { MainLayout } from './layouts/MainLayout';
 
 import { POS } from './pages/pos/POS';
+import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
 
 import { Kitchen } from './pages/kitchen/Kitchen';
 import { Dashboard } from './pages/dashboard/Dashboard';
@@ -22,8 +24,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route index element={<Navigate to="/login" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="pos" element={<POS />} />
           <Route path="kitchen" element={<Kitchen />} />

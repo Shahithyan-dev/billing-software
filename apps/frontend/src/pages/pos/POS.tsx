@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api';
 import React, { useState } from 'react';
 import { Search, Plus, Minus, Trash2, User, CreditCard, Smartphone, Banknote, MoreHorizontal, SplitSquareHorizontal, PauseCircle, Printer, Pencil, X, ShoppingBag } from 'lucide-react';
 import { RESTAURANT_DETAILS } from '../../config/restaurant';
@@ -47,7 +48,7 @@ export const POS = () => {
 
   React.useEffect(() => {
     // In a multi-tenant SaaS, this fetches the restaurant based on the logged-in user.
-    fetch('http://localhost:5001/api/v1/restaurants')
+    fetch(`${API_BASE_URL}/api/v1/restaurants`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data && data.data.length > 0) {

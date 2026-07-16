@@ -1,14 +1,45 @@
-import React from 'react';
-import { ChefHat, Mail, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChefHat, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../../components/ui/button';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
+
+import { API_BASE_URL } from '../../config/api';
 
 export const Login = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate('/dashboard'); // Match mockup which goes to Dashboard
+    setLoading(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('restaurantId', result.restaurantId);
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,8 +54,8 @@ export const Login = () => {
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 md:p-12 ml-0 md:ml-12 border border-[#e3e3df]">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-[#4a7b47]/10 rounded-full flex items-center justify-center mb-4 overflow-hidden p-1.5">
-            <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain" />
+          <div className="w-24 h-24 flex items-center justify-center mb-4">
+            <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain mix-blend-multiply p-2 drop-shadow-md" />
           </div>
           <h1 className="text-3xl font-black text-[#2c332c] mb-2 tracking-tight">ServeWell</h1>
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center">
@@ -38,12 +69,20 @@ export const Login = () => {
           <p className="text-sm text-muted-foreground mt-2">All in one solution for billing, orders, inventory and more.</p>
         </div>
 
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-200">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input 
-              type="text" 
-              placeholder="Email or Username" 
+              name="email"
+              type="email" 
+              required
+              placeholder="Email address" 
               className="w-full pl-12 pr-4 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-[#4a7b47] focus:ring-1 focus:ring-[#4a7b47] transition-all"
             />
           </div>
@@ -51,10 +90,19 @@ export const Login = () => {
           <div className="relative">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input 
-              type="password" 
+              name="password"
+              type={showPassword ? "text" : "password"} 
+              required
               placeholder="Password" 
-              className="w-full pl-12 pr-4 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-[#4a7b47] focus:ring-1 focus:ring-[#4a7b47] transition-all"
+              className="w-full pl-12 pr-12 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-[#4a7b47] focus:ring-1 focus:ring-[#4a7b47] transition-all"
             />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-[#4a7b47] focus:outline-none"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
           </div>
 
           <div className="flex items-center justify-between text-sm py-2">
@@ -65,13 +113,13 @@ export const Login = () => {
             <a href="#" className="text-[#4a7b47] font-medium hover:underline">Forgot Password?</a>
           </div>
 
-          <Button type="submit" className="w-full py-6 text-lg font-bold rounded-xl bg-[#4a7b47] hover:bg-[#3d663b] shadow-lg shadow-[#4a7b47]/20">
-            Login
+          <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-bold rounded-xl bg-[#4a7b47] hover:bg-[#3d663b] shadow-lg shadow-[#4a7b47]/20">
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
 
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          Don't have an account? <a href="#" className="text-[#4a7b47] font-bold hover:underline">Create New</a>
+          Don't have an account? <Link to="/register" className="text-[#4a7b47] font-bold hover:underline">Create New</Link>
         </div>
       </div>
     </div>

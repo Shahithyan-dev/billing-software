@@ -16,7 +16,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-const Sidebar = ({ className = "w-64 hidden md:flex" }: { className?: string }) => {
+const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
   const menuItems = [
     { name: 'POS', icon: ShoppingCart, path: '/pos' },
     { name: 'Kitchen', icon: ChefHat, path: '/kitchen' },
@@ -33,8 +33,8 @@ const Sidebar = ({ className = "w-64 hidden md:flex" }: { className?: string }) 
   return (
     <aside className={`bg-card border-r border-border h-screen flex-col z-50 ${className}`}>
       <div className="h-20 flex items-center px-6 gap-3 pt-4">
-        <div className="w-10 h-10 bg-[#4a7b47]/10 rounded-full flex items-center justify-center overflow-hidden p-1">
-          <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain" />
+        <div className="w-16 h-16 flex items-center justify-center shrink-0">
+          <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain mix-blend-multiply p-2" />
         </div>
         <h1 className="text-xl font-black tracking-tight text-[#2c332c]">ServeWell</h1>
       </div>
@@ -69,18 +69,14 @@ const Sidebar = ({ className = "w-64 hidden md:flex" }: { className?: string }) 
 };
 
 export const MainLayout = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen print:h-auto print:min-h-0 bg-background text-foreground overflow-hidden print:overflow-visible relative">
-      <div className="print:hidden h-full flex">
-        <Sidebar />
-      </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="absolute top-0 left-0 bottom-0 w-64 bg-white" onClick={e => e.stopPropagation()}>
+      {/* Sidebar Overlay (All screen sizes) */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setIsSidebarOpen(false)}>
+          <div className="absolute top-0 left-0 bottom-0 w-64 bg-white shadow-2xl transition-transform" onClick={e => e.stopPropagation()}>
             <Sidebar className="w-full flex" />
           </div>
         </div>
@@ -90,14 +86,14 @@ export const MainLayout = () => {
         <header className="h-20 bg-transparent flex items-center justify-between px-4 md:px-8 z-10 pt-4 print:hidden">
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 text-muted-foreground hover:bg-white rounded-lg hover:shadow-sm transition-all md:hidden"
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 text-muted-foreground hover:bg-white rounded-lg hover:shadow-sm transition-all"
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="hidden md:flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-border">
-               <img src="/logo.png" alt="ServeWell" className="w-5 h-5 object-contain" />
-               <span className="font-bold text-[#2c332c]">ServeWell</span>
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-border">
+               <img src="/logo.png" alt="ServeWell" className="w-8 h-8 object-contain mix-blend-multiply" />
+               <span className="font-bold text-[#2c332c] text-lg">ServeWell</span>
             </div>
           </div>
           <div className="flex items-center gap-6">

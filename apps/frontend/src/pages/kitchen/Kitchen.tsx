@@ -20,7 +20,9 @@ interface KitchenOrder {
   };
 }
 
-const socket = io('http://localhost:5001');
+import { API_BASE_URL } from '../../config/api';
+
+const socket = io(API_BASE_URL);
 
 export const Kitchen = () => {
   const [orders, setOrders] = useState<KitchenOrder[]>([]);

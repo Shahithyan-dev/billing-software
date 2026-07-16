@@ -1,40 +1,21 @@
 import { Request, Response } from 'express';
-import { prisma, io } from '../index';
+import { io } from '../index';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
     const { items, type, total } = req.body;
 
-    const order = await prisma.order.create({
-      data: {
-        type: type || 'Dine In',
-        total: total,
-        status: 'Pending',
-        items: {
-          create: items.map((i: any) => ({
-            menuItemId: i.id,
-            name: i.name,
-            quantity: i.quantity,
-            price: i.price
-          }))
-        },
-        kitchenOrders: {
-          create: {
-            station: 'Main Kitchen',
-            status: 'Pending'
-          }
-        }
-      },
-      include: {
-        items: true,
-        kitchenOrders: true
-      }
-    });
+    const orderData = {
+      id: Math.random().toString(36).substr(2, 9),
+      type: type || 'Dine In',
+      total,
+      status: 'Pending',
+      items: items || []
+    };
 
-    // Alert Kitchen Display System in realtime
-    io.emit('new-kitchen-order', order);
+    io.emit('new_order', orderData);
 
-    res.status(201).json({ success: true, order });
+    res.json({ success: true, order: orderData });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create order' });
