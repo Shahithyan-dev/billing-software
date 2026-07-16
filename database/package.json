@@ -1,0 +1,11 @@
+{
+  "name": "@restaurant-os/database",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
+  }
+}
