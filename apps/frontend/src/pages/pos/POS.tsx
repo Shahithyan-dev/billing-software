@@ -51,8 +51,8 @@ export const POS = () => {
   const [orderType, setOrderType] = useState<'Dine-In' | 'Parcel'>('Dine-In');
   const [selectedTable, setSelectedTable] = useState('T3');
   const [acType, setAcType] = useState<'AC' | 'Non-AC'>('AC');
-  const [selectedSupplier, setSelectedSupplier] = useState('Supplier');
-  const suppliers = ['Supplier', 'Swiggy', 'Zomato', 'Direct', 'Uber Eats', 'Dunzo'];
+  const [selectedWaiter, setSelectedWaiter] = useState('Waiter');
+  const waiters = ['Waiter', 'Rahul', 'Priya', 'Amit', 'Suresh', 'Self Service'];
 
   const categories = ['All', ...Array.from(new Set(menuItems.map(i => i.category)))];
   
@@ -168,11 +168,11 @@ export const POS = () => {
                  <Pencil className="w-4 h-4" /> Edit Menu
                </button>
                <select 
-                 value={selectedSupplier}
-                 onChange={(e) => setSelectedSupplier(e.target.value)}
+                 value={selectedWaiter}
+                 onChange={(e) => setSelectedWaiter(e.target.value)}
                  className="bg-white border border-[#e3e3df] px-3 py-1.5 rounded-xl text-sm font-bold text-[#2c332c] outline-none shadow-sm flex-1 md:flex-none"
                >
-                 {suppliers.map(s => <option key={s} value={s}>{s}</option>)}
+                 {waiters.map(w => <option key={w} value={w}>{w}</option>)}
                </select>
                <div className="flex items-center gap-2 bg-white border border-[#e3e3df] px-3 py-1.5 rounded-xl shadow-sm justify-between md:justify-start flex-1 md:flex-none">
                  <span className="text-sm font-medium text-muted-foreground">Cashier</span>
@@ -260,9 +260,9 @@ export const POS = () => {
           <div className="flex justify-between items-start mb-6">
             <div className="flex flex-col">
               <h2 className="text-xl font-black text-[#2c332c]">Current Order</h2>
-              {selectedSupplier !== 'Supplier' && (
+              {selectedWaiter !== 'Waiter' && (
                 <span className="text-xs font-bold text-[#4a7b47] bg-[#4a7b47]/10 px-2 py-0.5 rounded-md mt-1 w-max">
-                  via {selectedSupplier}
+                  Served by {selectedWaiter}
                 </span>
               )}
             </div>
@@ -415,7 +415,7 @@ export const POS = () => {
             <span className="text-right">Bill No.: DR{billNo}</span>
           </div>
           <div className="flex justify-between gap-2">
-            <span>Supplier: {selectedSupplier === 'Supplier' ? 'Direct' : selectedSupplier}</span>
+            <span>Waiter: {selectedWaiter === 'Waiter' ? 'Self Service' : selectedWaiter}</span>
           </div>
         </div>
         
