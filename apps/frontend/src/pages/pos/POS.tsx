@@ -94,8 +94,7 @@ export const POS = () => {
   const updateQuantity = (id: string, delta: number) => {
     setCart(prev => prev.map(i => {
       if (i.id === id) {
-        const newQ = i.quantity + delta;
-        return newQ > 0 ? { ...i, quantity: newQ } : i;
+        return { ...i, quantity: i.quantity + delta };
       }
       return i;
     }).filter(i => i.quantity > 0));
