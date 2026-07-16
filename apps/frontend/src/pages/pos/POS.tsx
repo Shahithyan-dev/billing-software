@@ -257,8 +257,15 @@ export const POS = () => {
           lg:relative lg:h-auto lg:w-[420px] lg:shrink-0 lg:rounded-[2rem] lg:border lg:border-[#e3e3df] lg:shadow-sm lg:translate-y-0 lg:z-0
           ${isMobileCartOpen ? 'translate-y-0' : 'translate-y-full'}
         `}>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-black text-[#2c332c]">Current Order</h2>
+          <div className="flex justify-between items-start mb-6">
+            <div className="flex flex-col">
+              <h2 className="text-xl font-black text-[#2c332c]">Current Order</h2>
+              {selectedSupplier !== 'Supplier' && (
+                <span className="text-xs font-bold text-[#4a7b47] bg-[#4a7b47]/10 px-2 py-0.5 rounded-md mt-1 w-max">
+                  via {selectedSupplier}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <button className="text-sm font-bold text-red-500 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors" onClick={() => setCart([])}>Clear</button>
               <button className="lg:hidden p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors" onClick={() => setIsMobileCartOpen(false)}>
