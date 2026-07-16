@@ -58,7 +58,7 @@ export const MenuManagerModal: React.FC<MenuManagerModalProps> = ({ isOpen, onCl
             <div className="p-4 border-b border-[#e3e3df] flex justify-between items-center bg-white">
                <h3 className="font-bold text-[#2c332c]">Current Items ({items.length})</h3>
                <button 
-                 onClick={() => setEditingItem({ id: Date.now().toString(), name: '', price: 0, category: 'Main Course', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=200&auto=format&fit=crop', type: 'veg' })}
+                 onClick={() => setEditingItem({ id: Date.now().toString(), name: '', price: 0, category: '', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=200&auto=format&fit=crop', type: 'veg' })}
                  className="flex items-center gap-2 bg-[#4a7b47] text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-[#3d663b] transition-colors"
                >
                  <Plus className="w-4 h-4" /> Add New
@@ -138,21 +138,21 @@ export const MenuManagerModal: React.FC<MenuManagerModalProps> = ({ isOpen, onCl
 
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Category</label>
-                    <input 
-                      type="text" 
+                    <select
                       required
-                      list="categories"
                       value={editingItem.category}
                       onChange={e => setEditingItem({...editingItem, category: e.target.value})}
-                      className="w-full border border-[#e3e3df] px-3 py-2.5 rounded-xl text-sm font-medium focus:border-[#4a7b47] focus:outline-none"
-                      placeholder="e.g. Starters, Main Course"
-                    />
-                    <datalist id="categories">
-                      <option value="Starters" />
-                      <option value="Main Course" />
-                      <option value="Beverages" />
-                      <option value="Desserts" />
-                    </datalist>
+                      className="w-full border border-[#e3e3df] px-3 py-2.5 rounded-xl text-sm font-medium focus:border-[#4a7b47] focus:outline-none bg-white"
+                    >
+                      <option value="" disabled>Select a category</option>
+                      <option value="Starters">Starters</option>
+                      <option value="Main Course">Main Course</option>
+                      <option value="Breads">Breads</option>
+                      <option value="Rice & Biryani">Rice & Biryani</option>
+                      <option value="Beverages">Beverages</option>
+                      <option value="Desserts">Desserts</option>
+                      <option value="Others">Others</option>
+                    </select>
                   </div>
 
                   <div>
