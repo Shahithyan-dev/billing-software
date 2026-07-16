@@ -399,14 +399,14 @@ export const POS = () => {
           <p className="text-[13px]">GSTIN:{RESTAURANT_DETAILS.gstin}</p>
         </div>
         
-        <div className="border border-black rounded-md p-1.5 mb-2 text-[13px] leading-relaxed">
-          <div className="flex justify-between">
-            <span>Date: {new Date().toLocaleDateString('en-GB')} {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
-            <span>{orderType === 'Dine-In' ? `Dine In: ${selectedTable} (${acType})` : 'Parcel'}</span>
+        <div className="border border-black rounded-md p-1.5 mb-2 text-xs leading-relaxed">
+          <div className="flex justify-between gap-2">
+            <span>Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })} {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+            <span className="text-right">{orderType === 'Dine-In' ? `Dine In: ${selectedTable} (${acType})` : 'Parcel'}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <span>Cashier: Admin</span>
-            <span>Bill No.: DR{billNo}</span>
+            <span className="text-right">Bill No.: DR{billNo}</span>
           </div>
         </div>
         
