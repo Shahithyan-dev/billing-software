@@ -414,11 +414,9 @@ export const POS = () => {
             <span>Cashier: Admin</span>
             <span className="text-right">Bill No.: DR{billNo}</span>
           </div>
-          {selectedSupplier !== 'Supplier' && (
-            <div className="flex justify-between gap-2">
-              <span>Supplier: {selectedSupplier}</span>
-            </div>
-          )}
+          <div className="flex justify-between gap-2">
+            <span>Supplier: {selectedSupplier === 'Supplier' ? 'Direct' : selectedSupplier}</span>
+          </div>
         </div>
         
         <div className="border border-black mb-2">
