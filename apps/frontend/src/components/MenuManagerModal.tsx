@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Pencil, Trash2, Image as ImageIcon } from 'lucide-react';
-import type { MenuItem } from '../pages/pos/POS';
+import type { MenuItem } from '../app/(dashboard)/pos/page';
 
 interface MenuManagerModalProps {
   isOpen: boolean;
@@ -145,13 +145,12 @@ export const MenuManagerModal: React.FC<MenuManagerModalProps> = ({ isOpen, onCl
                       className="w-full border border-[#e3e3df] px-3 py-2.5 rounded-xl text-sm font-medium focus:border-[#4a7b47] focus:outline-none bg-white"
                     >
                       <option value="" disabled>Select a category</option>
-                      <option value="Starters">Starters</option>
-                      <option value="Main Course">Main Course</option>
-                      <option value="Breads">Breads</option>
-                      <option value="Rice & Biryani">Rice & Biryani</option>
+                      <option value="Breakfast">Breakfast</option>
+                      <option value="Lunch">Lunch</option>
+                      <option value="Dinner">Dinner</option>
+                      <option value="Snacks">Snacks</option>
                       <option value="Beverages">Beverages</option>
-                      <option value="Desserts">Desserts</option>
-                      <option value="Others">Others</option>
+                      <option value="All Day">All Day</option>
                     </select>
                   </div>
 

@@ -36,5 +36,23 @@ router.get('/', async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 });
+// Delete a specific restaurant by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const restaurantId = req.params.id;
+    const restaurant = await Restaurant.findByIdAndDelete(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ success: false, error: 'Restaurant not found' });
+    }
+    
+    // Import User model inline to avoid circular dependency issues if any, or just import it at top.
+    const User = require('../models/User').default;
+    await User.deleteMany({ restaurantId });
+
+    res.status(200).json({ success: true, message: 'Restaurant and associated users deleted' });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
 
 export default router;

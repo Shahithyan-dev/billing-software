@@ -8,9 +8,31 @@ const router = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-dev';
 
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: any, res: any) => {
   try {
-    const { name, tagline, phone, gstin, fssai, address, email, password } = req.body;
+    // Check for superadmin authorization
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized. Super Admin access required.' });
+    }
+    const adminToken = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(adminToken, JWT_SECRET) as any;
+    } catch (err) {
+      return res.status(401).json({ success: false, error: 'Invalid token.' });
+    }
+    if (decoded.role !== 'superadmin') {
+      return res.status(403).json({ success: false, error: 'Forbidden. Only Super Admins can register new restaurants.' });
+    }
+    const { name, tagline, phone, gstin, fssai, address, email, password, captains, tables, sidebarFeatures, preferences, initialMenu } = req.body;
+
+    // Parse JSON fields
+    const parsedCaptains = typeof captains === 'string' ? JSON.parse(captains) : captains;
+    const parsedTables = typeof tables === 'string' ? JSON.parse(tables) : tables;
+    const parsedSidebarFeatures = typeof sidebarFeatures === 'string' ? JSON.parse(sidebarFeatures) : sidebarFeatures;
+    const parsedPreferences = typeof preferences === 'string' ? JSON.parse(preferences) : preferences;
+    const parsedInitialMenu = typeof initialMenu === 'string' ? JSON.parse(initialMenu) : initialMenu;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -18,9 +40,17 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Email already exists' });
     }
 
+    let menuPdfUrl = null;
+
     // 1. Create the Restaurant
     const restaurant = new Restaurant({
-      name, tagline, phone, gstin, fssai, address
+      name, tagline, phone, gstin, fssai, address,
+      captains: parsedCaptains || ['Captain', 'Self Service'],
+      tables: parsedTables || ['T1', 'T2', 'T3'],
+      sidebarFeatures: parsedSidebarFeatures || ['POS', 'Kitchen', 'Settings'],
+      preferences: parsedPreferences || { showGstin: true, showFssai: true, showPhone: true },
+      defaultMenu: parsedInitialMenu || [],
+      menuPdfUrl
     });
     await restaurant.save();
 
@@ -34,7 +64,19 @@ router.post('/register', async (req, res) => {
     });
     await user.save();
 
-    res.status(201).json({ success: true, message: 'Registration successful' });
+    // Generate JWT Token (10 years for persistent session)
+    const token = jwt.sign(
+      { userId: user._id, restaurantId: user.restaurantId, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '3650d' }
+    );
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Registration successful',
+      token,
+      restaurantId: restaurant._id
+    });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -54,17 +96,24 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    // Generate JWT Token
+    const restaurant = await Restaurant.findById(user.restaurantId);
+
+    // Generate JWT Token (10 years for persistent session)
     const token = jwt.sign(
       { userId: user._id, restaurantId: user.restaurantId, role: user.role },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '3650d' }
     );
 
     res.status(200).json({ 
       success: true, 
       token, 
-      restaurantId: user.restaurantId 
+      restaurantId: user.restaurantId,
+      role: user.role,
+      captains: restaurant?.captains || [],
+      tables: restaurant?.tables || [],
+      sidebarFeatures: restaurant?.sidebarFeatures || [],
+      defaultMenu: restaurant?.defaultMenu || []
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
