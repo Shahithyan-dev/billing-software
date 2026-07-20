@@ -13,7 +13,7 @@ export default function SuperAdminDashboard() {
 
   const [initialMenu, setInitialMenu] = useState<{id: string, name: string, price: number, category: string, type: string}[]>([]);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://billing-software-03up.onrender.com';
 
   const SIDEBAR_FEATURES = ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'];
   const MENU_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages', 'Starters', 'Main Course', 'Desserts'];
