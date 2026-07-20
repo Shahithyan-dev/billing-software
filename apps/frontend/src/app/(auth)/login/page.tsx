@@ -48,7 +48,26 @@ const Login = () => {
           }
         }
         
-        navigate('/dashboard');
+        let redirectPath = '/pos';
+        if (result.sidebarFeatures && result.sidebarFeatures.length > 0) {
+          const firstFeature = result.sidebarFeatures[0].toLowerCase();
+          const routeMap: Record<string, string> = {
+            'pos': '/pos',
+            'kitchen': '/kitchen',
+            'inventory': '/inventory',
+            'reservations': '/reservations',
+            'analytics': '/analytics',
+            'staff': '/staff',
+            'loyalty': '/loyalty',
+            'hardware': '/hardware',
+            'security': '/security',
+            'settings': '/settings',
+            'dashboard': '/dashboard'
+          };
+          redirectPath = routeMap[firstFeature] || '/pos';
+        }
+        
+        navigate(redirectPath);
       } else {
         setError(result.error || 'Login failed');
       }

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, protocol, net } = require('electron');
+const { app, BrowserWindow, protocol, net, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -23,6 +23,12 @@ function createWindow() {
     // In development, load from Next.js dev server
     win.loadURL('http://localhost:3000');
   }
+
+  ipcMain.on('print-bill', (event) => {
+    win.webContents.print({ silent: true, printBackground: true }, (success, failureReason) => {
+      if (!success) console.log('Print failed', failureReason);
+    });
+  });
 }
 
 app.whenReady().then(() => {

@@ -445,7 +445,18 @@ const POS = () => {
             <button 
               onClick={() => { 
                 if (cart.length === 0) return;
-                window.print(); 
+                
+                if (typeof window !== 'undefined' && (window as any).require) {
+                  try {
+                    const { ipcRenderer } = (window as any).require('electron');
+                    ipcRenderer.send('print-bill');
+                  } catch (e) {
+                    window.print();
+                  }
+                } else {
+                  window.print(); 
+                }
+                
                 setTimeout(() => handleCharge(), 500); 
                 setIsMobileCartOpen(false);
               }} 
