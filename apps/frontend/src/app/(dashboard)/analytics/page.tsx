@@ -7,30 +7,65 @@ import {
 } from 'recharts';
 import { IndianRupee, ShoppingBag, Users, Clock, TrendingUp, MoreHorizontal } from 'lucide-react';
 
-const salesData = [
-  { time: '8 AM', sales: 12000 },
-  { time: '12 PM', sales: 45000 },
-  { time: '4 PM', sales: 30000 },
-  { time: '8 PM', sales: 65000 },
-  { time: '11 PM', sales: 20000 },
-];
-
-const orderStatusData = [
-  { name: 'Received', value: 12, color: '#3b82f6' },
-  { name: 'Preparing', value: 8, color: '#f59e0b' },
-  { name: 'Ready', value: 4, color: '#10b981' },
-  { name: 'Served', value: 3, color: '#8b5cf6' },
-  { name: 'Cancelled', value: 1, color: '#ef4444' },
-];
-
-const topItems = [
-  { name: 'Chicken Biryani', qty: 45, rev: '₹22,500', img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=100&auto=format&fit=crop' },
-  { name: 'Paneer Butter Masala', qty: 32, rev: '₹12,800', img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc0?q=80&w=100&auto=format&fit=crop' },
-  { name: 'Garlic Naan', qty: 85, rev: '₹4,250', img: 'https://images.unsplash.com/photo-1605493724641-7890f5df314d?q=80&w=100&auto=format&fit=crop' },
-  { name: 'Cold Coffee', qty: 28, rev: '₹3,360', img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?q=80&w=100&auto=format&fit=crop' },
-];
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
 
 const Dashboard = () => {
+  const allOrders = useLiveQuery(() => db.orders.toArray(), []) || [];
+  
+  // Calculate today's metrics
+  const today = new Date().setHours(0,0,0,0);
+  const todayOrders = allOrders.filter(o => o.timestamp >= today);
+  
+  const totalSales = todayOrders.reduce((sum, order) => sum + order.total, 0);
+  const totalOrdersCount = todayOrders.length;
+  const pendingOrders = todayOrders.filter(o => o.syncStatus === 'pending').length;
+  const activeTables = todayOrders.filter(o => o.orderType === 'Dine-In' && o.syncStatus === 'pending').length;
+
+  // Compute Sales Data for chart
+  const salesDataMap = new Map();
+  todayOrders.forEach(o => {
+    const hour = new Date(o.timestamp).getHours();
+    const timeStr = hour > 12 ? `${hour-12} PM` : hour === 0 ? '12 AM' : hour === 12 ? '12 PM' : `${hour} AM`;
+    salesDataMap.set(timeStr, (salesDataMap.get(timeStr) || 0) + o.total);
+  });
+  const salesData = Array.from(salesDataMap.entries())
+    .map(([time, sales]) => ({ time, sales }))
+    .reverse(); // Simple reverse to somewhat order chronologically if fetched descending
+
+  // Compute Top Items
+  const itemMap = new Map();
+  allOrders.forEach(o => {
+    o.items.forEach(item => {
+      const existing = itemMap.get(item.name) || { qty: 0, rev: 0 };
+      itemMap.set(item.name, {
+        qty: existing.qty + item.quantity,
+        rev: existing.rev + (item.quantity * item.price)
+      });
+    });
+  });
+  
+  const topItems = Array.from(itemMap.entries())
+    .map(([name, data]) => ({ 
+      name, 
+      qty: data.qty, 
+      rev: `₹${data.rev.toFixed(2)}`, 
+      img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Food' 
+    }))
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 4);
+
+  // Compute Order Status
+  let orderStatusData = [
+    { name: 'Pending', value: allOrders.filter(o => o.syncStatus === 'pending').length, color: '#f59e0b' },
+    { name: 'Synced', value: allOrders.filter(o => o.syncStatus === 'synced').length, color: '#10b981' },
+    { name: 'Failed', value: allOrders.filter(o => o.syncStatus === 'failed').length, color: '#ef4444' },
+  ].filter(d => d.value > 0);
+  
+  if (orderStatusData.length === 0) {
+    orderStatusData = [{ name: 'No Orders', value: 1, color: '#e2e8f0' }];
+  }
+
   return (
     <div className="h-full flex flex-col gap-6 overflow-y-auto pb-8">
       <header>
@@ -43,10 +78,10 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { title: "Total Sales", value: "₹24,560", trend: "+18.5%", icon: IndianRupee, color: "text-green-600", bg: "bg-green-100", up: true },
-          { title: "Total Orders", value: "128", trend: "+12.2%", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-100", up: true },
-          { title: "Active Tables", value: "14", trend: "+3.2%", icon: Users, color: "text-purple-600", bg: "bg-purple-100", up: true },
-          { title: "Pending Orders", value: "9", trend: "-20.4%", icon: Clock, color: "text-orange-600", bg: "bg-orange-100", up: false },
+          { title: "Total Sales", value: `₹${totalSales.toLocaleString()}`, trend: "Live", icon: IndianRupee, color: "text-green-600", bg: "bg-green-100", up: true },
+          { title: "Total Orders", value: totalOrdersCount.toString(), trend: "Today", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-100", up: true },
+          { title: "Pending Sync", value: pendingOrders.toString(), trend: "Unsynced", icon: Clock, color: "text-orange-600", bg: "bg-orange-100", up: false },
+          { title: "Total Items", value: Array.from(itemMap.keys()).length.toString(), trend: "Unique", icon: Users, color: "text-purple-600", bg: "bg-purple-100", up: true },
         ].map((kpi, idx) => (
           <div key={idx} className="bg-white border border-[#e3e3df] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-4 mb-4">
@@ -60,7 +95,7 @@ const Dashboard = () => {
             </div>
             <div className={`flex items-center gap-1 text-sm font-bold ${kpi.up ? 'text-green-600' : 'text-red-500'}`}>
                {kpi.up ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />}
-               {kpi.trend} <span className="text-muted-foreground font-medium ml-1">vs yesterday</span>
+               <span className="text-muted-foreground font-medium ml-1">{kpi.trend}</span>
             </div>
           </div>
         ))}
@@ -106,7 +141,7 @@ const Dashboard = () => {
             <a href="#" className="text-sm font-bold text-[#4a7b47]">View All</a>
           </div>
           <div className="space-y-4">
-            {topItems.map((item, idx) => (
+            {topItems.length > 0 ? topItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-4">
                 <img src={item.img} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
                 <div className="flex-1">
@@ -115,7 +150,7 @@ const Dashboard = () => {
                 </div>
                 <div className="text-sm font-black text-[#2c332c]">{item.rev}</div>
               </div>
-            ))}
+            )) : <p className="text-muted-foreground text-sm py-4">No items sold yet.</p>}
           </div>
         </div>
       </div>
@@ -139,7 +174,7 @@ const Dashboard = () => {
                 </PieChart>
                </ResponsiveContainer>
                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                 <span className="text-2xl font-black text-[#2c332c]">128</span>
+                 <span className="text-2xl font-black text-[#2c332c]">{allOrders.length}</span>
                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Orders</span>
                </div>
             </div>

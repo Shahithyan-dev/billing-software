@@ -69,6 +69,7 @@ const POS = () => {
 
   const [isMenuManagerOpen, setIsMenuManagerOpen] = useState(false);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   const [restaurantData, setRestaurantData] = useState(RESTAURANT_DETAILS);
 
@@ -445,19 +446,7 @@ const POS = () => {
             <button 
               onClick={() => { 
                 if (cart.length === 0) return;
-                
-                if (typeof window !== 'undefined' && (window as any).require) {
-                  try {
-                    const { ipcRenderer } = (window as any).require('electron');
-                    ipcRenderer.send('print-bill');
-                  } catch (e) {
-                    window.print();
-                  }
-                } else {
-                  window.print(); 
-                }
-                
-                setTimeout(() => handleCharge(), 500); 
+                setIsPreviewOpen(true);
                 setIsMobileCartOpen(false);
               }} 
               className="w-full flex items-center justify-center gap-2 bg-[#4a7b47] text-white text-xl font-bold py-4 rounded-2xl shadow-md hover:bg-[#3d663b] active:scale-95 transition-all mt-2"
@@ -486,9 +475,12 @@ const POS = () => {
         {`
           @page { size: 80mm auto; margin: 0; }
           body { margin: 0; padding: 0; background: white; width: 80mm; }
+          .print-preview-modal { display: none !important; }
         `}
       </style>
-      <div className="hidden print:block w-full text-black font-mono text-[13px] p-2 bg-white leading-tight">
+      
+      {/* The Printable Bill Content */}
+      <div id="print-bill-content" className="hidden print:block w-full text-black font-mono text-[13px] p-2 bg-white leading-tight">
         <div className="text-center mb-3">
           <h1 className="font-serif text-2xl font-normal leading-none tracking-wide">{restaurantData.name}</h1>
           <p className="font-serif text-[13px] italic mt-1">{restaurantData.tagline}</p>
@@ -582,12 +574,161 @@ const POS = () => {
         </div>
       </div>
       
-      <MenuManagerModal 
+        <MenuManagerModal 
         isOpen={isMenuManagerOpen} 
         onClose={() => setIsMenuManagerOpen(false)} 
         menuItems={menuItems}
         onSave={handleSaveMenu}
       />
+
+      {/* Print Preview Modal */}
+      {isPreviewOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center print-preview-modal">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsPreviewOpen(false)}></div>
+          
+          <div className="bg-white border border-[#e3e3df] rounded-2xl shadow-2xl z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col m-4 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-4 border-b border-[#e3e3df] flex justify-between items-center bg-gray-50">
+              <h2 className="text-lg font-bold text-[#2c332c] flex items-center gap-2">
+                <Printer className="w-5 h-5 text-[#4a7b47]" />
+                Print Preview
+              </h2>
+              <button 
+                onClick={() => setIsPreviewOpen(false)}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-1.5 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-100 flex justify-center">
+              {/* Fake Paper Roll */}
+              <div className="bg-white shadow-md text-black font-mono text-[13px] p-4 leading-tight w-[80mm] min-h-[300px]">
+                <div className="text-center mb-3">
+                  <h1 className="font-serif text-2xl font-normal leading-none tracking-wide">{restaurantData.name}</h1>
+                  <p className="font-serif text-[13px] italic mt-1">{restaurantData.tagline}</p>
+                  <p className="text-[13px] mt-1.5">MOB : {restaurantData.phone}</p>
+                  <p className="text-[13px]">GSTIN:{restaurantData.gstin}</p>
+                </div>
+                
+                <div className="border border-black rounded-md p-1.5 mb-2 text-xs leading-relaxed">
+                  <div className="flex justify-between gap-2">
+                    <span>Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })} {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                    <span className="text-right">{orderType === 'Dine-In' ? `Dine In: ${selectedTable} (${acType})` : 'Parcel'}</span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span>Cashier: Admin</span>
+                    <span className="text-right">Bill No.: DR{billNo}</span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span>Captain: {selectedCaptain === 'Captain' ? 'Self Service' : selectedCaptain}</span>
+                  </div>
+                </div>
+                
+                <div className="border border-black mb-2">
+                  <table className="w-full text-[13px] text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-black">
+                        <th className="font-normal p-1 border-r border-black uppercase">ITEM</th>
+                        <th className="font-normal p-1 border-r border-black text-center uppercase w-10">QTY.</th>
+                        <th className="font-normal p-1 border-r border-black text-center uppercase w-[4.5rem]">PRICE</th>
+                        <th className="font-normal p-1 text-center uppercase w-[4.5rem]">AMOUNT</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cart.map((item, index) => (
+                        <tr key={index} className="align-top">
+                          <td className="p-1 border-r border-black pr-2 leading-snug">{item.name}</td>
+                          <td className="p-1 border-r border-black text-center">{item.quantity}</td>
+                          <td className="p-1 border-r border-black text-right">{item.price.toFixed(2)}</td>
+                          <td className="p-1 text-right">{(item.price * item.quantity).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="flex justify-between text-[13px] mb-2 px-1">
+                  <span>Total Qty: {cart.reduce((s, i) => s + i.quantity, 0)}</span>
+                  <span>Sub Total {(subtotal - discount).toFixed(2)}</span>
+                </div>
+                
+                {acCharge > 0 && (
+                  <div className="flex justify-between text-[13px] mb-2 px-1">
+                    <span>AC Charge (2%)</span>
+                    <span>{acCharge.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className="text-[13px] px-1 mb-2">
+                  <p>Net Total [inclusive of GST]</p>
+                  <div className="flex justify-between pl-4 pr-1 mt-0.5">
+                    <span>CGST@2.5</span>
+                    <span>2.5%</span>
+                    <span>{(tax / 2).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between pl-4 pr-1 mt-0.5">
+                    <span>SGST@2.5</span>
+                    <span>2.5%</span>
+                    <span>{(tax / 2).toFixed(2)}</span>
+                  </div>
+                </div>
+                
+                <div className="border-t border-black my-1"></div>
+                <div className="flex justify-end text-[13px] py-1 pr-1">
+                  <span>Round off <span className="ml-4">{roundOff.toFixed(2)}</span></span>
+                </div>
+                
+                <div className="border-t border-black my-1"></div>
+                <div className="flex justify-between items-center text-lg py-1.5 px-1">
+                  <span className="font-normal uppercase tracking-wide">GRAND TOTAL</span>
+                  <span className="font-normal">₹ {total.toFixed(2)}</span>
+                </div>
+                
+                <div className="border-t border-black my-1"></div>
+                <div className="text-center text-[13px] py-1.5">
+                  <span>Mode of Payment: {paymentMethod}</span>
+                </div>
+                
+                <div className="border-t border-black my-1 mb-2"></div>
+                <div className="text-center text-[13px]">
+                  {restaurantData.fssai && <p>FSSAI Lic No. {restaurantData.fssai}</p>}
+                  <p className="italic mt-1">THANK YOU !! VISIT AGAIN !!</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-[#e3e3df] flex gap-3 bg-white">
+              <button 
+                onClick={() => setIsPreviewOpen(false)}
+                className="flex-1 py-2.5 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  if (typeof window !== 'undefined' && (window as any).require) {
+                    try {
+                      const { ipcRenderer } = (window as any).require('electron');
+                      ipcRenderer.send('print-bill');
+                    } catch (e) {
+                      window.print();
+                    }
+                  } else {
+                    window.print(); 
+                  }
+                  
+                  setTimeout(() => handleCharge(), 500);
+                  setIsPreviewOpen(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl font-bold text-white bg-[#4a7b47] hover:bg-[#3d663b] shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
+              >
+                <Printer className="w-5 h-5" />
+                Confirm & Print
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
