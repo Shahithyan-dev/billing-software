@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import { Search, Plus, Minus, Trash2, User, CreditCard, Smartphone, Banknote, MoreHorizontal, SplitSquareHorizontal, PauseCircle, Printer, Pencil, X, ShoppingBag } from 'lucide-react';
 import { RESTAURANT_DETAILS } from '@/config/restaurant';
 import { MenuManagerModal } from '@/components/MenuManagerModal';
+import { db } from '@/lib/db';
+import { useLiveQuery } from 'dexie-react-hooks';
 
 export interface MenuItem {
   id: string;
@@ -36,42 +38,39 @@ const getCurrentTimeSlot = () => {
 };
 
 const POS = () => {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenu);
-
+  const dbMenuItems = useLiveQuery(() => db.menuItems.toArray(), []);
+  
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const rid = localStorage.getItem('restaurantId') || '';
-      const saved = localStorage.getItem(`servewell_menu_${rid}`);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setMenuItems(parsed);
+    const initMenu = async () => {
+      const count = await db.menuItems.count();
+      if (count === 0) {
+        let initialMenu = mockMenu;
+        if (typeof window !== 'undefined') {
+          const restId = localStorage.getItem('restaurantId');
+          const storedMenu = localStorage.getItem(`servewell_menu_${restId}`);
+          if (storedMenu) {
+            try {
+              const parsedMenu = JSON.parse(storedMenu);
+              if (Array.isArray(parsedMenu) && parsedMenu.length > 0) {
+                initialMenu = parsedMenu;
+              }
+            } catch (e) {
+              console.error("Failed to parse stored menu", e);
+            }
           }
-        } catch (e) {
-          // Fall through to default
         }
+        await db.menuItems.bulkAdd(initialMenu);
       }
-    }
+    };
+    initMenu();
   }, []);
+
+  const menuItems = dbMenuItems || mockMenu;
 
   const [isMenuManagerOpen, setIsMenuManagerOpen] = useState(false);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   
   const [restaurantData, setRestaurantData] = useState(RESTAURANT_DETAILS);
-
-  React.useEffect(() => {
-    // In a multi-tenant SaaS, this fetches the restaurant based on the logged-in user.
-    fetch(`${API_BASE_URL}/api/v1/restaurants`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data && data.data.length > 0) {
-          // Use the first restaurant found
-          setRestaurantData(data.data[0]);
-        }
-      })
-      .catch(console.error);
-  }, []);
 
   const lastTimeSlotRef = React.useRef(getCurrentTimeSlot());
   React.useEffect(() => {
@@ -121,10 +120,9 @@ const POS = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const handleSaveMenu = (newItems: MenuItem[]) => {
-    setMenuItems(newItems);
-    const rid = typeof window !== 'undefined' ? localStorage.getItem('restaurantId') || '' : '';
-    localStorage.setItem(`servewell_menu_${rid}`, JSON.stringify(newItems));
+  const handleSaveMenu = async (newItems: MenuItem[]) => {
+    await db.menuItems.clear();
+    await db.menuItems.bulkAdd(newItems);
     
     // Also remove items from cart if they were deleted
     setCart(prev => prev.filter(cartItem => newItems.some(item => item.id === cartItem.id)).map(cartItem => {
@@ -161,8 +159,29 @@ const POS = () => {
     }).filter(i => i.quantity > 0));
   };
 
-  const handleCharge = () => {
+  const handleCharge = async () => {
     if (cart.length === 0) return;
+    
+    const newOrder = {
+      uuid: crypto.randomUUID(),
+      restaurantId: (restaurantData as any).id || 'default_restaurant',
+      items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, quantity: c.quantity })),
+      subtotal,
+      discount,
+      tax,
+      total,
+      paymentMethod,
+      orderType,
+      timestamp: Date.now(),
+      syncStatus: 'pending' as const
+    };
+
+    try {
+      await db.orders.add(newOrder);
+    } catch (e) {
+      console.error('Failed to save order offline:', e);
+    }
+
     setCart([]);
     setBillNo(prev => prev + 1);
   };
