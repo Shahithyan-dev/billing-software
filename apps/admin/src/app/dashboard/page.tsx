@@ -12,11 +12,14 @@ export default function SuperAdminDashboard() {
   const [success, setSuccess] = useState('');
 
   const [initialMenu, setInitialMenu] = useState<{id: string, name: string, price: number, category: string, type: string}[]>([]);
+  const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
+  const [bulkMenuText, setBulkMenuText] = useState('');
+  const [isBulkPasting, setIsBulkPasting] = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://billing-software-03up.onrender.com';
 
   const SIDEBAR_FEATURES = ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'];
-  const MENU_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages', 'Starters', 'Main Course', 'Desserts'];
+  const MENU_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -24,7 +27,29 @@ export default function SuperAdminDashboard() {
       router.push('/login');
       return;
     }
+    
+    // Initial fetch
     fetchRestaurants();
+    
+    // Verify session every 30 seconds
+    const verifySession = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+          alert('You have been logged out because your account was accessed from another device.');
+          handleLogout();
+        }
+      } catch (e) {
+        // Ignore network errors, only act on 401
+      }
+    };
+    
+    verifySession(); // Check immediately on load
+    const interval = setInterval(verifySession, 30000);
+    
+    return () => clearInterval(interval);
   }, [router]);
 
   const fetchRestaurants = async () => {
@@ -93,6 +118,53 @@ export default function SuperAdminDashboard() {
     ]);
   };
 
+  const handleProcessBulkPaste = () => {
+    if (!bulkMenuText.trim()) return;
+    const lines = bulkMenuText.split('\n');
+    const newItems = lines.map((line, idx) => {
+      const parts = line.split('\t').map(p => p.trim());
+      if (parts.length >= 2) {
+        return {
+          id: Date.now().toString() + idx,
+          name: parts[0],
+          price: parseInt(parts[1]) || 0,
+          category: parts[2] || 'Lunch',
+          type: parts[3]?.toLowerCase() === 'non-veg' ? 'non-veg' : 'veg'
+        };
+      }
+      return null;
+    }).filter(Boolean) as any[];
+    
+    setInitialMenu([...initialMenu, ...newItems]);
+    setBulkMenuText('');
+    setIsBulkPasting(false);
+  };
+
+  const handleEditTenant = (rest: any) => {
+    setEditingTenantId(rest._id);
+    setInitialMenu(rest.defaultMenu || []);
+    // Populate form fields
+    setTimeout(() => {
+      const form = document.getElementById('tenant-form') as HTMLFormElement;
+      if (form) {
+        (form.elements.namedItem('name') as HTMLInputElement).value = rest.name || '';
+        (form.elements.namedItem('phone') as HTMLInputElement).value = rest.phone || '';
+        (form.elements.namedItem('gstin') as HTMLInputElement).value = rest.gstin || '';
+        (form.elements.namedItem('fssai') as HTMLInputElement).value = rest.fssai || '';
+        (form.elements.namedItem('address') as HTMLInputElement).value = rest.address || '';
+        (form.elements.namedItem('captains') as HTMLInputElement).value = rest.captains?.join(', ') || '';
+        (form.elements.namedItem('tables') as HTMLInputElement).value = rest.tables?.join(', ') || '';
+        // Note: admin email/password cannot easily be populated securely, we can leave them blank or disabled for updates
+      }
+      
+      // Update sidebar features
+      rest.sidebarFeatures?.forEach((f: string) => {
+        const checkbox = document.querySelector(`input[name="feature_${f}"]`) as HTMLInputElement;
+        if (checkbox) checkbox.checked = true;
+      });
+    }, 100);
+  };
+
   const handleCreateRestaurant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -110,41 +182,50 @@ export default function SuperAdminDashboard() {
     const captainsArray = captainsStr ? captainsStr.split(',').map(s => s.trim()).filter(s => s) : ['Captain'];
     const tablesArray = tablesStr ? tablesStr.split(',').map(s => s.trim()).filter(s => s) : ['T1', 'T2', 'T3'];
 
-    const payload = new FormData();
-    payload.append('name', formData.get('name') as string);
-    payload.append('tagline', formData.get('tagline') as string);
-    payload.append('phone', formData.get('phone') as string);
-    payload.append('gstin', formData.get('gstin') as string);
-    payload.append('fssai', formData.get('fssai') as string);
-    payload.append('address', formData.get('address') as string);
-    payload.append('email', formData.get('email') as string);
-    payload.append('password', formData.get('password') as string);
-    
-    payload.append('captains', JSON.stringify(captainsArray));
-    payload.append('tables', JSON.stringify(tablesArray));
-    payload.append('sidebarFeatures', JSON.stringify(selectedFeatures));
-    
-    // Validate and append menu items
     const validMenuItems = initialMenu.filter(item => item.name.trim() !== '' && item.price >= 0);
-    payload.append('initialMenu', JSON.stringify(validMenuItems));
+    
+    const payloadObj = {
+      name: formData.get('name') as string,
+      tagline: formData.get('tagline') as string,
+      phone: formData.get('phone') as string,
+      gstin: formData.get('gstin') as string,
+      fssai: formData.get('fssai') as string,
+      address: formData.get('address') as string,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      captains: captainsArray,
+      tables: tablesArray,
+      sidebarFeatures: selectedFeatures,
+      initialMenu: validMenuItems
+    };
 
     const token = localStorage.getItem('adminToken');
+    const isEditing = !!editingTenantId;
+    const url = isEditing ? `${API_BASE_URL}/api/v1/restaurants/${editingTenantId}` : `${API_BASE_URL}/api/v1/auth/register`;
+    const method = isEditing ? 'PUT' : 'POST';
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: { 
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: payload,
+        body: JSON.stringify(payloadObj),
       });
       
       const result = await response.json();
       
       if (result.success) {
-        setSuccess(`Restaurant created successfully! Admin login: ${formData.get('email')}`);
-        (e.target as HTMLFormElement).reset();
-        setInitialMenu([]);
+        setSuccess(isEditing ? 'Restaurant updated successfully!' : `Restaurant created successfully! Admin login: ${formData.get('email')}`);
+        if (!isEditing) {
+          (e.target as HTMLFormElement).reset();
+          setInitialMenu([]);
+        } else {
+          setEditingTenantId(null);
+          (e.target as HTMLFormElement).reset();
+          setInitialMenu([]);
+        }
         fetchRestaurants();
       } else {
         setError(result.error || 'Failed to create restaurant');
@@ -173,14 +254,28 @@ export default function SuperAdminDashboard() {
 
       <div className="max-w-7xl mx-auto p-8 grid lg:grid-cols-[1.5fr_1fr] gap-8">
         
-        {/* Create Restaurant Form */}
+        {/* Create / Edit Restaurant Form */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
-          <h2 className="text-xl font-bold mb-6">Create New Tenant</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold">{editingTenantId ? 'Edit Tenant' : 'Create New Tenant'}</h2>
+            {editingTenantId && (
+              <button 
+                onClick={() => {
+                  setEditingTenantId(null);
+                  setInitialMenu([]);
+                  (document.getElementById('tenant-form') as HTMLFormElement)?.reset();
+                }}
+                className="text-sm text-red-500 hover:bg-red-50 px-3 py-1 rounded"
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
           
           {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
           {success && <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm mb-4 font-medium">{success}</div>}
           
-          <form onSubmit={handleCreateRestaurant} className="space-y-6">
+          <form id="tenant-form" onSubmit={handleCreateRestaurant} className="space-y-6">
             
             {/* 1. Basic Details */}
             <div>
@@ -211,15 +306,15 @@ export default function SuperAdminDashboard() {
 
             {/* 2. Admin Credentials */}
             <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">2. Master Login</h3>
+              <h3 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">2. Master Login {editingTenantId && "(Leave blank to keep unchanged)"}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email *</label>
-                  <input name="email" type="email" required className="w-full px-3 py-2 border rounded-lg bg-blue-50 focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email {!editingTenantId && "*"}</label>
+                  <input name="email" type="email" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-3 py-2 border rounded-lg bg-blue-50 focus:ring-2 focus:ring-gray-900 text-gray-900 disabled:opacity-50" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Password *</label>
-                  <input name="password" type="text" required className="w-full px-3 py-2 border rounded-lg bg-blue-50 focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Password {!editingTenantId && "*"}</label>
+                  <input name="password" type="text" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-3 py-2 border rounded-lg bg-blue-50 focus:ring-2 focus:ring-gray-900 text-gray-900 disabled:opacity-50" />
                 </div>
               </div>
             </div>
@@ -253,19 +348,44 @@ export default function SuperAdminDashboard() {
             <div>
               <div className="flex justify-between items-end mb-3 border-b pb-2">
                 <h3 className="text-sm font-bold text-gray-900">4. Interactive Menu Builder</h3>
-                <button 
-                  type="button" 
-                  onClick={handleLoadDefaultMenu}
-                  className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold flex items-center gap-1 transition-colors"
-                >
-                  <Download className="w-3 h-3" /> Load Default Menu
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsBulkPasting(!isBulkPasting)}
+                    className="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-200 font-bold transition-colors"
+                  >
+                    Bulk Paste Excel
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleLoadDefaultMenu}
+                    className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold flex items-center gap-1 transition-colors"
+                  >
+                    <Download className="w-3 h-3" /> Load Default Menu
+                  </button>
+                </div>
               </div>
+              
+              {isBulkPasting && (
+                <div className="mb-4 bg-gray-50 p-4 rounded-lg border">
+                  <p className="text-xs text-gray-500 mb-2">Paste your menu from Excel (Format: Name [tab] Price [tab] Category [tab] Type)</p>
+                  <textarea 
+                    value={bulkMenuText}
+                    onChange={(e) => setBulkMenuText(e.target.value)}
+                    className="w-full h-32 px-3 py-2 border rounded-lg text-sm"
+                    placeholder="Idli Sambar	60	Breakfast	veg&#10;Chicken Biryani	320	Lunch	non-veg"
+                  ></textarea>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button type="button" onClick={() => setIsBulkPasting(false)} className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
+                    <button type="button" onClick={handleProcessBulkPaste} className="px-3 py-1 text-sm bg-green-600 text-white font-bold rounded hover:bg-green-700">Process</button>
+                  </div>
+                </div>
+              )}
               
               <div className="bg-gray-50 border rounded-lg p-4 mb-2 max-h-[300px] overflow-y-auto">
                 {initialMenu.length === 0 ? (
                   <div className="text-center py-6 text-gray-400 text-sm italic">
-                    No items added yet. Click "Add Item" or "Load Default Menu".
+                    No items added yet. Click &quot;Add Item&quot; or &quot;Load Default Menu&quot;.
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -324,7 +444,7 @@ export default function SuperAdminDashboard() {
             </div>
 
             <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition-colors shadow-lg">
-              {loading ? 'Provisioning Tenant...' : 'Create & Provision Tenant'}
+              {loading ? 'Saving...' : editingTenantId ? 'Save Tenant Updates' : 'Create & Provision Tenant'}
             </button>
           </form>
         </div>
@@ -342,13 +462,22 @@ export default function SuperAdminDashboard() {
             ) : (
               restaurants.map(rest => (
                 <div key={rest._id} className="p-4 border rounded-xl hover:border-gray-400 transition-colors relative group">
-                  <button 
-                    onClick={() => handleDeleteRestaurant(rest._id)}
-                    className="absolute top-4 right-4 text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-all opacity-0 group-hover:opacity-100"
-                    title="Delete Tenant"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <button 
+                      onClick={() => handleEditTenant(rest)}
+                      className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded transition-all"
+                      title="Edit Tenant"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteRestaurant(rest._id)}
+                      className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-all"
+                      title="Delete Tenant"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                   <div className="flex justify-between items-start mb-1 pr-8">
                     <h3 className="font-bold text-gray-900">{rest.name}</h3>
                     <span className="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">Active</span>

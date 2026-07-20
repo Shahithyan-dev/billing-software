@@ -14,6 +14,35 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Update an existing restaurant
+router.put('/:id', async (req, res) => {
+  try {
+    const { name, tagline, phone, gstin, fssai, address, captains, tables, sidebarFeatures, initialMenu } = req.body;
+    
+    const updateData: any = {
+      name, tagline, phone, gstin, fssai, address, captains, tables, sidebarFeatures
+    };
+    
+    if (initialMenu) {
+      updateData.defaultMenu = initialMenu;
+    }
+    
+    const restaurant = await Restaurant.findByIdAndUpdate(
+      req.params.id, 
+      { $set: updateData }, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!restaurant) {
+      return res.status(404).json({ success: false, error: 'Restaurant not found' });
+    }
+    
+    res.status(200).json({ success: true, data: restaurant });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
 // Get a specific restaurant by ID
 router.get('/:id', async (req, res) => {
   try {

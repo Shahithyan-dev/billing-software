@@ -112,7 +112,7 @@ const POS = () => {
     }
   }, []);
 
-  const coreCategories = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages', 'All Day'];
+  const coreCategories = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
   const categories = Array.from(new Set([...coreCategories, ...menuItems.map(i => i.category)]));
   
   const filteredMenu = menuItems.filter(i => {
@@ -187,11 +187,6 @@ const POS = () => {
     setBillNo(prev => prev + 1);
   };
 
-  const handleHoldBill = () => {
-    if (cart.length === 0) return;
-    alert('Bill put on hold successfully!');
-    setCart([]);
-  };
 
   return (
     <>
@@ -329,7 +324,7 @@ const POS = () => {
         {/* Cart Section / Mobile Drawer */}
         <div className={`
           fixed bottom-0 left-0 right-0 z-50 h-[85vh] bg-white rounded-t-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex flex-col p-6 transition-transform duration-300
-          lg:relative lg:h-auto lg:w-[420px] lg:shrink-0 lg:rounded-[2rem] lg:border lg:border-[#e3e3df] lg:shadow-sm lg:translate-y-0 lg:z-0
+          lg:relative lg:h-[calc(100vh-144px)] lg:w-[420px] lg:shrink-0 lg:rounded-[2rem] lg:border lg:border-[#e3e3df] lg:shadow-sm lg:translate-y-0 lg:z-0
           ${isMobileCartOpen ? 'translate-y-0' : 'translate-y-full'}
         `}>
           <div className="flex justify-between items-start mb-6">
@@ -378,10 +373,6 @@ const POS = () => {
               ))
             )}
             
-            <div className="border border-dashed border-[#e3e3df] rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 text-muted-foreground">
-               <Plus className="w-5 h-5" />
-               <span className="text-sm font-bold">Add Item</span>
-            </div>
           </div>
 
           <div className="pt-6 space-y-4 mt-auto">
@@ -413,35 +404,28 @@ const POS = () => {
             <div className="grid grid-cols-3 gap-3 pt-2">
               <button 
                 onClick={() => setPaymentMethod('CASH')}
-                className={`flex flex-col items-center justify-center rounded-2xl p-3 active:scale-95 transition-all border ${paymentMethod === 'CASH' ? 'bg-[#4a7b47]/10 border-[#4a7b47] text-[#4a7b47]' : 'bg-[#f9f7f1] border-[#e3e3df] text-muted-foreground hover:border-[#4a7b47] hover:text-[#4a7b47]'}`}
+                className={`flex flex-col items-center justify-center rounded-xl p-2 active:scale-95 transition-all border ${paymentMethod === 'CASH' ? 'bg-[#4a7b47]/10 border-[#4a7b47] text-[#4a7b47]' : 'bg-[#f9f7f1] border-[#e3e3df] text-muted-foreground hover:border-[#4a7b47] hover:text-[#4a7b47]'}`}
               >
-                 <Banknote className={`w-6 h-6 mb-2 ${paymentMethod === 'CASH' ? 'text-[#4a7b47]' : 'text-gray-500'}`} />
+                 <Banknote className={`w-5 h-5 mb-1 ${paymentMethod === 'CASH' ? 'text-[#4a7b47]' : 'text-gray-500'}`} />
                  <span className="text-[11px] font-bold uppercase">Cash</span>
               </button>
               <button 
                 onClick={() => setPaymentMethod('CARD')}
-                className={`flex flex-col items-center justify-center rounded-2xl p-3 active:scale-95 transition-all border ${paymentMethod === 'CARD' ? 'bg-[#4a7b47]/10 border-[#4a7b47] text-[#4a7b47]' : 'bg-[#f9f7f1] border-[#e3e3df] text-muted-foreground hover:border-[#4a7b47] hover:text-[#4a7b47]'}`}
+                className={`flex flex-col items-center justify-center rounded-xl p-2 active:scale-95 transition-all border ${paymentMethod === 'CARD' ? 'bg-[#4a7b47]/10 border-[#4a7b47] text-[#4a7b47]' : 'bg-[#f9f7f1] border-[#e3e3df] text-muted-foreground hover:border-[#4a7b47] hover:text-[#4a7b47]'}`}
               >
-                 <CreditCard className={`w-6 h-6 mb-2 ${paymentMethod === 'CARD' ? 'text-[#4a7b47]' : 'text-gray-500'}`} />
+                 <CreditCard className={`w-5 h-5 mb-1 ${paymentMethod === 'CARD' ? 'text-[#4a7b47]' : 'text-gray-500'}`} />
                  <span className="text-[11px] font-bold uppercase">Card</span>
               </button>
               <button 
                 onClick={() => setPaymentMethod('UPI')}
-                className={`flex flex-col items-center justify-center rounded-2xl p-3 active:scale-95 transition-all border ${paymentMethod === 'UPI' ? 'bg-[#4a7b47]/10 border-[#4a7b47] text-[#4a7b47]' : 'bg-[#f9f7f1] border-[#e3e3df] text-muted-foreground hover:border-[#4a7b47] hover:text-[#4a7b47]'}`}
+                className={`flex flex-col items-center justify-center rounded-xl p-2 active:scale-95 transition-all border ${paymentMethod === 'UPI' ? 'bg-[#4a7b47]/10 border-[#4a7b47] text-[#4a7b47]' : 'bg-[#f9f7f1] border-[#e3e3df] text-muted-foreground hover:border-[#4a7b47] hover:text-[#4a7b47]'}`}
               >
-                 <Smartphone className={`w-6 h-6 mb-2 ${paymentMethod === 'UPI' ? 'text-[#4a7b47]' : 'text-gray-500'}`} />
+                 <Smartphone className={`w-5 h-5 mb-1 ${paymentMethod === 'UPI' ? 'text-[#4a7b47]' : 'text-gray-500'}`} />
                  <span className="text-[11px] font-bold uppercase">UPI</span>
               </button>
             </div>
 
-            <div className="flex gap-2 mb-2">
-               <button onClick={() => alert('Split Bill functionality opening...')} className="flex-1 flex gap-2 items-center justify-center bg-white border border-[#e3e3df] text-[#2c332c] font-bold text-sm py-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all">
-                  <SplitSquareHorizontal className="w-4 h-4" /> Split Bill
-               </button>
-               <button onClick={handleHoldBill} className="flex-1 flex gap-2 items-center justify-center bg-white border border-[#e3e3df] text-[#2c332c] font-bold text-sm py-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all">
-                  <PauseCircle className="w-4 h-4" /> Hold Bill
-               </button>
-            </div>
+
             
             <button 
               onClick={() => { 

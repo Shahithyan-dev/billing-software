@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   ShoppingCart, 
   ChefHat, 
@@ -14,11 +14,13 @@ import {
   Activity,
   Cpu,
   PackageOpen,
-  Menu
+  Menu,
+  LogOut
 } from 'lucide-react';
 
 const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [allowedFeatures, setAllowedFeatures] = useState<string[]>([]);
 
   React.useEffect(() => {
@@ -79,8 +81,20 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
         </ul>
       </nav>
       
-      <div className="p-4 border-t border-border text-xs text-muted-foreground text-center">
-        Enterprise Offline OS v1.0
+      <div className="p-4 border-t border-border">
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            router.push('/login');
+          }}
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all font-medium text-red-500 hover:bg-red-50"
+        >
+          <LogOut className="w-5 h-5" />
+          Logout
+        </button>
+        <div className="mt-4 text-xs text-muted-foreground text-center">
+          Enterprise Offline OS v1.0
+        </div>
       </div>
     </aside>
   );
@@ -92,6 +106,33 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://billing-software-03up.onrender.com';
+
+    const verifySession = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          alert('You have been logged out because your account was accessed from another device.');
+          router.push('/login');
+        }
+      } catch (e) {
+        // Offline or network error, ignore
+      }
+    };
+
+    verifySession();
+    const interval = setInterval(verifySession, 30000);
+    return () => clearInterval(interval);
+  }, [router]);
 
   return (
     <div className="flex h-screen print:h-auto print:min-h-0 bg-background text-foreground overflow-hidden print:overflow-visible relative">
