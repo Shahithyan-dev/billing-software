@@ -18,7 +18,7 @@ export default function SuperAdminLogin() {
 
     try {
       // Admin app uses the same backend API as the main app
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://billing-software-03up.onrender.com');
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
       
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
