@@ -85,6 +85,28 @@ const POS = () => {
       if (stored) {
         setRestaurantData(JSON.parse(stored));
       }
+      
+      // Always try to fetch the latest data from the backend to ensure it's up to date
+      const restId = localStorage.getItem('restaurantId');
+      if (restId) {
+        fetch(`${API_BASE_URL}/api/v1/restaurants/${restId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.data) {
+              const freshData = {
+                name: data.data.name || '',
+                tagline: data.data.tagline || '',
+                phone: data.data.phone || '',
+                gstin: data.data.gstin || '',
+                fssai: data.data.fssai || '',
+                logo: data.data.logo || ''
+              };
+              setRestaurantData(freshData);
+              localStorage.setItem('servewell_restaurant_details', JSON.stringify(freshData));
+            }
+          })
+          .catch(err => console.error("Failed to fetch latest restaurant data", err));
+      }
     }
   }, []);
 
