@@ -3,7 +3,6 @@
 import { API_BASE_URL } from '@/config/api';
 import React, { useState } from 'react';
 import { Search, Plus, Minus, Trash2, User, CreditCard, Smartphone, Banknote, MoreHorizontal, SplitSquareHorizontal, PauseCircle, Printer, Pencil, X, ShoppingBag } from 'lucide-react';
-import { RESTAURANT_DETAILS } from '@/config/restaurant';
 import { MenuManagerModal } from '@/components/MenuManagerModal';
 import { db } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -71,7 +70,23 @@ const POS = () => {
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
-  const [restaurantData, setRestaurantData] = useState(RESTAURANT_DETAILS);
+  const [restaurantData, setRestaurantData] = useState({
+    name: "Loading...",
+    tagline: "",
+    phone: "",
+    gstin: "",
+    fssai: "",
+    logo: "/client-logo.png"
+  });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('servewell_restaurant_details');
+      if (stored) {
+        setRestaurantData(JSON.parse(stored));
+      }
+    }
+  }, []);
 
   const lastTimeSlotRef = React.useRef(getCurrentTimeSlot());
   React.useEffect(() => {

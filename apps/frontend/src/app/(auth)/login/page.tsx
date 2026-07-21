@@ -49,6 +49,7 @@ const Login = () => {
         if (result.captains) localStorage.setItem('servewell_captains', JSON.stringify(result.captains));
         if (result.tables) localStorage.setItem('servewell_tables', JSON.stringify(result.tables));
         if (result.sidebarFeatures) localStorage.setItem('servewell_sidebar', JSON.stringify(result.sidebarFeatures));
+        if (result.restaurant) localStorage.setItem('servewell_restaurant_details', JSON.stringify(result.restaurant));
         
         // Only override local menu if backend sent a default one and local is empty
         if (result.defaultMenu && result.defaultMenu.length > 0) {

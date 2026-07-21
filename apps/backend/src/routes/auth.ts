@@ -118,7 +118,15 @@ router.post('/login', async (req, res) => {
       captains: restaurant?.captains || [],
       tables: restaurant?.tables || [],
       sidebarFeatures: restaurant?.sidebarFeatures || [],
-      defaultMenu: restaurant?.defaultMenu || []
+      defaultMenu: restaurant?.defaultMenu || [],
+      restaurant: {
+        name: restaurant?.name || '',
+        tagline: restaurant?.tagline || '',
+        phone: restaurant?.phone || '',
+        gstin: restaurant?.gstin || '',
+        fssai: restaurant?.fssai || '',
+        logo: restaurant?.logo || ''
+      }
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
