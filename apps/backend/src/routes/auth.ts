@@ -150,9 +150,8 @@ router.get('/verify', async (req, res) => {
     }
     
     // Check if the sessionToken matches the database
-    // If user has no sessionToken in DB yet, we can allow it for backwards compatibility,
-    // but if it exists, it MUST match.
-    if (user.sessionToken && decoded.sessionToken !== user.sessionToken) {
+    // Exempt superadmins from this check so they can be logged into the Admin Portal and POS simultaneously
+    if (user.role !== 'superadmin' && user.sessionToken && decoded.sessionToken !== user.sessionToken) {
       return res.status(401).json({ success: false, error: 'Session expired due to login from another device' });
     }
     
