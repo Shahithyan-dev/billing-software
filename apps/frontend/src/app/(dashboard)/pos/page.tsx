@@ -29,12 +29,12 @@ const mockMenu: MenuItem[] = [
 ];
 
 const getCurrentTimeSlot = () => {
-  if (typeof window === 'undefined') return 'All Day';
+  if (typeof window === 'undefined') return 'All';
   const hour = new Date().getHours();
   if (hour >= 6 && hour < 12) return 'Breakfast';
   if (hour >= 12 && hour < 17) return 'Lunch';
   if (hour >= 17 && hour <= 23) return 'Dinner';
-  return 'All Day';
+  return 'All';
 };
 
 const POS = () => {
@@ -87,7 +87,7 @@ const POS = () => {
 
   const [cart, setCart] = useState<(MenuItem & { quantity: number })[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('All Day');
+  const [activeCategory, setActiveCategory] = useState<string>('All');
   
   // Hydration-safe initialization for time-based categories
   React.useEffect(() => {

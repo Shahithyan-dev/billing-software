@@ -107,6 +107,11 @@ export default function DashboardLayout({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  React.useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
 
   React.useEffect(() => {
     const token = localStorage.getItem('token');
