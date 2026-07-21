@@ -114,6 +114,18 @@ export default function DashboardLayout({
   }, [pathname]);
 
   React.useEffect(() => {
+    const initCapgo = async () => {
+      try {
+        const { CapacitorUpdater } = await import('@capgo/capacitor-updater');
+        await CapacitorUpdater.notifyAppReady();
+      } catch (e) {
+        // Not running in Capacitor or updater not available
+      }
+    };
+    initCapgo();
+  }, []);
+
+  React.useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
