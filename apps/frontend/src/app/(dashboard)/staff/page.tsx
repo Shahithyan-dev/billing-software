@@ -14,7 +14,7 @@ const Staff = () => {
 
   return (
     <div className="h-full flex flex-col gap-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-primary flex items-center gap-3">
             <Users className="w-8 h-8 text-pink-500" />

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 const Security = () => {
   return (
     <div className="h-full flex flex-col gap-6 max-w-5xl mx-auto">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-primary flex items-center gap-3">
             <ShieldCheck className="w-8 h-8 text-teal-500" />
