@@ -7,6 +7,7 @@ const config: CapacitorConfig = {
   plugins: {
     CapacitorUpdater: {
       autoUpdate: true,
+      updateUrl: 'https://raw.githubusercontent.com/Shahithyan-dev/billing-software/main/apps/frontend/latest.json',
     }
   }
 };

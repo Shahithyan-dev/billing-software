@@ -36,6 +36,24 @@ jobs:
         run: npx @capgo/cli@latest bundle upload com.servewell.pos -a ${{ secrets.CAPGO_TOKEN }} -p ./out --channel production -b 0.1.${{ github.run_number }}
         continue-on-error: true
 
+      - name: Create GitHub Release with OTA Bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="0.1.${{ github.run_number }}"
+          cd apps/frontend
+          zip -r bundle.zip out/
+          gh release create "v${VERSION}" bundle.zip \
+            --title "App Bundle v${VERSION}" \
+            --notes "Auto-released by GitHub Actions build #${{ github.run_number }}"
+          BUNDLE_URL="https://github.com/Shahithyan-dev/billing-software/releases/download/v${VERSION}/bundle.zip"
+          echo "{\"version\":\"${VERSION}\",\"url\":\"${BUNDLE_URL}\"}" > latest.json
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add latest.json
+          git commit -m "chore: update OTA bundle to v${VERSION} [skip ci]"
+          git push
+
       - name: Sync Capacitor
         working-directory: ./apps/frontend
         run: npx cap sync android
