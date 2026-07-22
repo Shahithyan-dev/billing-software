@@ -135,7 +135,7 @@ const POS = () => {
     setActiveCategory(getCurrentTimeSlot());
   }, []);
   const [paymentMethod, setPaymentMethod] = useState('CASH');
-  const [billNo, setBillNo] = useState(273);
+  const [billNo, setBillNo] = useState(1);
   const [orderType, setOrderType] = useState<'Dine-In' | 'Parcel'>('Dine-In');
   const [selectedTable, setSelectedTable] = useState('T3');
   const [acType, setAcType] = useState<string>(''); // Will initialize when restaurantData loads
@@ -758,7 +758,7 @@ const POS = () => {
                 className="flex-1 py-2.5 rounded-xl font-bold text-white bg-[#4a7b47] hover:bg-[#3d663b] shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
               >
                 <Printer className="w-5 h-5" />
-                Confirm & Print
+                Print Bill
               </button>
             </div>
           </div>
