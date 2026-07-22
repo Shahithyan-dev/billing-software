@@ -149,7 +149,10 @@ const POS = () => {
       if (storedCaptains) setCaptains(JSON.parse(storedCaptains));
 
       const storedTables = localStorage.getItem('servewell_tables');
-      if (storedTables) setTables([...JSON.parse(storedTables), 'Parcel', 'Delivery']);
+      if (storedTables) {
+        const parsedTables = JSON.parse(storedTables);
+        setTables(Array.from(new Set([...parsedTables, 'Parcel', 'Delivery'])));
+      }
       
       const storedRestaurant = localStorage.getItem('servewell_restaurant_details');
       if (storedRestaurant) {
@@ -652,7 +655,7 @@ const POS = () => {
                   </div>
                   <div className="flex justify-between gap-2">
                     <span>Cashier: Admin</span>
-                    <span className="text-right">Bill No.: DR{billNo}</span>
+                    <span className="text-right">Bill No.: {billNo}</span>
                   </div>
                   <div className="flex justify-between gap-2">
                     <span>Captain: {selectedCaptain === 'Captain' ? 'Self Service' : selectedCaptain}</span>
