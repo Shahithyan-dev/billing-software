@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Plus, Download } from 'lucide-react';
+import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
@@ -246,26 +246,37 @@ export default function SuperAdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 pb-20">
-      <nav className="bg-gray-900 text-white p-4 px-8 flex justify-between items-center sticky top-0 z-50">
-        <div>
-          <h1 className="text-xl font-black">ServeWell Admin</h1>
-          <span className="text-xs text-red-500 font-bold uppercase tracking-widest">Super Access</span>
+    <div className="min-h-screen w-full bg-[#f8fafc] pb-20 font-sans selection:bg-indigo-500/30">
+      {/* Glassmorphic Navbar */}
+      <nav className="backdrop-blur-xl bg-white/70 border-b border-white shadow-sm p-4 px-8 flex justify-between items-center sticky top-0 z-50 transition-all">
+        <div className="flex items-center">
+          <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">ServeWell Admin</h1>
+          <span className="ml-4 text-[10px] bg-red-50 text-red-600 font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-red-100 flex items-center gap-1.5 shadow-sm shadow-red-100">
+            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+            Super Access
+          </span>
         </div>
         <button 
           onClick={handleLogout}
-          className="text-sm font-medium hover:text-red-400 transition-colors"
+          className="text-sm font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-all"
         >
           Logout
         </button>
       </nav>
 
-      <div className="max-w-7xl mx-auto p-8 grid lg:grid-cols-[1.5fr_1fr] gap-8">
+      <div className="max-w-7xl mx-auto p-4 sm:p-8 grid lg:grid-cols-[1.5fr_1fr] gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
         
         {/* Create / Edit Restaurant Form */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">{editingTenantId ? 'Edit Tenant' : 'Create New Tenant'}</h2>
+        <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white h-fit relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 rounded-[2rem] -z-10 opacity-50"></div>
+          
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+              <span className="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl shadow-inner">
+                {editingTenantId ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              </span>
+              {editingTenantId ? 'Edit Tenant' : 'Create New Tenant'}
+            </h2>
             {editingTenantId && (
               <button 
                 onClick={() => {
@@ -273,166 +284,180 @@ export default function SuperAdminDashboard() {
                   setInitialMenu([]);
                   (document.getElementById('tenant-form') as HTMLFormElement)?.reset();
                 }}
-                className="text-sm text-red-500 hover:bg-red-50 px-3 py-1 rounded"
+                className="text-sm text-rose-500 hover:bg-rose-50 font-bold px-4 py-2 rounded-xl transition-all"
               >
                 Cancel Edit
               </button>
             )}
           </div>
           
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
-          {success && <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm mb-4 font-medium">{success}</div>}
+          {error && <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-xl text-sm mb-6 flex items-center gap-2 shadow-sm animate-in fade-in"><CheckCircle2 className="w-4 h-4" /> {error}</div>}
+          {success && <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-xl text-sm mb-6 font-medium flex items-center gap-2 shadow-sm animate-in fade-in"><CheckCircle2 className="w-4 h-4" /> {success}</div>}
           
-          <form id="tenant-form" onSubmit={handleCreateRestaurant} className="space-y-6">
+          <form id="tenant-form" onSubmit={handleCreateRestaurant} className="space-y-8 relative">
             
             {/* 1. Basic Details */}
-            <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">1. Restaurant Details</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
+                <Server className="w-4 h-4 text-indigo-500" /> 1. Restaurant Details
+              </h3>
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Name *</label>
-                  <input name="name" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Name *</label>
+                  <input name="name" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="ServeWell Cafe" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone *</label>
-                  <input name="phone" required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Phone *</label>
+                  <input name="phone" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="+91 9876543210" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">GSTIN</label>
-                  <input name="gstin" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">GSTIN</label>
+                  <input name="gstin" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">FSSAI</label>
-                  <input name="fssai" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">FSSAI</label>
+                  <input name="fssai" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Address</label>
-                  <input name="address" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Address</label>
+                  <input name="address" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="123 Food Street, Food City" />
                 </div>
               </div>
             </div>
 
             {/* 2. Admin Credentials */}
-            <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">2. Master Login {editingTenantId && "(Leave blank to keep unchanged)"}</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
+                <Key className="w-4 h-4 text-violet-500" /> 2. Master Login 
+                {editingTenantId && <span className="text-slate-400 text-[10px] ml-2 normal-case tracking-normal bg-slate-200 px-2 py-0.5 rounded-md">(Leave blank to keep unchanged)</span>}
+              </h3>
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email {!editingTenantId && "*"}</label>
-                  <input name="email" type="email" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-3 py-2 border rounded-lg bg-blue-50 focus:ring-2 focus:ring-gray-900 text-gray-900 disabled:opacity-50" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Email {!editingTenantId && "*"}</label>
+                  <input name="email" type="email" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm disabled:opacity-50 disabled:bg-slate-100" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Password {!editingTenantId && "*"}</label>
-                  <input name="password" type="text" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-3 py-2 border rounded-lg bg-blue-50 focus:ring-2 focus:ring-gray-900 text-gray-900 disabled:opacity-50" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Password {!editingTenantId && "*"}</label>
+                  <input name="password" type="text" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm disabled:opacity-50 disabled:bg-slate-100" />
                 </div>
               </div>
             </div>
 
             {/* 3. POS Configuration */}
-            <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">3. POS Setup</h3>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
+                <LayoutGrid className="w-4 h-4 text-fuchsia-500" /> 3. POS Setup
+              </h3>
+              <div className="grid grid-cols-2 gap-5 mb-6">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Captains (Comma separated)</label>
-                  <input name="captains" placeholder="Rahul, Suresh, Self Service" defaultValue="Captain, Rahul, Priya, Self Service" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Captains (Comma separated)</label>
+                  <input name="captains" placeholder="Rahul, Suresh" defaultValue="Captain, Rahul, Priya, Self Service" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tables (Comma separated)</label>
-                  <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Tables (Comma separated)</label>
+                  <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Dining Areas (Comma separated)</label>
-                  <input name="diningAreas" placeholder="AC, Non-AC, Garden" defaultValue="AC, Non-AC" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Dining Areas (Comma separated)</label>
+                  <input name="diningAreas" placeholder="AC, Non-AC" defaultValue="AC, Non-AC" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Menu Categories (Comma separated)</label>
-                  <input name="menuCategories" placeholder="Starters, Mains, Drinks" defaultValue="Breakfast, Lunch, Dinner, Snacks, Beverages" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Menu Categories (Comma separated)</label>
+                  <input name="menuCategories" placeholder="Starters, Mains" defaultValue="Breakfast, Lunch, Dinner, Snacks, Beverages" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                 </div>
               </div>
               
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Enable Sidebar Modules</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-3 border rounded-lg">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase mb-3 ml-1">Enable Sidebar Modules</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-4 border border-slate-200 rounded-xl shadow-sm">
                 {SIDEBAR_FEATURES.map(feature => (
-                  <label key={feature} className="flex items-center space-x-2 text-sm text-gray-700">
-                    <input type="checkbox" name={`feature_${feature}`} defaultChecked className="rounded text-gray-900 focus:ring-gray-900" />
-                    <span>{feature}</span>
+                  <label key={feature} className="flex items-center space-x-3 text-sm font-medium text-slate-700 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-fuchsia-500 border-slate-300 rounded focus:ring-fuchsia-500 focus:ring-2 transition-all cursor-pointer" />
+                    </div>
+                    <span className="group-hover:text-fuchsia-600 transition-colors">{feature}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             {/* 4. Interactive Menu Builder */}
-            <div>
-              <div className="flex justify-between items-end mb-3 border-b pb-2">
-                <h3 className="text-sm font-bold text-gray-900">4. Interactive Menu Builder</h3>
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                  <div className="w-4 h-4 text-emerald-500 flex items-center justify-center font-serif text-lg font-bold italic">M</div> 4. Menu Builder
+                </h3>
                 <div className="flex gap-2">
                   <button 
                     type="button" 
                     onClick={() => setIsBulkPasting(!isBulkPasting)}
-                    className="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-200 font-bold transition-colors"
+                    className="text-[11px] uppercase tracking-wider bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-indigo-600 font-bold transition-all shadow-sm"
                   >
-                    Bulk Paste Excel
+                    Paste Excel
                   </button>
                   <button 
                     type="button" 
                     onClick={handleLoadDefaultMenu}
-                    className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-bold flex items-center gap-1 transition-colors"
+                    className="text-[11px] uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg hover:bg-indigo-100 font-bold flex items-center gap-1.5 transition-all shadow-sm"
                   >
-                    <Download className="w-3 h-3" /> Load Default Menu
+                    <Download className="w-3.5 h-3.5" /> Default Menu
                   </button>
                 </div>
               </div>
               
               {isBulkPasting && (
-                <div className="mb-4 bg-gray-50 p-4 rounded-lg border">
-                  <p className="text-xs text-gray-500 mb-2">Paste your menu from Excel (Format: Name [tab] Price [tab] Category [tab] Type)</p>
+                <div className="mb-5 bg-white p-5 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-top-2">
+                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-2">Paste from Excel (Format: Name [tab] Price [tab] Category [tab] Type)</p>
                   <textarea 
                     value={bulkMenuText}
                     onChange={(e) => setBulkMenuText(e.target.value)}
-                    className="w-full h-32 px-3 py-2 border rounded-lg text-sm"
+                    className="w-full h-32 px-4 py-3 bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 rounded-xl transition-all duration-200 text-sm font-mono"
                     placeholder="Idli Sambar	60	Breakfast	veg&#10;Chicken Biryani	320	Lunch	non-veg"
                   ></textarea>
-                  <div className="flex justify-end gap-2 mt-2">
-                    <button type="button" onClick={() => setIsBulkPasting(false)} className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
-                    <button type="button" onClick={handleProcessBulkPaste} className="px-3 py-1 text-sm bg-green-600 text-white font-bold rounded hover:bg-green-700">Process</button>
+                  <div className="flex justify-end gap-2 mt-3">
+                    <button type="button" onClick={() => setIsBulkPasting(false)} className="px-4 py-2 text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button type="button" onClick={handleProcessBulkPaste} className="px-4 py-2 text-xs font-bold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-colors">Process Data</button>
                   </div>
                 </div>
               )}
               
-              <div className="bg-gray-50 border rounded-lg p-4 mb-2 max-h-[300px] overflow-y-auto">
+              <div className="bg-white border border-slate-200 rounded-xl p-2 mb-3 max-h-[320px] overflow-y-auto shadow-inner">
                 {initialMenu.length === 0 ? (
-                  <div className="text-center py-6 text-gray-400 text-sm italic">
+                  <div className="text-center py-10 text-slate-400 text-sm font-medium flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-1">
+                      <Plus className="w-5 h-5 text-slate-300" />
+                    </div>
                     No items added yet. Click &quot;Add Item&quot; or &quot;Load Default Menu&quot;.
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 p-1">
                     {initialMenu.map((item, index) => (
-                      <div key={item.id} className="flex gap-2 items-center bg-white p-2 border rounded shadow-sm">
-                        <div className="text-xs text-gray-400 font-mono w-4">{index + 1}.</div>
+                      <div key={item.id} className="flex gap-2 items-center bg-slate-50 p-2 border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-sm rounded-lg transition-all group">
+                        <div className="text-[10px] text-slate-400 font-bold font-mono w-5 text-center">{index + 1}</div>
                         <input 
                           type="text" 
                           placeholder="Item Name" 
                           value={item.name} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'name', e.target.value)}
-                          className="flex-1 px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-gray-900"
+                          className="flex-1 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium text-slate-800"
                         />
                         <input 
                           type="number" 
                           placeholder="Price" 
                           value={item.price} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'price', parseInt(e.target.value) || 0)}
-                          className="w-20 px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-gray-900 text-right"
+                          className="w-20 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-mono font-medium text-slate-800 text-right"
                         />
                         <select 
                           value={item.category} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'category', e.target.value)}
-                          className="w-32 px-2 py-1 text-sm border rounded bg-white focus:ring-1 focus:ring-gray-900"
+                          className="w-32 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
                         >
                           {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                         <select 
                           value={item.type} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'type', e.target.value)}
-                          className="w-24 px-2 py-1 text-sm border rounded bg-white focus:ring-1 focus:ring-gray-900"
+                          className="w-24 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
                         >
                           <option value="veg">Veg</option>
                           <option value="non-veg">Non-Veg</option>
@@ -440,7 +465,7 @@ export default function SuperAdminDashboard() {
                         <button 
                           type="button" 
                           onClick={() => handleRemoveMenuItem(item.id)}
-                          className="text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"
+                          className="text-slate-300 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-md transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -453,64 +478,87 @@ export default function SuperAdminDashboard() {
               <button 
                 type="button" 
                 onClick={handleAddMenuItem}
-                className="text-sm font-bold text-[#4a7b47] hover:text-[#386236] flex items-center gap-1 p-2 hover:bg-[#4a7b47]/10 rounded-lg transition-colors"
+                className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 py-2 px-3 hover:bg-emerald-50 rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4" /> Add Item Manually
               </button>
             </div>
 
-            <button type="submit" disabled={loading} className="w-full py-4 mt-6 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition-colors shadow-lg">
-              {loading ? 'Saving...' : editingTenantId ? 'Save Tenant Updates' : 'Create & Provision Tenant'}
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full py-4 mt-8 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-400 disabled:to-slate-500 text-white font-bold text-base tracking-wide rounded-xl shadow-lg shadow-indigo-500/30 transform hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2"
+            >
+              {loading ? 'Processing...' : editingTenantId ? 'Save Tenant Updates' : 'Create & Provision Tenant'}
+              {!loading && <ChevronRight className="w-5 h-5" />}
             </button>
           </form>
         </div>
 
         {/* Existing Tenants */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit sticky top-24">
-          <h2 className="text-xl font-bold mb-6 flex justify-between items-center">
-            Active Tenants 
-            <span className="bg-gray-100 text-gray-600 text-xs py-1 px-2 rounded-full">{restaurants.length} total</span>
-          </h2>
+        <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white h-fit sticky top-[100px]">
+          <div className="flex justify-between items-end mb-6 border-b border-slate-100 pb-4">
+            <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">
+              Active Tenants 
+            </h2>
+            <span className="bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 rounded-full shadow-inner">
+              {restaurants.length} total
+            </span>
+          </div>
           
-          <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
+          <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
             {restaurants.length === 0 ? (
-              <p className="text-gray-500 text-sm italic">No restaurants provisioned yet.</p>
+              <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
+                <Server className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 text-sm font-medium">No tenants provisioned yet.</p>
+              </div>
             ) : (
               restaurants.map(rest => (
-                <div key={rest._id} className="p-4 border rounded-xl hover:border-gray-400 transition-colors relative group">
-                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <div key={rest._id} className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-100 transform hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-50 to-transparent -z-10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  
+                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
                     <button 
                       onClick={() => handleEditTenant(rest)}
-                      className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded transition-all"
+                      className="text-indigo-500 hover:text-white hover:bg-indigo-500 p-2 rounded-lg transition-all shadow-sm"
                       title="Edit Tenant"
                     >
-                      Edit
+                      <Edit2 className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleDeleteRestaurant(rest._id)}
-                      className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-all"
+                      className="text-rose-400 hover:text-white hover:bg-rose-500 p-2 rounded-lg transition-all shadow-sm"
                       title="Delete Tenant"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex justify-between items-start mb-1 pr-8">
-                    <h3 className="font-bold text-gray-900">{rest.name}</h3>
-                    <span className="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">Active</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mb-2">{rest.phone} • {rest.address}</p>
                   
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex justify-between items-start mb-2 pr-16">
+                    <h3 className="font-extrabold text-lg text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors">{rest.name}</h3>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider bg-emerald-50 border border-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                      Active
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">{rest.phone}</span>
+                  </div>
+                  
+                  <p className="text-[11px] text-slate-400 mb-4 line-clamp-1">{rest.address}</p>
+                  
+                  <div className="flex flex-wrap gap-1.5 mt-2">
                     {rest.sidebarFeatures?.map((f: string) => (
-                      <span key={f} className="text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border">{f}</span>
+                      <span key={f} className="text-[9px] font-bold uppercase tracking-wider bg-slate-50 text-slate-500 px-2 py-1 rounded-md border border-slate-100">{f}</span>
                     ))}
                   </div>
 
-                  <div className="mt-3 pt-3 border-t text-[10px] text-gray-400 flex justify-between items-center">
-                    <span>ID: {rest._id.substring(rest._id.length - 6)}</span>
+                  <div className="mt-4 pt-3 border-t border-slate-50 text-[10px] text-slate-400 flex justify-between items-center font-medium">
+                    <span className="font-mono text-slate-300">ID: {rest._id.substring(rest._id.length - 6)}</span>
                     <div className="flex gap-2">
-                      <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{rest.captains?.length || 0} Captains</span>
-                      <span className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded">{rest.defaultMenu?.length || 0} Items</span>
+                      <span className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md font-bold">{rest.captains?.length || 0} Capt.</span>
+                      <span className="bg-violet-50 text-violet-600 px-2 py-1 rounded-md font-bold">{rest.defaultMenu?.length || 0} Items</span>
                     </div>
                   </div>
                 </div>
