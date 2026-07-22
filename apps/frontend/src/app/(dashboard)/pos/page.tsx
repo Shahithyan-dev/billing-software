@@ -58,7 +58,7 @@ const POS = () => {
             }
           }
         }
-        await db.menuItems.bulkAdd(initialMenu);
+        await db.menuItems.bulkPut(initialMenu);
       }
     };
     initMenu();
@@ -160,7 +160,7 @@ const POS = () => {
 
   const handleSaveMenu = async (newItems: MenuItem[]) => {
     await db.menuItems.clear();
-    await db.menuItems.bulkAdd(newItems);
+    await db.menuItems.bulkPut(newItems);
     
     // Also remove items from cart if they were deleted
     setCart(prev => prev.filter(cartItem => newItems.some(item => item.id === cartItem.id)).map(cartItem => {
