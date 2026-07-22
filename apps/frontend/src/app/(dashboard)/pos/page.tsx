@@ -334,7 +334,7 @@ const POS = () => {
           </div>
 
           {/* Menu Grid */}
-          <div className="flex-1 overflow-y-auto pr-2">
+          <div className="flex-1 overflow-y-auto pr-2 pb-24 lg:pb-0">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredMenu.map(item => (
                 <div 
