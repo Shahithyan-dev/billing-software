@@ -174,15 +174,17 @@ export default function DashboardLayout({
             
             {/* Desktop Logo */}
             <div className="hidden sm:flex items-center gap-3 bg-gradient-to-r from-[#2c332c] to-gray-800 text-white px-4 py-2.5 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-all hover:-translate-y-0.5">
-               <div className="bg-white/10 p-1 rounded-lg backdrop-blur-sm">
-                 <img src="/logo.png" alt="ServeWell" className="w-6 h-6 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+               <div className="bg-white p-1 rounded-lg shadow-sm">
+                 <img src="/logo.png" alt="ServeWell" className="w-6 h-6 object-contain" />
                </div>
                <span className="font-black text-sm tracking-wider">SERVEWELL</span>
             </div>
             
             {/* Mobile Logo */}
             <div className="flex sm:hidden items-center gap-2 bg-gradient-to-r from-[#2c332c] to-gray-800 text-white px-3 py-2 rounded-xl shadow-md cursor-pointer">
-               <img src="/logo.png" alt="ServeWell" className="w-5 h-5 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+               <div className="bg-white p-0.5 rounded shadow-sm">
+                 <img src="/logo.png" alt="ServeWell" className="w-5 h-5 object-contain" />
+               </div>
                <span className="font-black text-[11px] tracking-wider">SERVEWELL</span>
             </div>
           </div>
