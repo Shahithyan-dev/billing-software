@@ -107,14 +107,14 @@ export default function SuperAdminDashboard() {
 
   const handleLoadDefaultMenu = () => {
     setInitialMenu([
-      { id: '1', name: 'Idli Sambar', price: 60, category: 'Breakfast', type: 'veg' },
-      { id: '2', name: 'Masala Dosa', price: 80, category: 'Breakfast', type: 'veg' },
-      { id: '3', name: 'Veg Thali', price: 220, category: 'Lunch', type: 'veg' },
-      { id: '4', name: 'Chicken Biryani', price: 320, category: 'Lunch', type: 'non-veg' },
-      { id: '5', name: 'Paneer Butter Masala', price: 280, category: 'Dinner', type: 'veg' },
-      { id: '6', name: 'Garlic Naan', price: 60, category: 'Dinner', type: 'veg' },
-      { id: '7', name: 'Veg Manchurian', price: 180, category: 'Snacks', type: 'veg' },
-      { id: '8', name: 'Cold Coffee', price: 120, category: 'Beverages', type: 'veg' },
+      { id: '1', name: 'Idli Sambar', price: 60, category: 'Breakfast', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Idli+Sambar' },
+      { id: '2', name: 'Masala Dosa', price: 80, category: 'Breakfast', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Masala+Dosa' },
+      { id: '3', name: 'Veg Thali', price: 220, category: 'Lunch', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Veg+Thali' },
+      { id: '4', name: 'Chicken Biryani', price: 320, category: 'Lunch', type: 'non-veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Chicken+Biryani' },
+      { id: '5', name: 'Paneer Butter Masala', price: 280, category: 'Dinner', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Paneer+Butter+Masala' },
+      { id: '6', name: 'Garlic Naan', price: 60, category: 'Dinner', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Garlic+Naan' },
+      { id: '7', name: 'Veg Manchurian', price: 180, category: 'Snacks', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Veg+Manchurian' },
+      { id: '8', name: 'Cold Coffee', price: 120, category: 'Beverages', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Cold+Coffee' },
     ]);
   };
 
@@ -129,7 +129,8 @@ export default function SuperAdminDashboard() {
           name: parts[0],
           price: parseInt(parts[1]) || 0,
           category: parts[2] || 'Lunch',
-          type: parts[3]?.toLowerCase() === 'non-veg' ? 'non-veg' : 'veg'
+          type: parts[3]?.toLowerCase() === 'non-veg' ? 'non-veg' : 'veg',
+          img: parts[4] || ''
         };
       }
       return null;
@@ -406,12 +407,12 @@ export default function SuperAdminDashboard() {
               
               {isBulkPasting && (
                 <div className="mb-5 bg-white p-5 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-top-2">
-                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-2">Paste from Excel (Format: Name [tab] Price [tab] Category [tab] Type)</p>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-2">Paste from Excel (Format: Name [tab] Price [tab] Category [tab] Type [tab] Image URL)</p>
                   <textarea 
                     value={bulkMenuText}
                     onChange={(e) => setBulkMenuText(e.target.value)}
                     className="w-full h-32 px-4 py-3 bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 rounded-xl transition-all duration-200 text-sm font-mono"
-                    placeholder="Idli Sambar	60	Breakfast	veg&#10;Chicken Biryani	320	Lunch	non-veg"
+                    placeholder="Idli Sambar	60	Breakfast	veg	https://example.com/idli.jpg&#10;Chicken Biryani	320	Lunch	non-veg	https://example.com/biryani.jpg"
                   ></textarea>
                   <div className="flex justify-end gap-2 mt-3">
                     <button type="button" onClick={() => setIsBulkPasting(false)} className="px-4 py-2 text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
@@ -450,18 +451,25 @@ export default function SuperAdminDashboard() {
                         <select 
                           value={item.category} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'category', e.target.value)}
-                          className="w-32 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
+                          className="w-24 px-2 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
                         >
                           {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                         <select 
                           value={item.type} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'type', e.target.value)}
-                          className="w-24 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
+                          className="w-20 px-2 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
                         >
                           <option value="veg">Veg</option>
                           <option value="non-veg">Non-Veg</option>
                         </select>
+                        <input 
+                          type="text" 
+                          placeholder="Image URL" 
+                          value={item.img || ''} 
+                          onChange={(e) => handleUpdateMenuItem(item.id, 'img', e.target.value)}
+                          className="w-32 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-mono text-slate-500 placeholder:text-slate-300"
+                        />
                         <button 
                           type="button" 
                           onClick={() => handleRemoveMenuItem(item.id)}
