@@ -618,11 +618,11 @@ const POS = () => {
 
       {/* Print Preview Modal */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center print-preview-modal">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsPreviewOpen(false)}></div>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center print:items-start print:justify-start print:static print:z-auto print-preview-modal">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm print:hidden" onClick={() => setIsPreviewOpen(false)}></div>
           
-          <div className="bg-white border border-[#e3e3df] rounded-2xl shadow-2xl z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col m-4 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-4 border-b border-[#e3e3df] flex justify-between items-center bg-gray-50">
+          <div className="bg-white border border-[#e3e3df] rounded-2xl shadow-2xl z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col m-4 overflow-hidden animate-in fade-in zoom-in duration-200 print:shadow-none print:border-none print:m-0 print:max-h-none print:h-auto print:w-full print:max-w-none">
+            <div className="p-4 border-b border-[#e3e3df] flex justify-between items-center bg-gray-50 print:hidden">
               <h2 className="text-lg font-bold text-[#2c332c] flex items-center gap-2">
                 <Printer className="w-5 h-5 text-[#4a7b47]" />
                 Print Preview
@@ -635,9 +635,9 @@ const POS = () => {
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-100 flex justify-center">
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-100 flex justify-center print:overflow-visible print:p-0 print:bg-white print:block">
               {/* Fake Paper Roll */}
-              <div className="bg-white shadow-md text-black font-mono text-[13px] p-4 leading-tight w-[80mm] min-h-[300px]">
+              <div className="bg-white shadow-md text-black font-mono text-[13px] p-4 leading-tight w-[80mm] min-h-[300px] print:shadow-none print:w-[80mm] print:mx-auto">
                 <div className="text-center mb-3">
                   <h1 className="font-serif text-2xl font-normal leading-none tracking-wide">{restaurantData.name}</h1>
                   <p className="font-serif text-[13px] italic mt-1">{restaurantData.tagline}</p>
@@ -732,7 +732,7 @@ const POS = () => {
               </div>
             </div>
             
-            <div className="p-4 border-t border-[#e3e3df] flex gap-3 bg-white">
+            <div className="p-4 border-t border-[#e3e3df] flex gap-3 bg-white print:hidden">
               <button 
                 onClick={() => setIsPreviewOpen(false)}
                 className="flex-1 py-2.5 rounded-xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
