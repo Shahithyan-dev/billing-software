@@ -31,10 +31,6 @@ jobs:
       - name: Build Next.js
         run: npm run build --workspace=apps/frontend
 
-      - name: Deploy OTA Update to Capgo
-        working-directory: ./apps/frontend
-        run: npx @capgo/cli@latest bundle upload -a ${{ secrets.CAPGO_TOKEN }}
-        continue-on-error: true
 
       - name: Sync Capacitor
         working-directory: ./apps/frontend
