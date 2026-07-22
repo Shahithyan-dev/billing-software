@@ -635,9 +635,9 @@ const POS = () => {
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-100 flex justify-center print:overflow-visible print:p-0 print:bg-white print:block">
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-100 flex justify-center items-start print:overflow-visible print:p-0 print:bg-white print:block">
               {/* Fake Paper Roll */}
-              <div className="bg-white shadow-md text-black font-mono text-[13px] p-4 leading-tight w-[80mm] min-h-[300px] print:shadow-none print:w-[80mm] print:mx-auto">
+              <div className="bg-white shadow-md text-black font-mono text-[13px] p-4 leading-tight w-[80mm] min-h-[300px] h-max print:shadow-none print:w-[80mm] print:mx-auto">
                 <div className="text-center mb-3">
                   <h1 className="font-serif text-2xl font-normal leading-none tracking-wide">{restaurantData.name}</h1>
                   <p className="font-serif text-[13px] italic mt-1">{restaurantData.tagline}</p>
