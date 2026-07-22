@@ -25,11 +25,13 @@ router.post('/register', async (req: any, res: any) => {
     if (decoded.role !== 'superadmin') {
       return res.status(403).json({ success: false, error: 'Forbidden. Only Super Admins can register new restaurants.' });
     }
-    const { name, tagline, phone, gstin, fssai, address, email, password, captains, tables, sidebarFeatures, preferences, initialMenu } = req.body;
+    const { name, tagline, phone, gstin, fssai, address, email, password, captains, tables, diningAreas, menuCategories, sidebarFeatures, preferences, initialMenu } = req.body;
 
     // Parse JSON fields
     const parsedCaptains = typeof captains === 'string' ? JSON.parse(captains) : captains;
     const parsedTables = typeof tables === 'string' ? JSON.parse(tables) : tables;
+    const parsedDiningAreas = typeof diningAreas === 'string' ? JSON.parse(diningAreas) : diningAreas;
+    const parsedMenuCategories = typeof menuCategories === 'string' ? JSON.parse(menuCategories) : menuCategories;
     const parsedSidebarFeatures = typeof sidebarFeatures === 'string' ? JSON.parse(sidebarFeatures) : sidebarFeatures;
     const parsedPreferences = typeof preferences === 'string' ? JSON.parse(preferences) : preferences;
     const parsedInitialMenu = typeof initialMenu === 'string' ? JSON.parse(initialMenu) : initialMenu;
@@ -47,6 +49,8 @@ router.post('/register', async (req: any, res: any) => {
       name, tagline, phone, gstin, fssai, address,
       captains: parsedCaptains || ['Captain', 'Self Service'],
       tables: parsedTables || ['T1', 'T2', 'T3'],
+      diningAreas: parsedDiningAreas || ['AC', 'Non-AC'],
+      menuCategories: parsedMenuCategories || ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'],
       sidebarFeatures: parsedSidebarFeatures || ['POS', 'Kitchen', 'Settings'],
       preferences: parsedPreferences || { showGstin: true, showFssai: true, showPhone: true },
       defaultMenu: parsedInitialMenu || [],
@@ -125,7 +129,9 @@ router.post('/login', async (req, res) => {
         phone: restaurant?.phone || '',
         gstin: restaurant?.gstin || '',
         fssai: restaurant?.fssai || '',
-        logo: restaurant?.logo || ''
+        logo: restaurant?.logo || '',
+        diningAreas: restaurant?.diningAreas || ['AC', 'Non-AC'],
+        menuCategories: restaurant?.menuCategories || ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages']
       }
     });
   } catch (error: any) {

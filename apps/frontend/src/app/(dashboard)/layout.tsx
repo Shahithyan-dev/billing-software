@@ -163,24 +163,43 @@ export default function DashboardLayout({
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible bg-background">
-        <header className="h-20 bg-transparent flex items-center justify-between px-4 md:px-8 z-10 pt-4 print:hidden">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-8 py-3 md:py-4 backdrop-blur-xl bg-white/70 border-b border-gray-200/50 shadow-sm print:hidden transition-all">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 text-muted-foreground hover:bg-white rounded-lg hover:shadow-sm transition-all"
+              className="p-2.5 text-[#2c332c] bg-white hover:bg-gray-50 rounded-xl shadow-sm border border-[#e3e3df] hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-border">
-               <img src="/logo.png" alt="ServeWell" className="w-8 h-8 object-contain mix-blend-multiply" />
-               <span className="font-bold text-[#2c332c] text-lg">ServeWell</span>
+            
+            {/* Desktop Logo */}
+            <div className="hidden sm:flex items-center gap-3 bg-gradient-to-r from-[#2c332c] to-gray-800 text-white px-4 py-2.5 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-all hover:-translate-y-0.5">
+               <div className="bg-white/10 p-1 rounded-lg backdrop-blur-sm">
+                 <img src="/logo.png" alt="ServeWell" className="w-6 h-6 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+               </div>
+               <span className="font-black text-sm tracking-wider">SERVEWELL</span>
+            </div>
+            
+            {/* Mobile Logo */}
+            <div className="flex sm:hidden items-center gap-2 bg-gradient-to-r from-[#2c332c] to-gray-800 text-white px-3 py-2 rounded-xl shadow-md cursor-pointer">
+               <img src="/logo.png" alt="ServeWell" className="w-5 h-5 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+               <span className="font-black text-[11px] tracking-wider">SERVEWELL</span>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-border text-sm font-medium text-muted-foreground">
-              <Calendar className="w-4 h-4" />
+
+          <div className="flex items-center gap-3 md:gap-4">
+             <div className="hidden md:flex items-center gap-2 bg-white/80 px-4 py-2.5 rounded-xl shadow-sm border border-[#e3e3df] text-sm font-bold text-[#2c332c] backdrop-blur-sm">
+              <Calendar className="w-4 h-4 text-[#4a7b47]" />
               {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
+            
+            {/* Notification Bell */}
+            <button className="relative p-2.5 bg-white text-[#2c332c] rounded-xl shadow-sm border border-[#e3e3df] hover:shadow-md hover:bg-gray-50 transition-all">
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
+              <div className="w-5 h-5 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              </div>
+            </button>
           </div>
         </header>
         

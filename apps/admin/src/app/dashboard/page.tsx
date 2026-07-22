@@ -154,6 +154,8 @@ export default function SuperAdminDashboard() {
         (form.elements.namedItem('address') as HTMLInputElement).value = rest.address || '';
         (form.elements.namedItem('captains') as HTMLInputElement).value = rest.captains?.join(', ') || '';
         (form.elements.namedItem('tables') as HTMLInputElement).value = rest.tables?.join(', ') || '';
+        (form.elements.namedItem('diningAreas') as HTMLInputElement).value = rest.diningAreas?.join(', ') || '';
+        (form.elements.namedItem('menuCategories') as HTMLInputElement).value = rest.menuCategories?.join(', ') || '';
         // Note: admin email/password cannot easily be populated securely, we can leave them blank or disabled for updates
       }
       
@@ -176,11 +178,15 @@ export default function SuperAdminDashboard() {
     // Extract checkbox values for sidebar features
     const selectedFeatures = SIDEBAR_FEATURES.filter(f => formData.get(`feature_${f}`) === 'on');
     
-    // Format captains and tables
     const captainsStr = formData.get('captains') as string;
     const tablesStr = formData.get('tables') as string;
+    const diningAreasStr = formData.get('diningAreas') as string;
+    const menuCategoriesStr = formData.get('menuCategories') as string;
+    
     const captainsArray = captainsStr ? captainsStr.split(',').map(s => s.trim()).filter(s => s) : ['Captain'];
     const tablesArray = tablesStr ? tablesStr.split(',').map(s => s.trim()).filter(s => s) : ['T1', 'T2', 'T3'];
+    const diningAreasArray = diningAreasStr ? diningAreasStr.split(',').map(s => s.trim()).filter(s => s) : ['AC', 'Non-AC'];
+    const menuCategoriesArray = menuCategoriesStr ? menuCategoriesStr.split(',').map(s => s.trim()).filter(s => s) : ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
 
     const validMenuItems = initialMenu.filter(item => item.name.trim() !== '' && item.price >= 0);
     
@@ -195,6 +201,8 @@ export default function SuperAdminDashboard() {
       password: formData.get('password') as string,
       captains: captainsArray,
       tables: tablesArray,
+      diningAreas: diningAreasArray,
+      menuCategories: menuCategoriesArray,
       sidebarFeatures: selectedFeatures,
       initialMenu: validMenuItems
     };
@@ -330,6 +338,14 @@ export default function SuperAdminDashboard() {
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tables (Comma separated)</label>
                   <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Dining Areas (Comma separated)</label>
+                  <input name="diningAreas" placeholder="AC, Non-AC, Garden" defaultValue="AC, Non-AC" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Menu Categories (Comma separated)</label>
+                  <input name="menuCategories" placeholder="Starters, Mains, Drinks" defaultValue="Breakfast, Lunch, Dinner, Snacks, Beverages" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 text-sm" />
                 </div>
               </div>
               

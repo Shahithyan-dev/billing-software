@@ -10,6 +10,8 @@ const RestaurantSchema = new mongoose.Schema({
   address: { type: String },
   captains: { type: [String], default: ['Captain', 'Rahul', 'Priya', 'Self Service'] },
   tables: { type: [String], default: ['T1', 'T2', 'T3', 'T4', 'T5'] },
+  diningAreas: { type: [String], default: ['AC', 'Non-AC'] },
+  menuCategories: { type: [String], default: ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'] },
   sidebarFeatures: { type: [String], default: ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'] },
   preferences: {
     showGstin: { type: Boolean, default: true },

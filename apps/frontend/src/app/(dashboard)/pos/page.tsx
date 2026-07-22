@@ -76,7 +76,9 @@ const POS = () => {
     phone: "",
     gstin: "",
     fssai: "",
-    logo: "/client-logo.png"
+    logo: "/client-logo.png",
+    diningAreas: ["AC", "Non-AC"],
+    menuCategories: ["Breakfast", "Lunch", "Dinner", "Snacks", "Beverages"]
   });
 
   React.useEffect(() => {
@@ -99,7 +101,9 @@ const POS = () => {
                 phone: data.data.phone || '',
                 gstin: data.data.gstin || '',
                 fssai: data.data.fssai || '',
-                logo: data.data.logo || ''
+                logo: data.data.logo || '',
+                diningAreas: data.data.diningAreas || ["AC", "Non-AC"],
+                menuCategories: data.data.menuCategories || ["Breakfast", "Lunch", "Dinner", "Snacks", "Beverages"]
               };
               setRestaurantData(freshData);
               localStorage.setItem('servewell_restaurant_details', JSON.stringify(freshData));
@@ -134,7 +138,7 @@ const POS = () => {
   const [billNo, setBillNo] = useState(273);
   const [orderType, setOrderType] = useState<'Dine-In' | 'Parcel'>('Dine-In');
   const [selectedTable, setSelectedTable] = useState('T3');
-  const [acType, setAcType] = useState<'AC' | 'Non-AC'>('AC');
+  const [acType, setAcType] = useState<string>(''); // Will initialize when restaurantData loads
   const [selectedCaptain, setSelectedCaptain] = useState('Captain');
   const [captains, setCaptains] = useState<string[]>(['Captain', 'Rahul', 'Priya', 'Self Service']);
   const [tables, setTables] = useState<string[]>(['T1', 'T2', 'T3', 'T4', 'T5', 'Parcel', 'Delivery']);
@@ -145,12 +149,24 @@ const POS = () => {
       if (storedCaptains) setCaptains(JSON.parse(storedCaptains));
 
       const storedTables = localStorage.getItem('servewell_tables');
-      if (storedTables) setTables(JSON.parse(storedTables));
+      if (storedTables) setTables([...JSON.parse(storedTables), 'Parcel', 'Delivery']);
+      
+      const storedRestaurant = localStorage.getItem('servewell_restaurant_details');
+      if (storedRestaurant) {
+        const parsed = JSON.parse(storedRestaurant);
+        if (parsed.diningAreas && parsed.diningAreas.length > 0) {
+          setAcType(parsed.diningAreas[0]);
+        } else {
+          setAcType('AC');
+        }
+      } else {
+        setAcType('AC');
+      }
     }
   }, []);
 
-  const coreCategories = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
-  const categories = Array.from(new Set([...coreCategories, ...menuItems.map(i => i.category)]));
+  const coreCategories = restaurantData.menuCategories && restaurantData.menuCategories.length > 0 ? restaurantData.menuCategories : ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
+  const categories = Array.from(new Set(['All', ...coreCategories, ...menuItems.map(i => i.category)]));
   
   const filteredMenu = menuItems.filter(i => {
     const matchesCategory = activeCategory === 'All' || i.category === activeCategory;
@@ -172,7 +188,7 @@ const POS = () => {
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = subtotal > 0 ? Math.min(20, subtotal) : 0;
-  const acCharge = (orderType === 'Dine-In' && acType === 'AC') ? (subtotal - discount) * 0.02 : 0;
+  const acCharge = (orderType === 'Dine-In' && acType.toUpperCase().includes('AC') && !acType.toUpperCase().includes('NON')) ? (subtotal - discount) * 0.02 : 0;
   const tax = (subtotal - discount + acCharge) * 0.05; 
   const rawTotal = subtotal - discount + acCharge + tax;
   const total = Math.round(rawTotal);
@@ -253,16 +269,14 @@ const POS = () => {
                       </select>
                     </div>
                     <div className="flex bg-gray-100 p-1 rounded-xl shadow-sm border border-[#e3e3df]">
-                      <button 
-                        onClick={() => setAcType('AC')}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${acType === 'AC' ? 'bg-[#4a7b47] text-white shadow-sm' : 'text-gray-500 hover:text-[#2c332c]'}`}>
-                        AC
-                      </button>
-                      <button 
-                        onClick={() => setAcType('Non-AC')}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${acType === 'Non-AC' ? 'bg-[#4a7b47] text-white shadow-sm' : 'text-gray-500 hover:text-[#2c332c]'}`}>
-                        Non-AC
-                      </button>
+                      {restaurantData.diningAreas.map(area => (
+                        <button 
+                          key={area}
+                          onClick={() => setAcType(area)}
+                          className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${acType === area ? 'bg-[#4a7b47] text-white shadow-sm' : 'text-gray-500 hover:text-[#2c332c]'}`}>
+                          {area}
+                        </button>
+                      ))}
                     </div>
                   </>
                 )}
