@@ -173,9 +173,12 @@ const POS = () => {
   const categories = Array.from(new Set(['All', ...coreCategories, ...menuItems.map(i => i.category)]));
 
   const filteredMenu = menuItems.filter(i => {
-    const matchesCategory = activeCategory === 'All' || i.category === activeCategory;
     const matchesSearch = i.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    if (searchQuery.trim() !== '') {
+      return matchesSearch;
+    }
+    const matchesCategory = activeCategory === 'All' || i.category === activeCategory;
+    return matchesCategory;
   });
 
   const handleSaveMenu = async (newItems: MenuItem[]) => {
