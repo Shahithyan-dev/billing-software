@@ -15,7 +15,8 @@ import {
   Cpu,
   PackageOpen,
   Menu,
-  LogOut
+  LogOut,
+  ShoppingBag
 } from 'lucide-react';
 
 const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
@@ -30,12 +31,13 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
         setAllowedFeatures(JSON.parse(storedFeatures));
       } else {
         // Fallback to all if not set
-        setAllowedFeatures(['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings']);
+        setAllowedFeatures(['POS', 'Online Orders', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings']);
       }
     }
   }, []);
   const menuItems = [
     { name: 'POS', icon: ShoppingCart, path: '/pos' },
+    { name: 'Online Orders', icon: ShoppingBag, path: '/online-orders' },
     { name: 'Kitchen', icon: ChefHat, path: '/kitchen' },
     { name: 'Inventory', icon: PackageOpen, path: '/inventory' },
     { name: 'Reservations', icon: Calendar, path: '/reservations' },

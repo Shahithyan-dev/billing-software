@@ -100,16 +100,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    // Generate a new session token to invalidate other sessions
-    const sessionToken = require('crypto').randomUUID();
-    user.sessionToken = sessionToken;
-    await user.save();
-
     const restaurant = await Restaurant.findById(user.restaurantId);
 
     // Generate JWT Token (10 years for persistent session)
     const token = jwt.sign(
-      { userId: user._id, restaurantId: user.restaurantId, role: user.role, sessionToken },
+      { userId: user._id, restaurantId: user.restaurantId, role: user.role },
       JWT_SECRET,
       { expiresIn: '3650d' }
     );
@@ -153,12 +148,6 @@ router.get('/verify', async (req, res) => {
     
     if (!user) {
       return res.status(401).json({ success: false, error: 'User not found' });
-    }
-    
-    // Check if the sessionToken matches the database
-    // Exempt superadmins from this check so they can be logged into the Admin Portal and POS simultaneously
-    if (user.role !== 'superadmin' && user.sessionToken && decoded.sessionToken !== user.sessionToken) {
-      return res.status(401).json({ success: false, error: 'Session expired due to login from another device' });
     }
     
     res.status(200).json({ success: true, message: 'Valid session' });
