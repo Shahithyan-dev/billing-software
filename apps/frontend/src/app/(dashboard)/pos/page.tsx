@@ -174,8 +174,9 @@ const POS = () => {
   const categories = Array.from(new Set(['All', ...coreCategories, ...menuItems.map(i => i.category)]));
 
   const filteredMenu = menuItems.filter(i => {
-    const matchesSearch = i.name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (searchQuery.trim() !== '') {
+    const searchLower = searchQuery.toLowerCase().trim();
+    const matchesSearch = i.name.toLowerCase().includes(searchLower) || i.category.toLowerCase().includes(searchLower);
+    if (searchLower !== '') {
       return matchesSearch;
     }
     const matchesCategory = activeCategory === 'All' || i.category === activeCategory;
@@ -615,13 +616,6 @@ const POS = () => {
               {cat}
             </button>
           ))}
-        </div>
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search menu or items..."
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#e3e3df] rounded-xl text-sm focus:outline-none focus:border-[#4a7b47] font-medium"
-          />
         </div>
 
         {/* Mobile Content by Tab */}
