@@ -567,57 +567,55 @@ const POS = () => {
       {/* ── MOBILE LAYOUT (<lg) ──────────────────────────────────────────────── */}
       <div className="lg:hidden flex flex-col h-full">
         {/* Controls Row */}
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <div className="flex bg-gray-100 p-0.5 rounded-xl border border-[#e3e3df]">
-            <button onClick={() => setOrderType('Dine-In')} className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${orderType === 'Dine-In' ? 'bg-[#4a7b47] text-white' : 'text-gray-500'}`}>
+        <div className="flex items-center justify-between mb-4 mt-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button onClick={() => setOrderType('Dine-In')} className={`px-4 py-1.5 shrink-0 rounded-full font-bold text-[13px] transition-all shadow-sm ${orderType === 'Dine-In' ? 'bg-[#3d663b] text-white' : 'bg-white text-gray-500 border border-[#e3e3df]'}`}>
               Dine-In
             </button>
-            <button onClick={() => setOrderType('Parcel')} className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${orderType === 'Parcel' ? 'bg-[#4a7b47] text-white' : 'text-gray-500'}`}>
-              Parcel
-            </button>
-            <button onClick={() => setOrderType('Delivery')} className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${orderType === 'Delivery' ? 'bg-[#4a7b47] text-white' : 'text-gray-500'}`}>
-              Delivery
-            </button>
-          </div>
-          {orderType === 'Dine-In' && (
-            <>
-              <div className="bg-gray-100 px-2.5 py-1.5 rounded-xl border border-gray-200">
-                <select className="bg-transparent text-xs font-bold text-gray-700 focus:outline-none" value={selectedTable} onChange={e => setSelectedTable(e.target.value)}>
-                  {tables.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              {restaurantData.diningAreas.slice(0, 2).map(area => (
-                <button key={area} onClick={() => setAcType(area)}
-                  className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-all ${acType === area ? 'bg-[#4a7b47] text-white border-[#4a7b47]' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                  {area}
+            {orderType === 'Dine-In' && (
+              <>
+                <div className="bg-white px-3 py-1.5 shrink-0 rounded-full border border-[#e3e3df] shadow-sm flex items-center">
+                  <select className="bg-transparent text-[13px] font-bold text-[#1a2318] focus:outline-none appearance-none pr-4" style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: '8px auto' }} value={selectedTable} onChange={e => setSelectedTable(e.target.value)}>
+                    {tables.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="bg-white px-3 py-1.5 shrink-0 rounded-full border border-[#e3e3df] shadow-sm flex items-center">
+                  <select className="bg-transparent text-[13px] font-bold text-[#1a2318] focus:outline-none appearance-none pr-4" style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: '8px auto' }} value={acType} onChange={e => setAcType(e.target.value)}>
+                    {restaurantData.diningAreas.slice(0, 2).map(area => <option key={area} value={area}>{area}</option>)}
+                  </select>
+                </div>
+              </>
+            )}
+            {orderType !== 'Dine-In' && (
+              <>
+                <button onClick={() => setOrderType('Parcel')} className={`px-4 py-1.5 shrink-0 rounded-full font-bold text-[13px] transition-all shadow-sm ${orderType === 'Parcel' ? 'bg-[#3d663b] text-white' : 'bg-white text-gray-500 border border-[#e3e3df]'}`}>
+                  Parcel
                 </button>
-              ))}
-            </>
-          )}
-          <button onClick={() => setIsMenuManagerOpen(true)} className="ml-auto bg-white border border-[#e3e3df] p-2 rounded-xl shadow-sm">
-            <Pencil className="w-4 h-4 text-[#4a7b47]" />
+                <button onClick={() => setOrderType('Delivery')} className={`px-4 py-1.5 shrink-0 rounded-full font-bold text-[13px] transition-all shadow-sm ${orderType === 'Delivery' ? 'bg-[#3d663b] text-white' : 'bg-white text-gray-500 border border-[#e3e3df]'}`}>
+                  Delivery
+                </button>
+              </>
+            )}
+          </div>
+          <button className="p-2 bg-white rounded-full shadow-sm border border-[#e3e3df] shrink-0 text-gray-500 hover:text-[#1a2318]">
+            <Search className="w-4 h-4" />
           </button>
         </div>
 
         {/* Category Tabs */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-1">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
-                activeCategory === cat ? 'bg-[#4a7b47] text-white shadow-md' : 'bg-white text-muted-foreground border border-[#e3e3df]'
+              className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all ${
+                activeCategory === cat ? 'bg-[#3d663b] text-white shadow-sm' : 'bg-white text-[#1a2318] border border-[#e3e3df]'
               }`}
             >
               {cat}
             </button>
           ))}
         </div>
-
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
