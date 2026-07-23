@@ -88,10 +88,10 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
       
       <div className="p-6 border-t border-white/10">
         <div className="bg-white/5 rounded-xl p-4 mb-4">
-          <h3 className="text-white text-xs font-bold mb-1">Premium Plan</h3>
-          <p className="text-gray-400 text-[10px] mb-3">78 Days Left</p>
+          <h3 className="text-white text-xs font-bold mb-1">Lifetime Plan</h3>
+          <p className="text-[#4a7b47] font-bold text-[10px] mb-3">Active Forever</p>
           <button className="w-full bg-[#4a7b47] hover:bg-[#3d663b] text-white text-xs font-bold py-2 rounded-lg transition-colors">
-            Upgrade Now
+            Support
           </button>
         </div>
         

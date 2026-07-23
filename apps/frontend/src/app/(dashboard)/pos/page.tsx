@@ -139,12 +139,12 @@ const POS = () => {
 
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [billNo, setBillNo] = useState(1);
-  const [orderType, setOrderType] = useState<'Dine-In' | 'Parcel'>('Dine-In');
+  const [orderType, setOrderType] = useState<'Dine-In' | 'Parcel' | 'Delivery'>('Dine-In');
   const [selectedTable, setSelectedTable] = useState('T3');
   const [acType, setAcType] = useState<string>('AC');
   const [selectedCaptain, setSelectedCaptain] = useState('Captain');
   const [captains, setCaptains] = useState<string[]>(['Captain', 'Rahul', 'Priya', 'Self Service']);
-  const [tables, setTables] = useState<string[]>(['T1', 'T2', 'T3', 'T4', 'T5', 'Parcel', 'Delivery']);
+  const [tables, setTables] = useState<string[]>(['T1', 'T2', 'T3', 'T4', 'T5']);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -154,7 +154,8 @@ const POS = () => {
       const storedTables = localStorage.getItem('servewell_tables');
       if (storedTables) {
         const parsedTables = JSON.parse(storedTables);
-        setTables(Array.from(new Set([...parsedTables, 'Parcel', 'Delivery'])));
+        const filteredTables = parsedTables.filter((t: string) => t !== 'Parcel' && t !== 'Delivery');
+        setTables(Array.from(new Set([...filteredTables])));
       }
 
       const storedRestaurant = localStorage.getItem('servewell_restaurant_details');
@@ -479,6 +480,12 @@ const POS = () => {
                 >
                   Parcel
                 </button>
+                <button
+                  onClick={() => setOrderType('Delivery')}
+                  className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${orderType === 'Delivery' ? 'bg-[#4a7b47] text-white shadow-sm' : 'text-gray-500'}`}
+                >
+                  Delivery
+                </button>
               </div>
               {orderType === 'Dine-In' && (
                 <>
@@ -567,6 +574,9 @@ const POS = () => {
             </button>
             <button onClick={() => setOrderType('Parcel')} className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${orderType === 'Parcel' ? 'bg-[#4a7b47] text-white' : 'text-gray-500'}`}>
               Parcel
+            </button>
+            <button onClick={() => setOrderType('Delivery')} className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${orderType === 'Delivery' ? 'bg-[#4a7b47] text-white' : 'text-gray-500'}`}>
+              Delivery
             </button>
           </div>
           {orderType === 'Dine-In' && (
