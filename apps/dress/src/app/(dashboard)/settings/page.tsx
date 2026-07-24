@@ -45,26 +45,7 @@ export default function SettingsPage() {
         setWhatsappToken(parsed.whatsappToken || '');
       }
 
-      // Load fresh details from DB
-      const restId = localStorage.getItem('restaurantId');
-      if (restId) {
-        fetch(`${API_BASE_URL}/api/v1/restaurants/${restId}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success && data.data) {
-              const d = data.data;
-              setName(d.name || '');
-              setTagline(d.tagline || '');
-              setPhone(d.phone || '');
-              setGstin(d.gstin || '');
-              setAddress(d.address || '');
-              setWhatsappNumber(d.whatsappNumber || '');
-              setWhatsappBusinessId(d.whatsappBusinessId || '');
-              setWhatsappToken(d.whatsappToken || '');
-            }
-          })
-          .catch(err => console.error("Error loading settings:", err));
-      }
+      // Offline retail mode: no need to fetch from backend API.
     }
   }, []);
 
@@ -73,13 +54,6 @@ export default function SettingsPage() {
     setLoading(true);
     setSuccess('');
     setError('');
-
-    const restId = localStorage.getItem('restaurantId');
-    if (!restId) {
-      setError("No session tenant found. Please log in again.");
-      setLoading(false);
-      return;
-    }
 
     const payload = {
       name,
@@ -92,32 +66,13 @@ export default function SettingsPage() {
       whatsappToken
     };
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/restaurants/${restId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-
-      if (result.success) {
-        setSuccess("Settings updated successfully!");
-        localStorage.setItem('servewell_restaurant_details', JSON.stringify({
-          ...payload,
-          diningAreas: result.data.diningAreas || [],
-          menuCategories: result.data.menuCategories || [],
-          logo: result.data.logo || ''
-        }));
-      } else {
-        setError(result.error || "Failed to update configuration.");
-      }
-    } catch (err) {
-      setError("Network error. Please try again.");
-    } finally {
+    // Save locally for the offline retail version
+    localStorage.setItem('servewell_restaurant_details', JSON.stringify(payload));
+    
+    setTimeout(() => {
+      setSuccess("Settings updated successfully! It will now reflect in your POS and Invoices.");
       setLoading(false);
-    }
+    }, 400);
   };
 
   return (
