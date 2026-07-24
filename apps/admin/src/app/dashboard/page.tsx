@@ -10,7 +10,7 @@ export default function SuperAdminDashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [initialMenu, setInitialMenu] = useState<{id: string, name: string, price: number, category: string, type: string}[]>([]);
+  const [initialMenu, setInitialMenu] = useState<{id: string, name: string, price: number, category: string, type: string, img?: string}[]>([]);
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
   const [bulkMenuText, setBulkMenuText] = useState('');
   const [isBulkPasting, setIsBulkPasting] = useState(false);
