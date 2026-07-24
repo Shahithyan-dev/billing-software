@@ -30,52 +30,16 @@ const Login = () => {
     setLoading(true);
     setError('');
 
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+    // Simulate network delay for UX
+    setTimeout(() => {
+      // For this local offline version, we bypass the backend login entirely.
+      localStorage.setItem('token', 'local-offline-token');
+      localStorage.setItem('restaurantId', 'local-shop');
+      localStorage.setItem('role', 'admin');
       
-      const result = await response.json();
-      
-      if (result.success) {
-        if (result.restaurant?.businessType !== 'dress') {
-          setError('This login portal is only for Dress/Retail shops.');
-          setLoading(false);
-          return;
-        }
-
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('restaurantId', result.restaurantId);
-        localStorage.setItem('role', result.role);
-        
-        if (result.captains) localStorage.setItem('servewell_captains', JSON.stringify(result.captains));
-        if (result.tables) localStorage.setItem('servewell_tables', JSON.stringify(result.tables));
-        if (result.sidebarFeatures) localStorage.setItem('servewell_sidebar', JSON.stringify(result.sidebarFeatures));
-        if (result.restaurant) localStorage.setItem('servewell_restaurant_details', JSON.stringify(result.restaurant));
-        
-        // Only override local menu if backend sent a default one and local is empty
-        if (result.defaultMenu && result.defaultMenu.length > 0) {
-          const existingMenu = localStorage.getItem(`servewell_menu_${result.restaurantId}`);
-          if (!existingMenu || JSON.parse(existingMenu).length === 0) {
-            localStorage.setItem(`servewell_menu_${result.restaurantId}`, JSON.stringify(result.defaultMenu));
-          }
-        }
-        
-        let redirectPath = '/dashboard';
-        navigate(redirectPath);
-      } else {
-        setError(result.error || 'Login failed');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
+      navigate('/pos');
       setLoading(false);
-    }
+    }, 600);
   };
 
   return (
