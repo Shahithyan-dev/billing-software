@@ -2,19 +2,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CapacitorUpdater } from '@capgo/capacitor-updater';
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Tell Capgo the app booted successfully so it doesn't roll back the OTA update
-      try {
-        CapacitorUpdater.notifyAppReady();
-      } catch (e) {
-        console.log('CapacitorUpdater not available in this environment');
-      }
 
       const token = localStorage.getItem('token');
       if (token) {
