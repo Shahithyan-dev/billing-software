@@ -32,7 +32,7 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
         setAllowedFeatures(JSON.parse(storedFeatures));
       } else {
         // Fallback to all if not set
-        setAllowedFeatures(['POS', 'Online Orders', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings']);
+        setAllowedFeatures(['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings']);
       }
     }
   }, []);
@@ -186,8 +186,8 @@ export default function DashboardLayout({
               >
                 <Menu className="w-5 h-5" />
               </button>
-              {/* Desktop Logo */}
-              <div className="hidden sm:flex items-center gap-3 cursor-pointer group">
+              {/* Desktop Logo (Hidden on large screens where sidebar is persistent) */}
+              <div className="hidden sm:flex lg:hidden items-center gap-3 cursor-pointer group">
                 <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all rounded-md p-1">
                   <Logo className="w-full h-full drop-shadow-md" />
                 </div>

@@ -12,8 +12,10 @@ import {
   Tag, 
   Lock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Database
 } from 'lucide-react';
+import { db } from '@/lib/db';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
@@ -75,14 +77,59 @@ export default function SettingsPage() {
     }, 400);
   };
 
+  const handleLoadDemoData = async () => {
+    if (!confirm("This will clear all current items and load default Dress Store demo data. Are you sure?")) return;
+    setLoading(true);
+    
+    // Set dress store details
+    const demoDetails = {
+      name: "Sri Murugan Silks",
+      tagline: "Exclusive Silk Sarees & Clothing",
+      phone: "+91 9876543210",
+      gstin: "33ABCDE1234F1Z5",
+      address: "123 Shopping Street, City",
+      whatsappNumber: "",
+      whatsappBusinessId: "",
+      whatsappToken: ""
+    };
+    localStorage.setItem('servewell_restaurant_details', JSON.stringify(demoDetails));
+    
+    // Update local state
+    setName(demoDetails.name);
+    setTagline(demoDetails.tagline);
+    setPhone(demoDetails.phone);
+    setGstin(demoDetails.gstin);
+    setAddress(demoDetails.address);
+
+    // Seed Dexie DB with Dress Items
+    await db.menuItems.clear();
+    await db.menuItems.bulkAdd([
+      { id: crypto.randomUUID(), name: 'Kanchipuram Silk Saree', price: 15000, purchasePrice: 12000, category: 'Sarees', type: 'standard', stock: 10, img: 'https://images.unsplash.com/photo-1610189013233-018fcc13dc4e?auto=format&fit=crop&q=80&w=200' },
+      { id: crypto.randomUUID(), name: 'Cotton Kurti', price: 850, purchasePrice: 500, category: 'Kurtis', type: 'standard', stock: 50, img: 'https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?auto=format&fit=crop&q=80&w=200' },
+      { id: crypto.randomUUID(), name: 'Designer Lehenga', price: 25000, purchasePrice: 18000, category: 'Lehengas', type: 'standard', stock: 5, img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=200' },
+      { id: crypto.randomUUID(), name: 'Mens Casual Shirt', price: 1200, purchasePrice: 800, category: 'Shirts', type: 'standard', stock: 30, img: 'https://images.unsplash.com/photo-1596755094514-f87e32f6b717?auto=format&fit=crop&q=80&w=200' },
+      { id: crypto.randomUUID(), name: 'Denim Jeans', price: 1800, purchasePrice: 1000, category: 'Jeans', type: 'standard', stock: 25, img: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&q=80&w=200' }
+    ]);
+    
+    setSuccess("Demo Data loaded successfully! Go to the POS dashboard to see the items.");
+    setLoading(false);
+  };
+
   return (
     <div className="p-8 max-w-4xl mx-auto min-h-screen">
       {/* Title Header */}
-      <div className="flex justify-between items-center mb-8 border-b border-slate-100 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-slate-100 pb-5 gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Configuration Settings</h1>
           <p className="text-slate-500 text-sm font-medium mt-1">Manage dress shop branding details and WhatsApp Cloud configurations</p>
         </div>
+        <button 
+          onClick={handleLoadDemoData}
+          disabled={loading}
+          className="flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-2.5 px-4 rounded-xl transition-all text-sm shrink-0"
+        >
+          <Database className="w-4 h-4" /> Load Demo Data
+        </button>
       </div>
 
       {success && (
