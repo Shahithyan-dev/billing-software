@@ -259,6 +259,25 @@ export default function SuperAdminDashboard() {
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
+      if (token === 'local-admin-token') {
+        // Mock successful response for local UI testing
+        setTimeout(() => {
+          setSuccess(isEditing ? 'Tenant updated successfully (Local Mock)!' : `Tenant created successfully (Local Mock)! Admin login: ${formData.get('email')}`);
+          if (!isEditing) {
+            (e.target as HTMLFormElement).reset();
+            setInitialMenu([]);
+            // Add a mock tenant to the list
+            setRestaurants([{ ...payloadObj, _id: Date.now().toString(), businessType: selectedSoftware || 'restaurant' }, ...restaurants]);
+          } else {
+            setEditingTenantId(null);
+            (e.target as HTMLFormElement).reset();
+            setInitialMenu([]);
+          }
+          setLoading(false);
+        }, 1000);
+        return;
+      }
+
       const response = await fetch(url, {
         method,
         headers: { 
