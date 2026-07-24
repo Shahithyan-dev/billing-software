@@ -30,16 +30,31 @@ const Login = () => {
     setLoading(true);
     setError('');
 
-    // Simulate network delay for UX
-    setTimeout(() => {
-      // For this local offline version, we bypass the backend login entirely.
-      localStorage.setItem('token', 'local-offline-token');
-      localStorage.setItem('restaurantId', 'local-shop');
-      localStorage.setItem('role', 'admin');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: e.currentTarget.email.value, password: e.currentTarget.password.value, businessType: 'dress' }),
+      });
       
-      navigate('/pos');
+      const data = await response.json();
+      
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('restaurantId', data.restaurantId || 'local-shop');
+        localStorage.setItem('role', data.role || 'admin');
+        if (data.sidebarFeatures) {
+          localStorage.setItem('servewell_sidebar', JSON.stringify(data.sidebarFeatures));
+        }
+        navigate('/pos');
+      } else {
+        setError(data.error || 'Invalid email or password');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   return (
