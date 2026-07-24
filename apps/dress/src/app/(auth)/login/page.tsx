@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from '@/hooks/useNavigate';;
-import Link from 'next/link';;
+import { useNavigate } from '@/hooks/useNavigate';
+import { db } from '@/lib/db';
+import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 
 import { API_BASE_URL } from '@/config/api';
@@ -46,6 +47,30 @@ const Login = () => {
         if (data.sidebarFeatures) {
           localStorage.setItem('servewell_sidebar', JSON.stringify(data.sidebarFeatures));
         }
+
+        // Fetch tenant details to sync DB
+        try {
+          const tenantRes = await fetch(`${API_BASE_URL}/api/v1/restaurants/${data.restaurantId || 'local-shop'}`, {
+            headers: { Authorization: `Bearer ${data.token}` }
+          });
+          const tenantData = await tenantRes.json();
+          if (tenantData.success && tenantData.data) {
+            localStorage.setItem('servewell_restaurant_details', JSON.stringify(tenantData.data));
+            
+            if (tenantData.data.defaultMenu && tenantData.data.defaultMenu.length > 0) {
+              await db.menuItems.clear();
+              const itemsToInsert = tenantData.data.defaultMenu.map((m: any) => ({
+                ...m,
+                id: m.id || crypto.randomUUID(),
+                type: m.type || 'standard'
+              }));
+              await db.menuItems.bulkAdd(itemsToInsert);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to sync tenant data", e);
+        }
+
         navigate('/pos');
       } else {
         setError(data.error || 'Invalid email or password');
