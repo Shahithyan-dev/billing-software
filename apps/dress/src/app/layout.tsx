@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ServeWell - Restaurant OS',
-  description: 'Better Management. Better Business.',
+  title: 'RetailBill - Dress Shop Billing',
+  description: 'Premium billing software for modern fashion boutiques.',
 };
 
 export default function RootLayout({
