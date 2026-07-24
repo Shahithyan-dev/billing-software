@@ -113,8 +113,9 @@ export default function PurchasesPage() {
           m.name.toLowerCase().trim() === purchasedItem.name.toLowerCase().trim()
         );
         if (matched) {
-          const newStock = (matched.stock || 0) + purchasedItem.qty;
-          await db.menuItems.update(matched.id, { stock: newStock });
+          const newStock = (Number(matched.stock) || 0) + Number(purchasedItem.qty);
+          const updatedItem = { ...matched, stock: newStock };
+          await db.menuItems.put(updatedItem);
         }
       }
 

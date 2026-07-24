@@ -294,8 +294,11 @@ export default function POSPage() {
             const newStock = Math.max(0, currentStock - Number(row.qty));
             console.log(`[STOCK DEDUCTION] Item ${itemToUpdate.name}: Current stock: ${currentStock}, Qty sold: ${row.qty}, New stock: ${newStock}`);
             
-            const updatedRows = await db.menuItems.update(itemToUpdate.id, { stock: newStock });
-            console.log(`[STOCK DEDUCTION] Update successful, rows affected:`, updatedRows);
+            // Use PUT to completely overwrite the object with the new stock
+            // This is foolproof against Dexie missing field or type mismatch errors
+            const updatedItem = { ...itemToUpdate, stock: newStock };
+            await db.menuItems.put(updatedItem);
+            console.log(`[STOCK DEDUCTION] PUT successful for item:`, updatedItem.name);
           } else {
             console.warn(`[STOCK DEDUCTION] Could not find item in DB for row:`, row.name);
           }
