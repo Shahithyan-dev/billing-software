@@ -274,12 +274,21 @@ export default function POSPage() {
       
       // Deduct stock for each sold item
       for (const row of validRows) {
+        let itemToUpdate = undefined;
+        
         if (row.itemId) {
-          const item = await db.menuItems.get(row.itemId);
-          if (item && item.stock !== undefined) {
-            const newStock = Math.max(0, (item.stock || 0) - row.qty);
-            await db.menuItems.update(row.itemId, { stock: newStock });
-          }
+          itemToUpdate = await db.menuItems.get(row.itemId);
+        } else if (row.name) {
+          // Fallback: match by name if user manually typed it in the row
+          const allItems = await db.menuItems.toArray();
+          // Extract base name ignoring sizes like "(XL)" at the end
+          const baseNameMatch = row.name.replace(/\(.*?\)/g, '').trim().toLowerCase();
+          itemToUpdate = allItems.find(m => m.name.toLowerCase().trim() === baseNameMatch || m.name.toLowerCase().trim() === row.name.toLowerCase().trim());
+        }
+
+        if (itemToUpdate && itemToUpdate.stock !== undefined) {
+          const newStock = Math.max(0, (itemToUpdate.stock || 0) - row.qty);
+          await db.menuItems.update(itemToUpdate.id, { stock: newStock });
         }
       }
 
@@ -916,11 +925,11 @@ export default function POSPage() {
                  <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col gap-3 text-[10px] text-slate-200">
                     <div className="flex items-center gap-2">
                       <div className="bg-slate-800 p-1.5 rounded-full"><Phone className="w-3.5 h-3.5 text-slate-300"/></div>
-                      <span>{restaurantData.phone || '8428507630'}</span>
+                      <span>{restaurantData.phone || '9876543210'}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="bg-slate-800 p-1.5 rounded-full"><MapPin className="w-3.5 h-3.5 text-slate-300"/></div> 
-                      <span className="max-w-[100px] leading-tight">{restaurantData.address || 'HEYBRO, MMB COMPLEX E PUDUR TRICHY'}</span>
+                      <span className="max-w-[100px] leading-tight">{restaurantData.address || '123 Retail Street, City, State'}</span>
                     </div>
                  </div>
              </div>
