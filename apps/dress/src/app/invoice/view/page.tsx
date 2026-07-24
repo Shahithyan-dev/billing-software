@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { API_BASE_URL } from '@/config/api';
 import { Printer, Share2, Phone, MapPin, Building, Calendar, FileText, CheckCircle, Shirt, Package, Info, Star, QrCode } from 'lucide-react';
@@ -47,7 +47,7 @@ function numberToWords(num: number): string {
   return str + 'only';
 }
 
-export default function InvoiceViewPage() {
+function InvoiceViewContent() {
   const searchParams = useSearchParams();
   const uuid = searchParams.get('uuid');
 
@@ -342,5 +342,13 @@ export default function InvoiceViewPage() {
           </div>
       </div>
     </div>
+  );
+}
+
+export default function InvoiceViewPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <InvoiceViewContent />
+    </Suspense>
   );
 }
