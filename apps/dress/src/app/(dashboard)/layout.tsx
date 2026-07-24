@@ -67,10 +67,10 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
               <li key={item.name}>
                 <Link
                   href={item.path}
-                  className={`flex items-center gap-3 px-4 py-3 transition-all font-bold text-sm ${
+                  className={`flex items-center gap-3 px-4 py-3 transition-all font-bold text-sm rounded-xl ${
                     isActive 
-                      ? 'bg-amber-400/10 text-amber-400 border-l-[3px] border-amber-400' 
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white border-l-[3px] border-transparent'
+                      ? 'bg-amber-500/10 text-amber-500 border border-amber-500/50 shadow-sm shadow-amber-500/10' 
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white border border-transparent'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
