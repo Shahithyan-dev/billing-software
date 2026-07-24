@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight } from 'lucide-react';
-
+import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight, ChefHat, PackageOpen } from 'lucide-react';
 export default function SuperAdminDashboard() {
   const router = useRouter();
   const [restaurants, setRestaurants] = useState<any[]>([]);
@@ -15,11 +14,15 @@ export default function SuperAdminDashboard() {
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
   const [bulkMenuText, setBulkMenuText] = useState('');
   const [isBulkPasting, setIsBulkPasting] = useState(false);
+  const [selectedSoftware, setSelectedSoftware] = useState<'restaurant' | 'dress' | null>(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
 
-  const SIDEBAR_FEATURES = ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'];
-  const MENU_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
+  const DRESS_SIDEBAR_FEATURES = ['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings'];
+  const RESTAURANT_SIDEBAR_FEATURES = ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'];
+
+  const DRESS_MENU_CATEGORIES = ['Sarees', 'Kurtis', 'Lehengas', 'Shirts', 'Jeans', 'Churidar', 'Kids Wear'];
+  const RESTAURANT_MENU_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -70,7 +73,7 @@ export default function SuperAdminDashboard() {
   };
 
   const handleDeleteRestaurant = async (id: string) => {
-    if (!confirm('Are you sure you want to completely delete this restaurant? This cannot be undone.')) {
+    if (!confirm('Are you sure you want to completely delete this tenant? This cannot be undone.')) {
       return;
     }
     
@@ -81,10 +84,10 @@ export default function SuperAdminDashboard() {
       });
       const result = await response.json();
       if (result.success) {
-        setSuccess('Restaurant deleted successfully.');
+        setSuccess('Tenant deleted successfully.');
         fetchRestaurants();
       } else {
-        setError(result.error || 'Failed to delete restaurant');
+        setError(result.error || 'Failed to delete tenant');
       }
     } catch (err) {
       setError('Network error while deleting.');
@@ -94,7 +97,8 @@ export default function SuperAdminDashboard() {
   };
 
   const handleAddMenuItem = () => {
-    setInitialMenu([...initialMenu, { id: Date.now().toString(), name: '', price: 0, category: 'Main Course', type: 'veg' }]);
+    const defaultCat = selectedSoftware === 'dress' ? DRESS_MENU_CATEGORIES[0] : RESTAURANT_MENU_CATEGORIES[0];
+    setInitialMenu([...initialMenu, { id: Date.now().toString(), name: '', price: 0, category: defaultCat, type: 'standard' }]);
   };
 
   const handleRemoveMenuItem = (id: string) => {
@@ -106,16 +110,26 @@ export default function SuperAdminDashboard() {
   };
 
   const handleLoadDefaultMenu = () => {
-    setInitialMenu([
-      { id: '1', name: 'Idli Sambar', price: 60, category: 'Breakfast', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Idli+Sambar' },
-      { id: '2', name: 'Masala Dosa', price: 80, category: 'Breakfast', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Masala+Dosa' },
-      { id: '3', name: 'Veg Thali', price: 220, category: 'Lunch', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Veg+Thali' },
-      { id: '4', name: 'Chicken Biryani', price: 320, category: 'Lunch', type: 'non-veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Chicken+Biryani' },
-      { id: '5', name: 'Paneer Butter Masala', price: 280, category: 'Dinner', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Paneer+Butter+Masala' },
-      { id: '6', name: 'Garlic Naan', price: 60, category: 'Dinner', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Garlic+Naan' },
-      { id: '7', name: 'Veg Manchurian', price: 180, category: 'Snacks', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Veg+Manchurian' },
-      { id: '8', name: 'Cold Coffee', price: 120, category: 'Beverages', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Cold+Coffee' },
-    ]);
+    if (selectedSoftware === 'dress') {
+      setInitialMenu([
+        { id: '1', name: 'Silk Saree', price: 1500, category: 'Sarees', type: 'standard', img: '' },
+        { id: '2', name: 'Cotton Kurtis', price: 450, category: 'Kurtis', type: 'standard', img: '' },
+        { id: '3', name: 'Designer Lehenga', price: 4500, category: 'Lehengas', type: 'standard', img: '' },
+        { id: '4', name: 'Mens Slim Fit Shirt', price: 800, category: 'Shirts', type: 'standard', img: '' },
+        { id: '5', name: 'Mens Denim Jeans', price: 1200, category: 'Jeans', type: 'standard', img: '' },
+      ]);
+    } else {
+      setInitialMenu([
+        { id: '1', name: 'Idli Sambar', price: 60, category: 'Breakfast', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Idli+Sambar' },
+        { id: '2', name: 'Masala Dosa', price: 80, category: 'Breakfast', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Masala+Dosa' },
+        { id: '3', name: 'Veg Thali', price: 220, category: 'Lunch', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Veg+Thali' },
+        { id: '4', name: 'Chicken Biryani', price: 320, category: 'Lunch', type: 'non-veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Chicken+Biryani' },
+        { id: '5', name: 'Paneer Butter Masala', price: 280, category: 'Dinner', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Paneer+Butter+Masala' },
+        { id: '6', name: 'Garlic Naan', price: 60, category: 'Dinner', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Garlic+Naan' },
+        { id: '7', name: 'Veg Manchurian', price: 180, category: 'Snacks', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Veg+Manchurian' },
+        { id: '8', name: 'Cold Coffee', price: 120, category: 'Beverages', type: 'veg', img: 'https://placehold.co/400x300/e2e8f0/64748b?text=Cold+Coffee' },
+      ]);
+    }
   };
 
   const handleProcessBulkPaste = () => {
@@ -128,8 +142,8 @@ export default function SuperAdminDashboard() {
           id: Date.now().toString() + idx,
           name: parts[0],
           price: parseInt(parts[1]) || 0,
-          category: parts[2] || 'Lunch',
-          type: parts[3]?.toLowerCase() === 'non-veg' ? 'non-veg' : 'veg',
+          category: parts[2] || (selectedSoftware === 'dress' ? 'Shirts' : 'Lunch'),
+          type: parts[3] || 'standard',
           img: parts[4] || ''
         };
       }
@@ -148,22 +162,34 @@ export default function SuperAdminDashboard() {
     setTimeout(() => {
       const form = document.getElementById('tenant-form') as HTMLFormElement;
       if (form) {
-        (form.elements.namedItem('name') as HTMLInputElement).value = rest.name || '';
-        (form.elements.namedItem('phone') as HTMLInputElement).value = rest.phone || '';
-        (form.elements.namedItem('gstin') as HTMLInputElement).value = rest.gstin || '';
-        (form.elements.namedItem('fssai') as HTMLInputElement).value = rest.fssai || '';
-        (form.elements.namedItem('address') as HTMLInputElement).value = rest.address || '';
-        (form.elements.namedItem('captains') as HTMLInputElement).value = rest.captains?.join(', ') || '';
-        (form.elements.namedItem('tables') as HTMLInputElement).value = rest.tables?.join(', ') || '';
-        (form.elements.namedItem('diningAreas') as HTMLInputElement).value = rest.diningAreas?.join(', ') || '';
-        (form.elements.namedItem('menuCategories') as HTMLInputElement).value = rest.menuCategories?.join(', ') || '';
-        // Note: admin email/password cannot easily be populated securely, we can leave them blank or disabled for updates
+        const setVal = (name: string, val: any) => {
+          const el = form.elements.namedItem(name) as HTMLInputElement;
+          if (el) el.value = val || '';
+        };
+
+        setVal('name', rest.name);
+        setVal('phone', rest.phone);
+        setVal('gstin', rest.gstin);
+        setVal('fssai', rest.fssai);
+        setVal('address', rest.address);
+        setVal('captains', rest.captains?.join(', '));
+        
+        if (selectedSoftware === 'restaurant') {
+          setVal('tables', rest.tables?.join(', '));
+          setVal('diningAreas', rest.diningAreas?.join(', '));
+        } else {
+          setVal('whatsappNumber', rest.whatsappNumber);
+          setVal('whatsappToken', rest.whatsappToken);
+          setVal('whatsappBusinessId', rest.whatsappBusinessId);
+        }
+        setVal('menuCategories', rest.menuCategories?.join(', '));
       }
       
       // Update sidebar features
-      rest.sidebarFeatures?.forEach((f: string) => {
+      const featuresToUse = selectedSoftware === 'dress' ? DRESS_SIDEBAR_FEATURES : RESTAURANT_SIDEBAR_FEATURES;
+      featuresToUse.forEach((f: string) => {
         const checkbox = document.querySelector(`input[name="feature_${f}"]`) as HTMLInputElement;
-        if (checkbox) checkbox.checked = true;
+        if (checkbox) checkbox.checked = rest.sidebarFeatures?.includes(f) || false;
       });
     }, 100);
   };
@@ -177,22 +203,37 @@ export default function SuperAdminDashboard() {
     const formData = new FormData(e.currentTarget);
     
     // Extract checkbox values for sidebar features
-    const selectedFeatures = SIDEBAR_FEATURES.filter(f => formData.get(`feature_${f}`) === 'on');
+    const featuresToUse = selectedSoftware === 'dress' ? DRESS_SIDEBAR_FEATURES : RESTAURANT_SIDEBAR_FEATURES;
+    const selectedFeatures = featuresToUse.filter(f => formData.get(`feature_${f}`) === 'on');
     
     const captainsStr = formData.get('captains') as string;
-    const tablesStr = formData.get('tables') as string;
-    const diningAreasStr = formData.get('diningAreas') as string;
     const menuCategoriesStr = formData.get('menuCategories') as string;
     
-    const captainsArray = captainsStr ? captainsStr.split(',').map(s => s.trim()).filter(s => s) : ['Captain'];
-    const tablesArray = tablesStr ? tablesStr.split(',').map(s => s.trim()).filter(s => s) : ['T1', 'T2', 'T3'];
-    const diningAreasArray = diningAreasStr ? diningAreasStr.split(',').map(s => s.trim()).filter(s => s) : ['AC', 'Non-AC'];
-    const menuCategoriesArray = menuCategoriesStr ? menuCategoriesStr.split(',').map(s => s.trim()).filter(s => s) : ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
+    const captainsArray = captainsStr ? captainsStr.split(',').map(s => s.trim()).filter(s => s) : (selectedSoftware === 'dress' ? ['Salesperson 1'] : ['Captain']);
+    const menuCategoriesArray = menuCategoriesStr ? menuCategoriesStr.split(',').map(s => s.trim()).filter(s => s) : (selectedSoftware === 'dress' ? DRESS_MENU_CATEGORIES : RESTAURANT_MENU_CATEGORIES);
+
+    let tablesArray = [];
+    let diningAreasArray = [];
+    let whatsappNumber = '';
+    let whatsappToken = '';
+    let whatsappBusinessId = '';
+
+    if (selectedSoftware === 'restaurant') {
+      const tablesStr = formData.get('tables') as string;
+      const diningAreasStr = formData.get('diningAreas') as string;
+      tablesArray = tablesStr ? tablesStr.split(',').map(s => s.trim()).filter(s => s) : ['T1', 'T2', 'T3'];
+      diningAreasArray = diningAreasStr ? diningAreasStr.split(',').map(s => s.trim()).filter(s => s) : ['AC', 'Non-AC'];
+    } else {
+      whatsappNumber = formData.get('whatsappNumber') as string || '';
+      whatsappToken = formData.get('whatsappToken') as string || '';
+      whatsappBusinessId = formData.get('whatsappBusinessId') as string || '';
+    }
 
     const validMenuItems = initialMenu.filter(item => item.name.trim() !== '' && item.price >= 0);
     
     const payloadObj = {
       name: formData.get('name') as string,
+      businessType: selectedSoftware || 'restaurant',
       tagline: formData.get('tagline') as string,
       phone: formData.get('phone') as string,
       gstin: formData.get('gstin') as string,
@@ -205,7 +246,10 @@ export default function SuperAdminDashboard() {
       diningAreas: diningAreasArray,
       menuCategories: menuCategoriesArray,
       sidebarFeatures: selectedFeatures,
-      initialMenu: validMenuItems
+      initialMenu: validMenuItems,
+      whatsappNumber,
+      whatsappToken,
+      whatsappBusinessId
     };
 
     const token = localStorage.getItem('adminToken');
@@ -226,7 +270,7 @@ export default function SuperAdminDashboard() {
       const result = await response.json();
       
       if (result.success) {
-        setSuccess(isEditing ? 'Restaurant updated successfully!' : `Restaurant created successfully! Admin login: ${formData.get('email')}`);
+        setSuccess(isEditing ? 'Tenant updated successfully!' : `Tenant created successfully! Admin login: ${formData.get('email')}`);
         if (!isEditing) {
           (e.target as HTMLFormElement).reset();
           setInitialMenu([]);
@@ -237,7 +281,7 @@ export default function SuperAdminDashboard() {
         }
         fetchRestaurants();
       } else {
-        setError(result.error || 'Failed to create restaurant');
+        setError(result.error || 'Failed to save tenant');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -245,6 +289,68 @@ export default function SuperAdminDashboard() {
       setLoading(false);
     }
   };
+
+  if (!selectedSoftware) {
+    return (
+      <div className="min-h-screen w-full bg-[#f8fafc] font-sans selection:bg-indigo-500/30 flex flex-col">
+        {/* Glassmorphic Navbar */}
+        <nav className="backdrop-blur-xl bg-white/70 border-b border-white shadow-sm p-4 px-8 flex justify-between items-center sticky top-0 z-50 transition-all">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">ServeWell Admin</h1>
+            <span className="ml-4 text-[10px] bg-red-50 text-red-600 font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-red-100 flex items-center gap-1.5 shadow-sm shadow-red-100">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+              Super Access
+            </span>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="text-sm font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-all"
+          >
+            Logout
+          </button>
+        </nav>
+
+        <div className="flex-1 flex flex-col items-center justify-center p-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
+          <h2 className="text-3xl font-black text-slate-800 mb-2">Select Software Module</h2>
+          <p className="text-slate-500 mb-12">Which software application would you like to manage?</p>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full">
+            {/* Restaurant Software Card */}
+            <div 
+              onClick={() => setSelectedSoftware('restaurant')}
+              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-indigo-100/50 hover:shadow-indigo-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
+            >
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <ChefHat className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-3">Restaurant Billing</h3>
+              <p className="text-slate-500 mb-6 line-clamp-2">Manage POS, Kitchen, and Inventory for cafes, restaurants, and bars.</p>
+              <div className="flex justify-between items-center text-sm font-bold text-emerald-600">
+                <span>Manage Tenants</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Dress/Retail Software Card */}
+            <div 
+              onClick={() => setSelectedSoftware('dress')}
+              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-indigo-100/50 hover:shadow-indigo-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
+            >
+              <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <PackageOpen className="w-8 h-8 text-rose-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-3">Dress Shop Billing</h3>
+              <p className="text-slate-500 mb-6 line-clamp-2">Manage retail items, parties, sale invoices, and WhatsApp receipts.</p>
+              <div className="flex justify-between items-center text-sm font-bold text-rose-600">
+                <span>Manage Tenants</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] pb-20 font-sans selection:bg-indigo-500/30">
@@ -256,13 +362,24 @@ export default function SuperAdminDashboard() {
             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
             Super Access
           </span>
+          <span className="ml-4 text-[10px] bg-slate-100 text-slate-600 font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-slate-200">
+            Managing: {selectedSoftware === 'restaurant' ? 'Restaurant Billing' : 'Dress Shop Billing'}
+          </span>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="text-sm font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-all"
-        >
-          Logout
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setSelectedSoftware(null)}
+            className="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all"
+          >
+            Switch Software
+          </button>
+          <button 
+            onClick={handleLogout}
+            className="text-sm font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-all"
+          >
+            Logout
+          </button>
+        </div>
       </nav>
 
       <div className="max-w-7xl mx-auto p-4 sm:p-8 grid lg:grid-cols-[1.5fr_1fr] gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -300,28 +417,30 @@ export default function SuperAdminDashboard() {
             {/* 1. Basic Details */}
             <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
               <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
-                <Server className="w-4 h-4 text-indigo-500" /> 1. Restaurant Details
+                <Server className="w-4 h-4 text-indigo-500" /> 1. Business Details
               </h3>
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Name *</label>
-                  <input name="name" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="ServeWell Cafe" />
+                  <input name="name" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder={selectedSoftware === 'dress' ? "Sri Murugan Silks" : "ServeWell Cafe"} />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Phone *</label>
                   <input name="phone" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="+91 9876543210" />
                 </div>
-                <div>
+                <div className={selectedSoftware === 'dress' ? "col-span-2" : ""}>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">GSTIN</label>
                   <input name="gstin" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">FSSAI</label>
-                  <input name="fssai" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
-                </div>
+                {selectedSoftware === 'restaurant' && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">FSSAI</label>
+                    <input name="fssai" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
+                  </div>
+                )}
                 <div className="col-span-2">
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Address</label>
-                  <input name="address" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="123 Food Street, Food City" />
+                  <input name="address" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="123 Shopping Street, City" />
                 </div>
               </div>
             </div>
@@ -349,43 +468,96 @@ export default function SuperAdminDashboard() {
               <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
                 <LayoutGrid className="w-4 h-4 text-fuchsia-500" /> 3. POS Setup
               </h3>
-              <div className="grid grid-cols-2 gap-5 mb-6">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Captains (Comma separated)</label>
-                  <input name="captains" placeholder="Rahul, Suresh" defaultValue="Captain, Rahul, Priya, Self Service" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Tables (Comma separated)</label>
-                  <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Dining Areas (Comma separated)</label>
-                  <input name="diningAreas" placeholder="AC, Non-AC" defaultValue="AC, Non-AC" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Menu Categories (Comma separated)</label>
-                  <input name="menuCategories" placeholder="Starters, Mains" defaultValue="Breakfast, Lunch, Dinner, Snacks, Beverages" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
-                </div>
-              </div>
               
-              <label className="block text-[11px] font-bold text-slate-500 uppercase mb-3 ml-1">Enable Sidebar Modules</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-4 border border-slate-200 rounded-xl shadow-sm">
-                {SIDEBAR_FEATURES.map(feature => (
-                  <label key={feature} className="flex items-center space-x-3 text-sm font-medium text-slate-700 cursor-pointer group">
-                    <div className="relative flex items-center">
-                      <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-fuchsia-500 border-slate-300 rounded focus:ring-fuchsia-500 focus:ring-2 transition-all cursor-pointer" />
+              {selectedSoftware === 'restaurant' ? (
+                <>
+                  <div className="grid grid-cols-2 gap-5 mb-6">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Captains (Comma separated)</label>
+                      <input name="captains" placeholder="Rahul, Suresh" defaultValue="Captain, Rahul, Priya, Self Service" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
-                    <span className="group-hover:text-fuchsia-600 transition-colors">{feature}</span>
-                  </label>
-                ))}
-              </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Tables (Comma separated)</label>
+                      <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Dining Areas (Comma separated)</label>
+                      <input name="diningAreas" placeholder="AC, Non-AC" defaultValue="AC, Non-AC" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Menu Categories (Comma separated)</label>
+                      <input name="menuCategories" placeholder="Starters, Mains" defaultValue="Breakfast, Lunch, Dinner, Snacks, Beverages" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                    </div>
+                  </div>
+                  
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-3 ml-1">Enable Sidebar Modules</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-4 border border-slate-200 rounded-xl shadow-sm mb-6">
+                    {RESTAURANT_SIDEBAR_FEATURES.map(feature => (
+                      <label key={feature} className="flex items-center space-x-3 text-sm font-medium text-slate-700 cursor-pointer group">
+                        <div className="relative flex items-center">
+                          <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-fuchsia-500 border-slate-300 rounded focus:ring-fuchsia-500 focus:ring-2 transition-all cursor-pointer" />
+                        </div>
+                        <span className="group-hover:text-fuchsia-600 transition-colors">{feature}</span>
+                      </label>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-5 mb-6">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Salespersons (Comma separated)</label>
+                      <input name="captains" placeholder="Salesperson 1, Salesperson 2" defaultValue="Ramesh, Suresh, Priya" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Product Categories (Comma separated)</label>
+                      <input name="menuCategories" placeholder="Shirts, Sarees, Kurtis" defaultValue="Sarees, Kurtis, Lehengas, Shirts, Jeans" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                    </div>
+                  </div>
+                  
+                  {/* WhatsApp Integration config for Dress Software */}
+                  <div className="bg-[#25d366]/5 border border-[#25d366]/20 rounded-2xl p-5 mb-6">
+                    <h4 className="text-xs font-bold text-slate-700 mb-4 flex items-center gap-1.5 uppercase tracking-wide">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#25d366] animate-pulse"></span>
+                      WhatsApp Cloud API Receipt Config
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">WhatsApp Business Phone Number (Sender)</label>
+                        <input name="whatsappNumber" placeholder="+91 9999999999" className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition-all font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">WhatsApp Phone Number ID</label>
+                        <input name="whatsappBusinessId" placeholder="105829188..." className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition-all font-mono" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 ml-1">WhatsApp Cloud API Access Token</label>
+                        <input name="whatsappToken" placeholder="EAAW..." className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition-all font-mono" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-3 ml-1">Enable Sidebar Modules</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-4 border border-slate-200 rounded-xl shadow-sm mb-6">
+                    {DRESS_SIDEBAR_FEATURES.map(feature => (
+                      <label key={feature} className="flex items-center space-x-3 text-sm font-medium text-slate-700 cursor-pointer group">
+                        <div className="relative flex items-center">
+                          <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-fuchsia-500 border-slate-300 rounded focus:ring-fuchsia-500 focus:ring-2 transition-all cursor-pointer" />
+                        </div>
+                        <span className="group-hover:text-fuchsia-600 transition-colors">{feature}</span>
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* 4. Interactive Menu Builder */}
+            {/* 4. Interactive Menu / Item Builder */}
             <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
               <div className="flex justify-between items-center mb-5">
                 <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                  <div className="w-4 h-4 text-emerald-500 flex items-center justify-center font-serif text-lg font-bold italic">M</div> 4. Menu Builder
+                  <div className="w-4 h-4 text-emerald-500 flex items-center justify-center font-serif text-lg font-bold italic">I</div> 
+                  {selectedSoftware === 'dress' ? '4. Item Builder (Inventory Setup)' : '4. Menu Builder'}
                 </h3>
                 <div className="flex gap-2">
                   <button 
@@ -400,23 +572,30 @@ export default function SuperAdminDashboard() {
                     onClick={handleLoadDefaultMenu}
                     className="text-[11px] uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg hover:bg-indigo-100 font-bold flex items-center gap-1.5 transition-all shadow-sm"
                   >
-                    <Download className="w-3.5 h-3.5" /> Default Menu
+                    <Download className="w-3.5 h-3.5" /> {selectedSoftware === 'dress' ? 'Default Items' : 'Default Menu'}
                   </button>
                 </div>
               </div>
               
               {isBulkPasting && (
                 <div className="mb-5 bg-white p-5 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-top-2">
-                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-2">Paste from Excel (Format: Name [tab] Price [tab] Category [tab] Type [tab] Image URL)</p>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-2">
+                    {selectedSoftware === 'dress' 
+                      ? 'Paste from Excel (Format: Name [tab] Price [tab] Category [tab] Barcode/Code [tab] Image URL)' 
+                      : 'Paste from Excel (Format: Name [tab] Price [tab] Category [tab] Type [tab] Image URL)'}
+                  </p>
                   <textarea 
                     value={bulkMenuText}
                     onChange={(e) => setBulkMenuText(e.target.value)}
                     className="w-full h-32 px-4 py-3 bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 rounded-xl transition-all duration-200 text-sm font-mono"
-                    placeholder="Idli Sambar	60	Breakfast	veg	https://example.com/idli.jpg&#10;Chicken Biryani	320	Lunch	non-veg	https://example.com/biryani.jpg"
+                    placeholder={selectedSoftware === 'dress'
+                      ? "Silk Saree	1500	Sarees	SS-001	https://example.com/silk-saree.jpg"
+                      : "Idli Sambar	60	Breakfast	veg	https://example.com/idli.jpg"
+                    }
                   ></textarea>
                   <div className="flex justify-end gap-2 mt-3">
                     <button type="button" onClick={() => setIsBulkPasting(false)} className="px-4 py-2 text-xs font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
-                    <button type="button" onClick={handleProcessBulkPaste} className="px-4 py-2 text-xs font-bold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-colors">Process Data</button>
+                    <button type="button" onClick={handleProcessBulkPaste} className="px-4 py-2 text-xs font-bold bg-[#25d366] text-white rounded-lg hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-colors">Process Data</button>
                   </div>
                 </div>
               )}
@@ -427,7 +606,10 @@ export default function SuperAdminDashboard() {
                     <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-1">
                       <Plus className="w-5 h-5 text-slate-300" />
                     </div>
-                    No items added yet. Click &quot;Add Item&quot; or &quot;Load Default Menu&quot;.
+                    {selectedSoftware === 'dress' 
+                      ? 'No items added yet. Click "Add Item Manually" or "Default Items".'
+                      : 'No items added yet. Click "Add Item Manually" or "Default Menu".'
+                    }
                   </div>
                 ) : (
                   <div className="space-y-1.5 p-1">
@@ -443,7 +625,7 @@ export default function SuperAdminDashboard() {
                         />
                         <input 
                           type="number" 
-                          placeholder="Price" 
+                          placeholder={selectedSoftware === 'dress' ? "Rate / Price" : "Price"} 
                           value={item.price} 
                           onChange={(e) => handleUpdateMenuItem(item.id, 'price', parseInt(e.target.value) || 0)}
                           className="w-20 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-mono font-medium text-slate-800 text-right"
@@ -453,16 +635,26 @@ export default function SuperAdminDashboard() {
                           onChange={(e) => handleUpdateMenuItem(item.id, 'category', e.target.value)}
                           className="w-24 px-2 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
                         >
-                          {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          {(selectedSoftware === 'dress' ? DRESS_MENU_CATEGORIES : RESTAURANT_MENU_CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
-                        <select 
-                          value={item.type} 
-                          onChange={(e) => handleUpdateMenuItem(item.id, 'type', e.target.value)}
-                          className="w-20 px-2 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
-                        >
-                          <option value="veg">Veg</option>
-                          <option value="non-veg">Non-Veg</option>
-                        </select>
+                        {selectedSoftware === 'restaurant' ? (
+                          <select 
+                            value={item.type} 
+                            onChange={(e) => handleUpdateMenuItem(item.id, 'type', e.target.value)}
+                            className="w-20 px-2 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
+                          >
+                            <option value="veg">Veg</option>
+                            <option value="non-veg">Non-Veg</option>
+                          </select>
+                        ) : (
+                          <input 
+                            type="text" 
+                            placeholder="Barcode / Code" 
+                            value={item.type === 'standard' ? '' : item.type} 
+                            onChange={(e) => handleUpdateMenuItem(item.id, 'type', e.target.value)}
+                            className="w-24 px-3 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-[#25d366]/20 transition-all text-slate-850 font-mono"
+                          />
+                        )}
                         <input 
                           type="text" 
                           placeholder="Image URL" 
@@ -515,13 +707,13 @@ export default function SuperAdminDashboard() {
           </div>
           
           <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
-            {restaurants.length === 0 ? (
+            {restaurants.filter(r => (r.businessType || 'restaurant') === selectedSoftware).length === 0 ? (
               <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
                 <Server className="w-8 h-8 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500 text-sm font-medium">No tenants provisioned yet.</p>
               </div>
             ) : (
-              restaurants.map(rest => (
+              restaurants.filter(r => (r.businessType || 'restaurant') === selectedSoftware).map(rest => (
                 <div key={rest._id} className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-100 transform hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-50 to-transparent -z-10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   

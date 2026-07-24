@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const RestaurantSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  businessType: { type: String, enum: ['restaurant', 'dress'], default: 'restaurant' },
   tagline: { type: String },
   phone: { type: String, required: true },
   gstin: { type: String },
@@ -18,6 +19,9 @@ const RestaurantSchema = new mongoose.Schema({
     showFssai: { type: Boolean, default: true },
     showPhone: { type: Boolean, default: true },
   },
+  whatsappNumber: { type: String, default: '' },
+  whatsappToken: { type: String, default: '' },
+  whatsappBusinessId: { type: String, default: '' },
   defaultMenu: { type: Array, default: [] },
   menuPdfUrl: { type: String },
 }, { timestamps: true });

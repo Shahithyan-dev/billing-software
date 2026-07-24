@@ -17,10 +17,10 @@ router.post('/', async (req, res) => {
 // Update an existing restaurant
 router.put('/:id', async (req, res) => {
   try {
-    const { name, tagline, phone, gstin, fssai, address, captains, tables, diningAreas, menuCategories, sidebarFeatures, initialMenu } = req.body;
+    const { name, tagline, phone, gstin, fssai, address, captains, tables, diningAreas, menuCategories, sidebarFeatures, initialMenu, whatsappNumber, whatsappToken, whatsappBusinessId } = req.body;
     
     const updateData: any = {
-      name, tagline, phone, gstin, fssai, address, captains, tables, diningAreas, menuCategories, sidebarFeatures
+      name, tagline, phone, gstin, fssai, address, captains, tables, diningAreas, menuCategories, sidebarFeatures, whatsappNumber, whatsappToken, whatsappBusinessId
     };
     
     if (initialMenu) {
