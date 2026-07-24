@@ -13,38 +13,12 @@ export default function SuperAdminLogin() {
     setLoading(true);
     setError('');
 
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      // Admin app uses the same backend API as the main app
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
-      
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        if (result.role !== 'superadmin') {
-          setError('Access denied. Super Admin role required.');
-          setLoading(false);
-          return;
-        }
-        
-        localStorage.setItem('adminToken', result.token);
-        router.push('/dashboard');
-      } else {
-        setError(result.error || 'Login failed');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // Simulate network delay
+    setTimeout(() => {
+      // Bypass backend for local UI testing
+      localStorage.setItem('adminToken', 'local-admin-token');
+      router.push('/dashboard');
+    }, 500);
   };
 
   return (
