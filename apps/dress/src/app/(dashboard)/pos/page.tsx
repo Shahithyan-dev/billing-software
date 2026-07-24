@@ -332,6 +332,10 @@ export default function POSPage() {
       return;
     }
     
+    // Pre-open WhatsApp window IMMEDIATELY (before any async work)
+    // This avoids browser popup blocker which blocks window.open() after async operations
+    const waWindow = window.open('about:blank', '_blank');
+
     // Show a loading feedback to the user
     const loadingToast = document.createElement('div');
     loadingToast.className = "fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white font-bold text-xs py-3 px-6 rounded-2xl shadow-2xl z-[9999] flex items-center gap-2.5 animate-in fade-in slide-in-from-top-4";
@@ -490,15 +494,21 @@ export default function POSPage() {
           URL.revokeObjectURL(downloadUrl);
         }
 
-        // Show a brief non-blocking toast and redirect to WhatsApp chat instantly
-        setToastMessage(copiedToClipboard 
-          ? "Invoice copied to Clipboard! Press Ctrl+V inside WhatsApp to paste the image." 
-          : "Invoice image downloaded. Attach it inside WhatsApp."
-        );
-        setTimeout(() => setToastMessage(''), 4000);
-
+        // Navigate the pre-opened WhatsApp window to the customer's chat
         const waUrl = `https://wa.me/${formattedPhone}?text=${billText}`;
-        window.open(waUrl, '_blank');
+        if (waWindow && !waWindow.closed) {
+          waWindow.location.href = waUrl;
+        } else {
+          // Fallback if pre-opened window was closed
+          window.open(waUrl, '_blank');
+        }
+
+        setToastMessage(
+          copiedToClipboard
+            ? "WhatsApp opened! Invoice image copied — press Ctrl+V to attach."
+            : "WhatsApp opened! Attach the downloaded invoice image."
+        );
+        setTimeout(() => setToastMessage(''), 5000);
       }
     } catch (err) {
       console.error(err);
