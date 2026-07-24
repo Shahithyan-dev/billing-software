@@ -159,14 +159,19 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen print:h-auto print:min-h-0 bg-white text-slate-800 overflow-hidden print:overflow-visible relative">
-      {/* Sidebar Overlay (All screen sizes) */}
+      {/* Sidebar Overlay (Mobile/Tablet) */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setIsSidebarOpen(false)}>
+        <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setIsSidebarOpen(false)}>
           <div className="absolute top-0 left-0 bottom-0 w-64 bg-[#0b1a30] shadow-2xl transition-transform" onClick={e => e.stopPropagation()}>
             <Sidebar className="w-full h-full flex bg-[#0b1a30]" />
           </div>
         </div>
       )}
+
+      {/* Persistent Sidebar (Desktop) */}
+      <div className="hidden lg:block w-64 shrink-0 border-r border-slate-700 bg-[#0b1a30]">
+        <Sidebar className="w-full h-full flex bg-[#0b1a30]" />
+      </div>
 
       <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible bg-white text-slate-800">
         <header className="sticky top-0 z-30 print:hidden">
@@ -177,7 +182,7 @@ export default function DashboardLayout({
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setIsSidebarOpen(true)}
-                className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 transition-all"
+                className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 transition-all lg:hidden"
               >
                 <Menu className="w-5 h-5" />
               </button>

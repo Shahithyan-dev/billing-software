@@ -80,6 +80,16 @@ export default function SuperAdminDashboard() {
     
     try {
       setLoading(true);
+      const token = localStorage.getItem('adminToken');
+      if (token === 'local-admin-token') {
+        setTimeout(() => {
+          setRestaurants(restaurants.filter(r => r._id !== id));
+          setSuccess('Tenant deleted successfully (Local Mock).');
+          setLoading(false);
+        }, 500);
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/v1/restaurants/${id}`, {
         method: 'DELETE'
       });

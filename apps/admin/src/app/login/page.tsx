@@ -13,12 +13,28 @@ export default function SuperAdminLogin() {
     setLoading(true);
     setError('');
 
-    // Simulate network delay
-    setTimeout(() => {
-      // Bypass backend for local UI testing
-      localStorage.setItem('adminToken', 'local-admin-token');
-      router.push('/dashboard');
-    }, 500);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://billing-software-03up.onrender.com';
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/superadmin-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: e.currentTarget.email.value, password: e.currentTarget.password.value }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        localStorage.setItem('adminToken', data.token);
+        router.push('/dashboard');
+      } else {
+        setError(data.error || 'Invalid credentials');
+      }
+    } catch (err) {
+      setError('Network error connecting to backend.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
