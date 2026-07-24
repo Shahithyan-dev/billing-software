@@ -137,6 +137,7 @@ export default function DashboardLayout({
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
 
     const verifySession = async () => {
+      if (token === 'local-offline-token') return; // Bypass for local UI testing
       try {
         const res = await fetch(`${API_BASE_URL}/api/v1/auth/verify`, {
           headers: { Authorization: `Bearer ${token}` }
