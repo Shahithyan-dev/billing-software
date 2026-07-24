@@ -15,6 +15,7 @@ export default function SuperAdminDashboard() {
   const [bulkMenuText, setBulkMenuText] = useState('');
   const [isBulkPasting, setIsBulkPasting] = useState(false);
   const [selectedSoftware, setSelectedSoftware] = useState<'restaurant' | 'dress' | null>(null);
+  const [currentCategories, setCurrentCategories] = useState<string>('');
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
 
@@ -163,6 +164,8 @@ export default function SuperAdminDashboard() {
   const handleEditTenant = (rest: any) => {
     setEditingTenantId(rest._id);
     setInitialMenu(rest.defaultMenu || []);
+    setSelectedSoftware(rest.businessType || 'restaurant');
+    setCurrentCategories(rest.menuCategories?.join(', ') || '');
     // Populate form fields
     setTimeout(() => {
       const form = document.getElementById('tenant-form') as HTMLFormElement;
@@ -187,7 +190,7 @@ export default function SuperAdminDashboard() {
           setVal('whatsappToken', rest.whatsappToken);
           setVal('whatsappBusinessId', rest.whatsappBusinessId);
         }
-        setVal('menuCategories', rest.menuCategories?.join(', '));
+        // Menu categories is controlled by state now, but we set it above.
       }
       
       // Update sidebar features
@@ -322,7 +325,7 @@ export default function SuperAdminDashboard() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full">
             {/* Restaurant Software Card */}
             <div 
-              onClick={() => setSelectedSoftware('restaurant')}
+              onClick={() => { setSelectedSoftware('restaurant'); setCurrentCategories(RESTAURANT_MENU_CATEGORIES.join(', ')); }}
               className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-indigo-100/50 hover:shadow-indigo-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
             >
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -338,7 +341,7 @@ export default function SuperAdminDashboard() {
 
             {/* Dress/Retail Software Card */}
             <div 
-              onClick={() => setSelectedSoftware('dress')}
+              onClick={() => { setSelectedSoftware('dress'); setCurrentCategories(DRESS_MENU_CATEGORIES.join(', ')); }}
               className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-indigo-100/50 hover:shadow-indigo-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
             >
               <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -491,7 +494,7 @@ export default function SuperAdminDashboard() {
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Menu Categories (Comma separated)</label>
-                      <input name="menuCategories" placeholder="Starters, Mains" defaultValue="Breakfast, Lunch, Dinner, Snacks, Beverages" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="menuCategories" placeholder="Starters, Mains" value={currentCategories} onChange={(e) => setCurrentCategories(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                   </div>
                   
@@ -516,7 +519,7 @@ export default function SuperAdminDashboard() {
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Product Categories (Comma separated)</label>
-                      <input name="menuCategories" placeholder="Shirts, Sarees, Kurtis" defaultValue="Sarees, Kurtis, Lehengas, Shirts, Jeans" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="menuCategories" placeholder="Shirts, Sarees, Kurtis" value={currentCategories} onChange={(e) => setCurrentCategories(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                   </div>
                   
@@ -640,7 +643,7 @@ export default function SuperAdminDashboard() {
                           onChange={(e) => handleUpdateMenuItem(item.id, 'category', e.target.value)}
                           className="w-24 px-2 py-1.5 text-sm bg-transparent border border-slate-200 rounded-md focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-600"
                         >
-                          {(selectedSoftware === 'dress' ? DRESS_MENU_CATEGORIES : RESTAURANT_MENU_CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
+                          {currentCategories.split(',').map(c => c.trim()).filter(Boolean).map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                         {selectedSoftware === 'restaurant' ? (
                           <select 
