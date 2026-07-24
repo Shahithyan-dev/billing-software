@@ -494,14 +494,18 @@ export default function POSPage() {
           URL.revokeObjectURL(downloadUrl);
         }
 
-        // Navigate the pre-opened WhatsApp window to the customer's chat
+        // Open WhatsApp using anchor click (bypasses popup blockers)
         const waUrl = `https://wa.me/${formattedPhone}?text=${billText}`;
-        if (waWindow && !waWindow.closed) {
-          waWindow.location.href = waUrl;
-        } else {
-          // Fallback if pre-opened window was closed
-          window.open(waUrl, '_blank');
-        }
+        const waLink = document.createElement('a');
+        waLink.href = waUrl;
+        waLink.target = '_blank';
+        waLink.rel = 'noopener noreferrer';
+        document.body.appendChild(waLink);
+        waLink.click();
+        document.body.removeChild(waLink);
+
+        // Close the pre-opened blank window if still open
+        if (waWindow && !waWindow.closed) waWindow.close();
 
         setToastMessage(
           copiedToClipboard
