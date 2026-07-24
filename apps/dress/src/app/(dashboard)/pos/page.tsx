@@ -843,9 +843,9 @@ export default function POSPage() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                window.print();
-                handleSaveOrder();
+              onClick={async () => {
+                const saved = await handleSaveOrder();
+                if (saved) window.print();
               }}
               className="py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-black text-sm tracking-wide shadow-lg transition-all flex justify-center items-center gap-2 rounded-xl active:scale-95"
             >

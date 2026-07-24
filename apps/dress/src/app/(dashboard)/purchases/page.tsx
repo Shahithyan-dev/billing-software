@@ -104,6 +104,20 @@ export default function PurchasesPage() {
 
     try {
       await db.purchases.add(newPurchase);
+
+      // Increase stock for each purchased item by matching name
+      for (const purchasedItem of itemsList) {
+        if (!purchasedItem.name) continue;
+        const allItems = await db.menuItems.toArray();
+        const matched = allItems.find(m =>
+          m.name.toLowerCase().trim() === purchasedItem.name.toLowerCase().trim()
+        );
+        if (matched) {
+          const newStock = (matched.stock || 0) + purchasedItem.qty;
+          await db.menuItems.update(matched.id, { stock: newStock });
+        }
+      }
+
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
