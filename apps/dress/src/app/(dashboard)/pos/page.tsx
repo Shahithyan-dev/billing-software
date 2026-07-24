@@ -91,32 +91,12 @@ export default function POSPage() {
   // Load store config
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // For this local retail version, we bypass backend fetch to prevent "Failed to fetch" errors.
       const stored = localStorage.getItem('servewell_restaurant_details');
       if (stored) {
-        setRestaurantData(JSON.parse(stored));
-      }
-      
-      const restId = localStorage.getItem('restaurantId');
-      if (restId) {
-        fetch(`${API_BASE_URL}/api/v1/restaurants/${restId}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success && data.data) {
-              const fresh = {
-                name: data.data.name || '',
-                tagline: data.data.tagline || '',
-                phone: data.data.phone || '',
-                gstin: data.data.gstin || '',
-                logo: data.data.logo || '',
-                whatsappNumber: data.data.whatsappNumber || '',
-                whatsappToken: data.data.whatsappToken || '',
-                whatsappBusinessId: data.data.whatsappBusinessId || ''
-              };
-              setRestaurantData(fresh);
-              localStorage.setItem('servewell_restaurant_details', JSON.stringify(fresh));
-            }
-          })
-          .catch(err => console.error(err));
+        const parsed = JSON.parse(stored);
+        // If it accidentally loaded old restaurant data like SUVAI, we can override or let them update via settings.
+        setRestaurantData(parsed);
       }
     }
   }, []);
