@@ -50,34 +50,44 @@ const Login = () => {
 
         // Fetch tenant details to sync DB
         try {
-          const tenantRes = await fetch(`${API_BASE_URL}/api/v1/restaurants/${data.restaurantId || 'local-shop'}`, {
-            headers: { Authorization: `Bearer ${data.token}` }
-          });
-          const tenantData = await tenantRes.json();
-          if (tenantData.success && tenantData.data) {
-            const t = tenantData.data;
-            // Normalize field names so POS always finds .name, .phone, etc.
-            const normalized = {
-              name: t.name || t.restaurantName || t.shopName || t.storeName || 'Retail Store',
-              tagline: t.tagline || t.description || '',
-              phone: t.phone || t.contactPhone || t.mobile || '',
-              gstin: t.gstin || t.gst || '',
-              address: t.address || '',
-              logo: t.logo || '',
-              whatsappNumber: t.whatsappNumber || '',
-              whatsappToken: t.whatsappToken || '',
-              whatsappBusinessId: t.whatsappBusinessId || ''
-            };
-            localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
-            
-            if (t.defaultMenu && t.defaultMenu.length > 0) {
-              await db.menuItems.clear();
-              const itemsToInsert = t.defaultMenu.map((m: any) => ({
-                ...m,
-                id: m.id || crypto.randomUUID(),
-                type: m.type || 'standard'
-              }));
-              await db.menuItems.bulkAdd(itemsToInsert);
+          const rid = data.restaurantId;
+          if (rid) {
+            const tenantRes = await fetch(`${API_BASE_URL}/api/v1/restaurants/${rid}`, {
+              headers: { Authorization: `Bearer ${data.token}` }
+            });
+            const tenantData = await tenantRes.json();
+            console.log('Tenant sync response:', tenantData);
+            if (tenantData.success && tenantData.data) {
+              const t = tenantData.data;
+              // Normalize field names so POS always finds .name, .phone, etc.
+              const normalized = {
+                name: t.name || t.restaurantName || t.shopName || t.storeName || 'Retail Store',
+                tagline: t.tagline || t.description || '',
+                phone: t.phone || t.contactPhone || t.mobile || '',
+                gstin: t.gstin || t.gst || '',
+                address: t.address || '',
+                logo: t.logo || '',
+                whatsappNumber: t.whatsappNumber || '',
+                whatsappToken: t.whatsappToken || '',
+                whatsappBusinessId: t.whatsappBusinessId || ''
+              };
+              localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
+              
+              if (t.defaultMenu && t.defaultMenu.length > 0) {
+                await db.menuItems.clear();
+                const itemsToInsert = t.defaultMenu.map((m: any) => ({
+                  ...m,
+                  id: String(m.id || crypto.randomUUID()),
+                  price: Number(m.price) || 0,
+                  purchasePrice: Number(m.purchasePrice) || 0,
+                  stock: Number(m.stock) || 0,
+                  type: m.type || 'standard',
+                  img: m.img || ''
+                }));
+                // Use bulkPut so it works even if items already exist
+                await db.menuItems.bulkPut(itemsToInsert);
+                console.log(`Synced ${itemsToInsert.length} items from backend`);
+              }
             }
           }
         } catch (e) {
