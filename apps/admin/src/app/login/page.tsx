@@ -16,7 +16,7 @@ export default function SuperAdminLogin() {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://billing-software-03up.onrender.com';
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/superadmin-login`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: e.currentTarget.email.value, password: e.currentTarget.password.value }),
@@ -25,6 +25,11 @@ export default function SuperAdminLogin() {
       const data = await response.json();
       
       if (data.success) {
+        if (data.role !== 'superadmin') {
+          setError('Access denied. Super Admin role required.');
+          setLoading(false);
+          return;
+        }
         localStorage.setItem('adminToken', data.token);
         router.push('/dashboard');
       } else {
