@@ -122,6 +122,13 @@ export default function ItemsPage() {
     setImg('');
   };
 
+  // Calculate Inventory Values
+  const totalCost = items.reduce((sum, item) => sum + ((item.purchasePrice || 0) * (item.stock || 0)), 0);
+  const totalRetail = items.reduce((sum, item) => sum + ((item.price || 0) * (item.stock || 0)), 0);
+  const totalPotentialProfit = totalRetail - totalCost;
+  const potentialMargin = totalRetail > 0 ? (totalPotentialProfit / totalRetail) * 100 : 0;
+  const totalStockItems = items.reduce((sum, item) => sum + (item.stock || 0), 0);
+
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
       {/* Title Header */}
@@ -139,6 +146,26 @@ export default function ItemsPage() {
         >
           <Plus className="w-4 h-4" /> Add New Item
         </button>
+      </div>
+
+      {/* KPI Header */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Total Stock Units</span>
+          <h3 className="text-2xl font-black text-slate-800">{totalStockItems} items</h3>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Total Cost Value</span>
+          <h3 className="text-2xl font-black text-slate-800">₹ {totalCost.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 shadow-sm">
+          <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Estimated Retail Value</span>
+          <h3 className="text-2xl font-black text-amber-600">₹ {totalRetail.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+        </div>
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+          <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block mb-1">Est. Profit ({potentialMargin.toFixed(1)}%)</span>
+          <h3 className="text-2xl font-black text-emerald-600">₹ {totalPotentialProfit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+        </div>
       </div>
 
       {/* Filter / Search Bar */}
