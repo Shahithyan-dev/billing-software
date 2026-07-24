@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '@/lib/db';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -156,6 +157,61 @@ export default function DashboardLayout({
     const interval = setInterval(verifySession, 30000);
     return () => clearInterval(interval);
   }, [router]);
+
+  // Sync tenant data + items from backend on every load
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    const rid = localStorage.getItem('restaurantId');
+    if (!token || !rid || token === 'local-offline-token') return;
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
+
+    const syncTenant = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/restaurants/${rid}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          const t = data.data;
+          const normalized = {
+            name: t.name || t.restaurantName || t.shopName || 'Retail Store',
+            tagline: t.tagline || '',
+            phone: t.phone || '',
+            gstin: t.gstin || '',
+            address: t.address || '',
+            logo: t.logo || '',
+            whatsappNumber: t.whatsappNumber || '',
+            whatsappToken: t.whatsappToken || '',
+            whatsappBusinessId: t.whatsappBusinessId || ''
+          };
+          localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
+
+          if (t.defaultMenu && t.defaultMenu.length > 0) {
+            const currentCount = await db.menuItems.count();
+            // Always sync if the backend has more items than local
+            if (currentCount !== t.defaultMenu.length) {
+              await db.menuItems.clear();
+              const itemsToInsert = t.defaultMenu.map((m: any) => ({
+                ...m,
+                id: String(m.id || crypto.randomUUID()),
+                price: Number(m.price) || 0,
+                purchasePrice: Number(m.purchasePrice) || 0,
+                stock: Number(m.stock) || 0,
+                type: m.type || 'standard',
+                img: m.img || ''
+              }));
+              await db.menuItems.bulkPut(itemsToInsert);
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore network errors silently
+      }
+    };
+
+    syncTenant();
+  }, []);
 
   return (
     <div className="flex h-screen print:h-auto print:min-h-0 bg-white text-slate-800 overflow-hidden print:overflow-visible relative">
