@@ -85,7 +85,8 @@ export default function POSPage() {
     logo: "",
     whatsappNumber: "",
     whatsappToken: "",
-    whatsappBusinessId: ""
+    whatsappBusinessId: "",
+    address: ""
   });
 
   // Load store config
