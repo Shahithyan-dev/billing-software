@@ -343,7 +343,6 @@ export default function InvoiceViewPage() {
       </div>
 
       </div>
-
     </div>
   );
 }
