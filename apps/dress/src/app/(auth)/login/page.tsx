@@ -43,75 +43,113 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center bg-[#f0f4f8] p-4 md:p-8 relative">
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#f0f4f8] via-[#e2e8f0]/80 to-transparent" />
+    <div className="min-h-screen w-full flex items-center bg-black overflow-hidden relative font-sans">
+      {/* Dynamic Background Image */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60 scale-105 transition-transform duration-[20s] hover:scale-100"
+        style={{ backgroundImage: 'url("/login-bg.png")' }}
+      />
+      
+      {/* Premium Gradient Overlay */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent md:from-black/90 md:via-black/70 md:to-black/30" />
 
-      {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 md:p-12 ml-0 md:ml-12 border border-[#e2e8f0]">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-24 h-24 flex items-center justify-center mb-4">
-            <Logo className="w-full h-full drop-shadow-md" />
+      {/* Main Content Container */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-between items-center px-4 md:px-12 h-screen">
+        
+        {/* Left Side: Branding / Marketing */}
+        <div className="hidden md:flex flex-col text-white max-w-lg pb-20">
+          <div className="w-28 h-28 flex items-center justify-center mb-8 bg-white/10 p-5 rounded-3xl backdrop-blur-md border border-white/20 shadow-2xl">
+            <Logo className="w-full h-full drop-shadow-xl" />
           </div>
-          <h1 className="text-3xl font-black text-[#1e293b] mb-2 tracking-tight">RetailBill</h1>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center">
-            Dress Shop Billing System
+          <h1 className="text-6xl font-black mb-4 tracking-tight leading-tight">
+            Elevate Your <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-300">Retail Experience.</span>
+          </h1>
+          <p className="text-lg text-slate-300 font-medium leading-relaxed mt-4 border-l-2 border-rose-500 pl-6">
+            State-of-the-art billing, seamless inventory management, and digital WhatsApp receipts designed exclusively for modern fashion boutiques.
           </p>
         </div>
 
-        <div className="text-center mb-8">
-          <h2 className="text-xl font-bold text-[#1e293b]">Simple Billing.</h2>
-          <h2 className="text-xl font-bold text-[#1e293b]">Faster Checkout.</h2>
-          <p className="text-sm text-muted-foreground mt-2">All in one solution for retail billing, inventory and WhatsApp receipts.</p>
-        </div>
+        {/* Right Side: Glassmorphism Login Card */}
+        <div className="w-full max-w-md mx-auto md:mx-0">
+          <div className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-white/20 relative overflow-hidden group">
+            
+            {/* Subtle glow effect inside the card */}
+            <div className="absolute -top-32 -right-32 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl transition-opacity duration-700 opacity-50 group-hover:opacity-100" />
+            <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl transition-opacity duration-700 opacity-50 group-hover:opacity-100" />
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-200">
-            {error}
-          </div>
-        )}
+            <div className="relative z-10">
+              <div className="flex flex-col items-center md:items-start mb-10">
+                <div className="md:hidden w-20 h-20 flex items-center justify-center mb-6 bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/20">
+                  <Logo className="w-full h-full drop-shadow-md" />
+                </div>
+                <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome Back</h2>
+                <p className="text-sm font-medium text-slate-300">Log in to manage your boutique.</p>
+              </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input 
-              name="email"
-              type="email" 
-              required
-              placeholder="Email address" 
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all"
-            />
+              {error && (
+                <div className="bg-red-500/20 text-red-200 p-4 rounded-xl text-sm mb-6 border border-red-500/30 backdrop-blur-md flex items-center gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input 
+                      name="email"
+                      type="email" 
+                      required
+                      placeholder="admin@heybro.com" 
+                      className="w-full pl-12 pr-4 py-4 bg-black/40 border border-white/10 rounded-2xl focus:outline-none focus:border-rose-400/50 focus:ring-1 focus:ring-rose-400/50 transition-all text-white placeholder-slate-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center ml-1">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Password</label>
+                    <a href="#" className="text-xs font-medium text-rose-400 hover:text-rose-300 transition-colors">Forgot?</a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input 
+                      name="password"
+                      type={showPassword ? "text" : "password"} 
+                      required
+                      placeholder="••••••••" 
+                      className="w-full pl-12 pr-12 py-4 bg-black/40 border border-white/10 rounded-2xl focus:outline-none focus:border-rose-400/50 focus:ring-1 focus:ring-rose-400/50 transition-all text-white placeholder-slate-500"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 pb-4">
+                  <input type="checkbox" id="remember" className="rounded-md border-white/20 bg-black/40 text-rose-500 focus:ring-rose-500/50 cursor-pointer" />
+                  <label htmlFor="remember" className="text-sm text-slate-300 cursor-pointer select-none">Keep me securely logged in</label>
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-bold rounded-2xl bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 shadow-lg shadow-rose-500/30 text-white border border-white/10 transition-all duration-300 hover:scale-[1.02]">
+                  {loading ? 'Authenticating...' : 'Access Dashboard'}
+                </Button>
+              </form>
+            </div>
           </div>
           
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input 
-              name="password"
-              type={showPassword ? "text" : "password"} 
-              required
-              placeholder="Password" 
-              className="w-full pl-12 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all"
-            />
-            <button 
-              type="button" 
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 focus:outline-none"
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
+          <div className="mt-8 text-center">
+            <p className="text-xs text-slate-400 font-medium tracking-wide">
+              Protected by ServeWell Security &copy; 2026
+            </p>
           </div>
-
-          <div className="flex items-center justify-between text-sm py-2">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-500">
-              <input type="checkbox" className="rounded text-rose-500 border-slate-200 focus:ring-rose-500" />
-              Remember Me
-            </label>
-            <a href="#" className="text-rose-600 font-medium hover:underline">Forgot Password?</a>
-          </div>
-
-          <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-bold rounded-xl bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-600/20 text-white">
-            {loading ? 'Logging in...' : 'Login'}
-          </Button>
-        </form>
+        </div>
 
       </div>
     </div>

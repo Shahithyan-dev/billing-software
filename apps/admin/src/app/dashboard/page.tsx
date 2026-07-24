@@ -36,6 +36,7 @@ export default function SuperAdminDashboard() {
     
     // Verify session every 30 seconds
     const verifySession = async () => {
+      if (token === 'local-admin-token') return; // Bypass for local UI testing
       try {
         const res = await fetch(`${API_BASE_URL}/api/v1/auth/verify`, {
           headers: { Authorization: `Bearer ${token}` }
