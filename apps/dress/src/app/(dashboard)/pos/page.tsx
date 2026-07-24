@@ -274,21 +274,33 @@ export default function POSPage() {
       
       // Deduct stock for each sold item
       for (const row of validRows) {
-        let itemToUpdate = undefined;
-        
-        if (row.itemId) {
-          itemToUpdate = await db.menuItems.get(row.itemId);
-        } else if (row.name) {
-          // Fallback: match by name if user manually typed it in the row
-          const allItems = await db.menuItems.toArray();
-          // Extract base name ignoring sizes like "(XL)" at the end
-          const baseNameMatch = row.name.replace(/\(.*?\)/g, '').trim().toLowerCase();
-          itemToUpdate = allItems.find(m => m.name.toLowerCase().trim() === baseNameMatch || m.name.toLowerCase().trim() === row.name.toLowerCase().trim());
-        }
+        try {
+          console.log("[STOCK DEDUCTION] Processing row:", row.name, "qty:", row.qty, "itemId:", row.itemId);
+          let itemToUpdate = undefined;
+          
+          if (row.itemId) {
+            itemToUpdate = await db.menuItems.get(row.itemId);
+            console.log("[STOCK DEDUCTION] Searched by itemId. Found:", !!itemToUpdate);
+          } else if (row.name) {
+            // Fallback: match by name if user manually typed it in the row
+            const allItems = await db.menuItems.toArray();
+            const baseNameMatch = row.name.replace(/\(.*?\)/g, '').trim().toLowerCase();
+            itemToUpdate = allItems.find(m => m.name.toLowerCase().trim() === baseNameMatch || m.name.toLowerCase().trim() === row.name.toLowerCase().trim());
+            console.log("[STOCK DEDUCTION] Searched by name. Found:", !!itemToUpdate);
+          }
 
-        if (itemToUpdate && itemToUpdate.stock !== undefined) {
-          const newStock = Math.max(0, (itemToUpdate.stock || 0) - row.qty);
-          await db.menuItems.update(itemToUpdate.id, { stock: newStock });
+          if (itemToUpdate) {
+            const currentStock = Number(itemToUpdate.stock) || 0;
+            const newStock = Math.max(0, currentStock - Number(row.qty));
+            console.log(`[STOCK DEDUCTION] Item ${itemToUpdate.name}: Current stock: ${currentStock}, Qty sold: ${row.qty}, New stock: ${newStock}`);
+            
+            const updatedRows = await db.menuItems.update(itemToUpdate.id, { stock: newStock });
+            console.log(`[STOCK DEDUCTION] Update successful, rows affected:`, updatedRows);
+          } else {
+            console.warn(`[STOCK DEDUCTION] Could not find item in DB for row:`, row.name);
+          }
+        } catch (stockErr) {
+          console.error(`[STOCK DEDUCTION] Error processing row ${row.name}:`, stockErr);
         }
       }
 

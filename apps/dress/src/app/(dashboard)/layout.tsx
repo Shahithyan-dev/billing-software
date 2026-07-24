@@ -189,8 +189,9 @@ export default function DashboardLayout({
 
           if (t.defaultMenu && t.defaultMenu.length > 0) {
             const currentCount = await db.menuItems.count();
-            // Always sync if the backend has more items than local
-            if (currentCount !== t.defaultMenu.length) {
+            // Only sync from backend if local DB is completely empty. 
+            // This prevents overwriting local stock deductions during local testing.
+            if (currentCount === 0) {
               await db.menuItems.clear();
               const itemsToInsert = t.defaultMenu.map((m: any) => ({
                 ...m,

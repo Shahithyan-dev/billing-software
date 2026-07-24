@@ -54,11 +54,11 @@ function InvoiceViewContent() {
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [store, setStore] = useState({
-    name: "HEY BRO CLOTHINGS",
-    tagline: "Premium Mens Wear & Accessories",
-    phone: "8428507630",
-    gstin: "33IQKPK2052L1ZM",
-    address: "HEYBRO ,MMB COMPLEX E PUDUR, TRICHY"
+    name: "Retail Store",
+    tagline: "",
+    phone: "9876543210",
+    gstin: "",
+    address: "123 Retail Street, City, State"
   });
 
   useEffect(() => {
@@ -77,7 +77,7 @@ function InvoiceViewContent() {
             .then(storeRes => {
               if (storeRes.success && storeRes.data) {
                 setStore({
-                  name: storeRes.data.name || 'HEY BRO CLOTHINGS',
+                  name: storeRes.data.name || 'Retail Store',
                   tagline: storeRes.data.tagline || '',
                   phone: storeRes.data.phone || '',
                   gstin: storeRes.data.gstin || '',
