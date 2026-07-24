@@ -55,11 +55,24 @@ const Login = () => {
           });
           const tenantData = await tenantRes.json();
           if (tenantData.success && tenantData.data) {
-            localStorage.setItem('servewell_restaurant_details', JSON.stringify(tenantData.data));
+            const t = tenantData.data;
+            // Normalize field names so POS always finds .name, .phone, etc.
+            const normalized = {
+              name: t.name || t.restaurantName || t.shopName || t.storeName || 'Retail Store',
+              tagline: t.tagline || t.description || '',
+              phone: t.phone || t.contactPhone || t.mobile || '',
+              gstin: t.gstin || t.gst || '',
+              address: t.address || '',
+              logo: t.logo || '',
+              whatsappNumber: t.whatsappNumber || '',
+              whatsappToken: t.whatsappToken || '',
+              whatsappBusinessId: t.whatsappBusinessId || ''
+            };
+            localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
             
-            if (tenantData.data.defaultMenu && tenantData.data.defaultMenu.length > 0) {
+            if (t.defaultMenu && t.defaultMenu.length > 0) {
               await db.menuItems.clear();
-              const itemsToInsert = tenantData.data.defaultMenu.map((m: any) => ({
+              const itemsToInsert = t.defaultMenu.map((m: any) => ({
                 ...m,
                 id: m.id || crypto.randomUUID(),
                 type: m.type || 'standard'

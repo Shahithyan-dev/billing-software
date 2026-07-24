@@ -272,6 +272,17 @@ export default function POSPage() {
     try {
       await db.orders.add(orderData);
       
+      // Deduct stock for each sold item
+      for (const row of validRows) {
+        if (row.itemId) {
+          const item = await db.menuItems.get(row.itemId);
+          if (item && item.stock !== undefined) {
+            const newStock = Math.max(0, (item.stock || 0) - row.qty);
+            await db.menuItems.update(row.itemId, { stock: newStock });
+          }
+        }
+      }
+
       // If customer phone is set and not existing, save customer to parties
       if (customerPhone && customerName) {
         const partyExists = dbParties.some(p => p.phone === customerPhone);
