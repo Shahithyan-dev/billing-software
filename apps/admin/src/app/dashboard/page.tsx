@@ -212,8 +212,8 @@ export default function SuperAdminDashboard() {
     const captainsArray = captainsStr ? captainsStr.split(',').map(s => s.trim()).filter(s => s) : (selectedSoftware === 'dress' ? ['Salesperson 1'] : ['Captain']);
     const menuCategoriesArray = menuCategoriesStr ? menuCategoriesStr.split(',').map(s => s.trim()).filter(s => s) : (selectedSoftware === 'dress' ? DRESS_MENU_CATEGORIES : RESTAURANT_MENU_CATEGORIES);
 
-    let tablesArray = [];
-    let diningAreasArray = [];
+    let tablesArray: string[] = [];
+    let diningAreasArray: string[] = [];
     let whatsappNumber = '';
     let whatsappToken = '';
     let whatsappBusinessId = '';
