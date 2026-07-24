@@ -12,12 +12,24 @@ import { db } from '@/lib/db';
 
 const Dashboard = () => {
   const allOrders = useLiveQuery(() => db.orders.toArray(), []) || [];
+  const menuItems = useLiveQuery(() => db.menuItems.toArray(), []) || [];
   
   // Calculate today's metrics
   const today = new Date().setHours(0,0,0,0);
   const todayOrders = allOrders.filter(o => o.timestamp >= today);
   
   const totalSales = todayOrders.reduce((sum, order) => sum + order.total, 0);
+  
+  const todayProfit = todayOrders.reduce((sum, order) => {
+    const cost = order.items.reduce((c, item) => {
+      const invItem = menuItems.find(mi => mi.name === item.name);
+      return c + ((invItem?.purchasePrice || 0) * item.quantity);
+    }, 0);
+    const revenue = order.subtotal - order.discount;
+    return sum + (revenue - cost);
+  }, 0);
+  const marginPercentage = totalSales > 0 ? (todayProfit / totalSales) * 100 : 0;
+
   const totalOrdersCount = todayOrders.length;
   const pendingOrders = todayOrders.filter(o => o.syncStatus === 'pending').length;
   const activeTables = todayOrders.filter(o => o.orderType === 'Dine-In' && o.syncStatus === 'pending').length;
@@ -79,8 +91,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { title: "Total Sales", value: `₹${totalSales.toLocaleString()}`, trend: "Live", icon: IndianRupee, color: "text-green-600", bg: "bg-green-100", up: true },
+          { title: "Today's Profit", value: `₹${todayProfit.toLocaleString()}`, trend: `${marginPercentage.toFixed(1)}% Margin`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-100", up: todayProfit >= 0 },
           { title: "Total Orders", value: totalOrdersCount.toString(), trend: "Today", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-100", up: true },
-          { title: "Pending Sync", value: pendingOrders.toString(), trend: "Unsynced", icon: Clock, color: "text-orange-600", bg: "bg-orange-100", up: false },
           { title: "Total Items", value: Array.from(itemMap.keys()).length.toString(), trend: "Unique", icon: Users, color: "text-purple-600", bg: "bg-purple-100", up: true },
         ].map((kpi, idx) => (
           <div key={idx} className="bg-white border border-[#e3e3df] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">

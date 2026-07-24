@@ -66,6 +66,17 @@ export default function SalesPage() {
   };
 
   const totalSalesVolume = orders.reduce((sum, o) => sum + o.total, 0);
+  
+  const totalProfitVolume = orders.reduce((sum, order) => {
+    const cost = order.items.reduce((c, item) => {
+      const invItem = menuItems.find(mi => mi.name === item.name);
+      return c + ((invItem?.purchasePrice || 0) * item.quantity);
+    }, 0);
+    const revenue = order.subtotal - order.discount;
+    return sum + (revenue - cost);
+  }, 0);
+  
+  const marginPercentage = totalSalesVolume > 0 ? (totalProfitVolume / totalSalesVolume) * 100 : 0;
 
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
@@ -75,9 +86,15 @@ export default function SalesPage() {
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Sale Invoices</h1>
           <p className="text-slate-500 text-sm font-medium mt-1">Review retail sales transactions and dispatch WhatsApp receipts</p>
         </div>
-        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-right">
-          <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Total Sales (Offline)</span>
-          <h3 className="text-2xl font-black text-amber-600">₹ {totalSalesVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+        <div className="flex gap-4">
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-right">
+            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Est. Profit ({marginPercentage.toFixed(1)}%)</span>
+            <h3 className="text-2xl font-black text-emerald-600">₹ {totalProfitVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+          </div>
+          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-right">
+            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Total Sales (Offline)</span>
+            <h3 className="text-2xl font-black text-amber-600">₹ {totalSalesVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
+          </div>
         </div>
       </div>
 
@@ -229,31 +246,6 @@ export default function SalesPage() {
                       <span>Grand Total</span>
                       <span className="text-amber-600 font-mono">₹ {selectedOrder.total.toFixed(2)}</span>
                     </div>
-                    
-                    {(() => {
-                      const cost = selectedOrder.items.reduce((sum, item) => {
-                        const invItem = menuItems.find(mi => mi.name === item.name);
-                        return sum + ((invItem?.purchasePrice || 0) * item.quantity);
-                      }, 0);
-                      const revenue = selectedOrder.subtotal - selectedOrder.discount;
-                      const profit = revenue - cost;
-                      const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-                      return (
-                        <div className="mt-4 p-3 bg-white rounded-xl border border-slate-200 text-xs shadow-sm">
-                          <div className="flex justify-between font-bold text-slate-500 mb-1">
-                            <span>Estimated Cost</span>
-                            <span className="font-mono">₹ {cost.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between font-bold text-slate-700">
-                            <span>Est. Profit Margin</span>
-                            <span className={`font-mono font-black ${profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                              ₹ {profit.toFixed(2)} <span className="text-[10px] bg-emerald-50 px-1 rounded ml-1">{margin.toFixed(1)}%</span>
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
                   </div>
 
                   <a
