@@ -42,16 +42,29 @@ const Login = () => {
       
       if (data.success) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('restaurantId', data.restaurantId || 'local-shop');
         localStorage.setItem('role', data.role || 'admin');
+
+        // Extract restaurantId from response OR decode JWT payload as fallback
+        let rid = data.restaurantId;
+        if (!rid && data.token) {
+          try {
+            const payload = JSON.parse(atob(data.token.split('.')[1]));
+            rid = payload.restaurantId;
+            console.log('Got restaurantId from JWT:', rid);
+          } catch {}
+        }
+        localStorage.setItem('restaurantId', rid || 'local-shop');
+
         if (data.sidebarFeatures) {
           localStorage.setItem('servewell_sidebar', JSON.stringify(data.sidebarFeatures));
         }
 
+        // Clear old cached data so fresh data is always shown
+        localStorage.removeItem('servewell_restaurant_details');
+
         // Fetch tenant details to sync DB
-        try {
-          const rid = data.restaurantId;
-          if (rid) {
+        if (rid && rid !== 'local-shop') {
+          try {
             const tenantRes = await fetch(`${API_BASE_URL}/api/v1/restaurants/${rid}`, {
               headers: { Authorization: `Bearer ${data.token}` }
             });
@@ -59,12 +72,11 @@ const Login = () => {
             console.log('Tenant sync response:', tenantData);
             if (tenantData.success && tenantData.data) {
               const t = tenantData.data;
-              // Normalize field names so POS always finds .name, .phone, etc.
               const normalized = {
-                name: t.name || t.restaurantName || t.shopName || t.storeName || 'Retail Store',
-                tagline: t.tagline || t.description || '',
-                phone: t.phone || t.contactPhone || t.mobile || '',
-                gstin: t.gstin || t.gst || '',
+                name: t.name || t.restaurantName || t.shopName || 'Retail Store',
+                tagline: t.tagline || '',
+                phone: t.phone || '',
+                gstin: t.gstin || '',
                 address: t.address || '',
                 logo: t.logo || '',
                 whatsappNumber: t.whatsappNumber || '',
@@ -72,7 +84,7 @@ const Login = () => {
                 whatsappBusinessId: t.whatsappBusinessId || ''
               };
               localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
-              
+
               if (t.defaultMenu && t.defaultMenu.length > 0) {
                 await db.menuItems.clear();
                 const itemsToInsert = t.defaultMenu.map((m: any) => ({
@@ -84,14 +96,13 @@ const Login = () => {
                   type: m.type || 'standard',
                   img: m.img || ''
                 }));
-                // Use bulkPut so it works even if items already exist
                 await db.menuItems.bulkPut(itemsToInsert);
-                console.log(`Synced ${itemsToInsert.length} items from backend`);
+                console.log(`✅ Synced ${itemsToInsert.length} items from backend`);
               }
             }
+          } catch (e) {
+            console.error("Failed to sync tenant data", e);
           }
-        } catch (e) {
-          console.error("Failed to sync tenant data", e);
         }
 
         navigate('/pos');
