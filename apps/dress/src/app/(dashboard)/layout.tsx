@@ -28,7 +28,7 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedFeatures = localStorage.getItem('servewell_sidebar');
+      const storedFeatures = localStorage.getItem('zyncobill_sidebar');
       if (storedFeatures) {
         setAllowedFeatures(JSON.parse(storedFeatures));
       } else {
@@ -56,7 +56,7 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
         </div>
         <div>
           <h1 className="text-xl font-black tracking-tight text-white leading-none">RetailBill</h1>
-          <p className="text-[10px] text-amber-400 font-bold mt-1">Smart Retail Billing</p>
+          <p className="text-[10px] text-amber-400 font-bold mt-1">Smart ZyncoBilling</p>
         </div>
       </div>
       
@@ -185,7 +185,7 @@ export default function DashboardLayout({
             whatsappToken: t.whatsappToken || '',
             whatsappBusinessId: t.whatsappBusinessId || ''
           };
-          localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
+          localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(normalized));
 
 
         }

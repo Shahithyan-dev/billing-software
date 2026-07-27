@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ServeWell - Restaurant OS',
+  title: 'ZyncoBill - Restaurant OS',
   description: 'Better Management. Better Business.',
 };
 

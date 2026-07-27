@@ -26,7 +26,7 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedFeatures = localStorage.getItem('servewell_sidebar');
+      const storedFeatures = localStorage.getItem('zyncobill_sidebar');
       if (storedFeatures) {
         setAllowedFeatures(JSON.parse(storedFeatures));
       } else {
@@ -55,10 +55,10 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
     <aside className={`bg-card border-r border-border h-screen flex-col z-50 ${className}`}>
       <div className="h-20 flex items-center px-6 gap-3 pt-4 border-b border-white/10 pb-4">
         <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-white rounded-lg p-1.5">
-          <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain mix-blend-multiply" />
+          <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain mix-blend-multiply" />
         </div>
         <div>
-          <h1 className="text-xl font-black tracking-tight text-white leading-none">ServeWell</h1>
+          <h1 className="text-xl font-black tracking-tight text-white leading-none">ZyncoBill</h1>
           <p className="text-[10px] text-gray-400 font-medium mt-1">Better Service, Smarter Business</p>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function DashboardLayout({
             {/* Desktop Logo */}
             <div className="hidden sm:flex items-center gap-3 bg-gradient-to-r from-[#1a2318] to-[#2c332c] text-white px-4 py-2.5 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-all hover:-translate-y-0.5">
                <div className="bg-white p-1 rounded-lg shadow-sm">
-                 <img src="/logo.png" alt="ServeWell" className="w-6 h-6 object-contain" />
+                 <img src="/logo.png" alt="ZyncoBill" className="w-6 h-6 object-contain" />
                </div>
                <span className="font-black text-sm tracking-wider">SERVEWELL</span>
             </div>
@@ -193,7 +193,7 @@ export default function DashboardLayout({
             {/* Mobile Logo */}
             <div className="flex sm:hidden items-center gap-2 bg-[#1a2318] text-white px-3 py-2 rounded-xl shadow-md cursor-pointer">
                <div className="bg-white p-0.5 rounded shadow-sm">
-                 <img src="/logo.png" alt="ServeWell" className="w-5 h-5 object-contain" />
+                 <img src="/logo.png" alt="ZyncoBill" className="w-5 h-5 object-contain" />
                </div>
                <span className="font-black text-[11px] tracking-wider">SERVEWELL</span>
             </div>

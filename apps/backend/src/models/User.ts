@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
   restaurantId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Restaurant',
-    required: function() {
+    required: function(): boolean {
       // @ts-ignore
       return this.role !== 'superadmin';
     }

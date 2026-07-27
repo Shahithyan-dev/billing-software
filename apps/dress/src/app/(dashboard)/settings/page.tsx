@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('servewell_restaurant_details');
+      const stored = localStorage.getItem('zyncobill_restaurant_details');
       if (stored) {
         const parsed = JSON.parse(stored);
         setName(parsed.name || '');
@@ -69,7 +69,7 @@ export default function SettingsPage() {
     };
 
     // Save locally for the offline retail version
-    localStorage.setItem('servewell_restaurant_details', JSON.stringify(payload));
+    localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(payload));
     
     setTimeout(() => {
       setSuccess("Settings updated successfully! It will now reflect in your POS and Invoices.");
@@ -92,7 +92,7 @@ export default function SettingsPage() {
       whatsappBusinessId: "",
       whatsappToken: ""
     };
-    localStorage.setItem('servewell_restaurant_details', JSON.stringify(demoDetails));
+    localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(demoDetails));
     
     // Update local state
     setName(demoDetails.name);

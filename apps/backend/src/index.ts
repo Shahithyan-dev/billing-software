@@ -58,19 +58,19 @@ httpServer.listen(PORT, async () => {
 
     // Auto-seed default superadmin for production databases
     try {
-      const existingUser = await User.findOne({ email: 'admin@servewell.com' });
+      const existingUser = await User.findOne({ email: 'admin@zyncobill.com' });
       if (!existingUser) {
-        const hashedPassword = await bcrypt.hash('servewelladmin', 10);
+        const hashedPassword = await bcrypt.hash('zyncobilladmin', 10);
         await User.create({
-          email: 'admin@servewell.com',
+          email: 'admin@zyncobill.com',
           password: hashedPassword,
           role: 'superadmin'
         });
-        console.log('[System] Default superadmin created (admin@servewell.com)');
+        console.log('[System] Default superadmin created (admin@zyncobill.com)');
       }
 
       // Auto-seed demo tenant for Sri Murugan Silks
-      const existingDemo = await User.findOne({ email: 'dress@servewell.com' });
+      const existingDemo = await User.findOne({ email: 'dress@zyncobill.com' });
       if (!existingDemo) {
         const restaurant = new Restaurant({
           name: 'Sri Murugan Silks',
@@ -97,12 +97,12 @@ httpServer.listen(PORT, async () => {
 
         const hashedDemoPassword = await bcrypt.hash('dress1234', 10);
         await User.create({
-          email: 'dress@servewell.com',
+          email: 'dress@zyncobill.com',
           password: hashedDemoPassword,
           role: 'admin',
           restaurantId: restaurant._id
         });
-        console.log('[System] Demo tenant created (dress@servewell.com)');
+        console.log('[System] Demo tenant created (dress@zyncobill.com)');
       }
 
     } catch (seedErr) {

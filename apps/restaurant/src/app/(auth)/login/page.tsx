@@ -46,16 +46,16 @@ const Login = () => {
         localStorage.setItem('restaurantId', result.restaurantId);
         localStorage.setItem('role', result.role);
         
-        if (result.captains) localStorage.setItem('servewell_captains', JSON.stringify(result.captains));
-        if (result.tables) localStorage.setItem('servewell_tables', JSON.stringify(result.tables));
-        if (result.sidebarFeatures) localStorage.setItem('servewell_sidebar', JSON.stringify(result.sidebarFeatures));
-        if (result.restaurant) localStorage.setItem('servewell_restaurant_details', JSON.stringify(result.restaurant));
+        if (result.captains) localStorage.setItem('zyncobill_captains', JSON.stringify(result.captains));
+        if (result.tables) localStorage.setItem('zyncobill_tables', JSON.stringify(result.tables));
+        if (result.sidebarFeatures) localStorage.setItem('zyncobill_sidebar', JSON.stringify(result.sidebarFeatures));
+        if (result.restaurant) localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(result.restaurant));
         
         // Only override local menu if backend sent a default one and local is empty
         if (result.defaultMenu && result.defaultMenu.length > 0) {
-          const existingMenu = localStorage.getItem(`servewell_menu_${result.restaurantId}`);
+          const existingMenu = localStorage.getItem(`zyncobill_menu_${result.restaurantId}`);
           if (!existingMenu || JSON.parse(existingMenu).length === 0) {
-            localStorage.setItem(`servewell_menu_${result.restaurantId}`, JSON.stringify(result.defaultMenu));
+            localStorage.setItem(`zyncobill_menu_${result.restaurantId}`, JSON.stringify(result.defaultMenu));
           }
         }
         
@@ -102,9 +102,9 @@ const Login = () => {
       <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 md:p-12 ml-0 md:ml-12 border border-[#e3e3df]">
         <div className="flex flex-col items-center mb-8">
           <div className="w-24 h-24 flex items-center justify-center mb-4">
-            <img src="/logo.png" alt="ServeWell" className="w-full h-full object-contain mix-blend-multiply p-2 drop-shadow-md" />
+            <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain mix-blend-multiply p-2 drop-shadow-md" />
           </div>
-          <h1 className="text-3xl font-black text-[#2c332c] mb-2 tracking-tight">ServeWell</h1>
+          <h1 className="text-3xl font-black text-[#2c332c] mb-2 tracking-tight">ZyncoBill</h1>
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center">
             Restaurant Management System
           </p>

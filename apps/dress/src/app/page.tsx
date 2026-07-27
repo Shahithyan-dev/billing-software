@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#f8f6f0]">
       <div className="w-16 h-16 animate-pulse">
-        <img src="/logo.png" alt="ServeWell" className="w-full h-full mix-blend-multiply opacity-50" />
+        <img src="/logo.png" alt="ZyncoBill" className="w-full h-full mix-blend-multiply opacity-50" />
       </div>
     </div>
   );

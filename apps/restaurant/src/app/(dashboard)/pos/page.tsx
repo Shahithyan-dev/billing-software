@@ -46,7 +46,7 @@ const POS = () => {
         let initialMenu = mockMenu;
         if (typeof window !== 'undefined') {
           const restId = localStorage.getItem('restaurantId');
-          const storedMenu = localStorage.getItem(`servewell_menu_${restId}`);
+          const storedMenu = localStorage.getItem(`zyncobill_menu_${restId}`);
           if (storedMenu) {
             try {
               const parsedMenu = JSON.parse(storedMenu);
@@ -83,7 +83,7 @@ const POS = () => {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('servewell_restaurant_details');
+      const stored = localStorage.getItem('zyncobill_restaurant_details');
       if (stored) {
         setRestaurantData(JSON.parse(stored));
       }
@@ -106,7 +106,7 @@ const POS = () => {
                 menuCategories: data.data.menuCategories || ["Breakfast", "Lunch", "Dinner", "Snacks", "Beverages"]
               };
               setRestaurantData(freshData);
-              localStorage.setItem('servewell_restaurant_details', JSON.stringify(freshData));
+              localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(freshData));
             }
           })
           .catch(err => console.error("Failed to fetch latest restaurant data", err));
@@ -145,17 +145,17 @@ const POS = () => {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedCaptains = localStorage.getItem('servewell_captains');
+      const storedCaptains = localStorage.getItem('zyncobill_captains');
       if (storedCaptains) setCaptains(JSON.parse(storedCaptains));
 
-      const storedTables = localStorage.getItem('servewell_tables');
+      const storedTables = localStorage.getItem('zyncobill_tables');
       if (storedTables) {
         const parsedTables = JSON.parse(storedTables);
         const filteredTables = parsedTables.filter((t: string) => t !== 'Parcel' && t !== 'Delivery');
         setTables(Array.from(new Set([...filteredTables])));
       }
       
-      const storedRestaurant = localStorage.getItem('servewell_restaurant_details');
+      const storedRestaurant = localStorage.getItem('zyncobill_restaurant_details');
       if (storedRestaurant) {
         const parsed = JSON.parse(storedRestaurant);
         if (parsed.diningAreas && parsed.diningAreas.length > 0) {

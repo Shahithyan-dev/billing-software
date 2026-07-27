@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight, ChefHat, PackageOpen } from 'lucide-react';
+import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight, ChefHat, PackageOpen, Inbox, Check, X } from 'lucide-react';
 export default function SuperAdminDashboard() {
   const router = useRouter();
   const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -34,6 +35,7 @@ export default function SuperAdminDashboard() {
     
     // Initial fetch
     fetchRestaurants();
+    fetchPendingRequests();
     
     // Verify session every 30 seconds
     const verifySession = async () => {
@@ -66,6 +68,67 @@ export default function SuperAdminDashboard() {
       }
     } catch (err) {
       console.error('Failed to fetch restaurants');
+    }
+  };
+
+  const fetchPendingRequests = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/register-requests`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPendingRequests(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch pending requests');
+    }
+  };
+
+  const handleApproveRequest = async (id: string) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/register-requests/${id}/approve`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (result.success) {
+        setSuccess('Registration approved and tenant provisioned successfully.');
+        fetchPendingRequests();
+        fetchRestaurants();
+      } else {
+        setError(result.error || 'Failed to approve registration');
+      }
+    } catch (err) {
+      setError('Network error while approving.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectRequest = async (id: string) => {
+    if (!confirm('Are you sure you want to reject this registration?')) return;
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/register-requests/${id}/reject`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (result.success) {
+        setSuccess('Registration rejected.');
+        fetchPendingRequests();
+      } else {
+        setError(result.error || 'Failed to reject registration');
+      }
+    } catch (err) {
+      setError('Network error while rejecting.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -300,12 +363,12 @@ export default function SuperAdminDashboard() {
 
   if (!selectedSoftware) {
     return (
-      <div className="min-h-screen w-full bg-[#f8fafc] font-sans selection:bg-indigo-500/30 flex flex-col">
+      <div className="min-h-screen w-full bg-[#f8fafc] font-sans selection:bg-blue-900/30 flex flex-col">
         {/* Glassmorphic Navbar */}
-        <nav className="backdrop-blur-xl bg-white/70 border-b border-white shadow-sm p-4 px-8 flex justify-between items-center sticky top-0 z-50 transition-all">
+        <nav className="backdrop-blur-xl bg-white/90 border-b border-slate-200 shadow-sm p-4 px-8 flex justify-between items-center sticky top-0 z-50 transition-all">
           <div className="flex items-center">
-            <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">ServeWell Admin</h1>
-            <span className="ml-4 text-[10px] bg-red-50 text-red-600 font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-red-100 flex items-center gap-1.5 shadow-sm shadow-red-100">
+            <div className="flex items-center gap-2"><img src="/logo.png" alt="ZyncoBill Logo" className="w-8 h-8 object-contain" /><h1 className="text-2xl font-black text-blue-950 tracking-tight">Zynco<span className="text-amber-500">Bill</span> Admin</h1></div>
+            <span className="ml-3 text-[10px] bg-red-50 text-red-600 font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border border-red-100 flex items-center gap-1 shadow-sm shadow-red-100">
               <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
               Super Access
             </span>
@@ -326,7 +389,7 @@ export default function SuperAdminDashboard() {
             {/* Restaurant Software Card */}
             <div 
               onClick={() => { setSelectedSoftware('restaurant'); setCurrentCategories(RESTAURANT_MENU_CATEGORIES.join(', ')); }}
-              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-indigo-100/50 hover:shadow-indigo-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
+              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-blue-100/50 hover:shadow-blue-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
             >
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <ChefHat className="w-8 h-8 text-emerald-500" />
@@ -342,7 +405,7 @@ export default function SuperAdminDashboard() {
             {/* Dress/Retail Software Card */}
             <div 
               onClick={() => { setSelectedSoftware('dress'); setCurrentCategories(DRESS_MENU_CATEGORIES.join(', ')); }}
-              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-indigo-100/50 hover:shadow-indigo-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
+              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-blue-100/50 hover:shadow-blue-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
             >
               <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <PackageOpen className="w-8 h-8 text-rose-500" />
@@ -361,11 +424,11 @@ export default function SuperAdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f8fafc] pb-20 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen w-full bg-[#f8fafc] pb-20 font-sans selection:bg-blue-900/30">
       {/* Glassmorphic Navbar */}
-      <nav className="backdrop-blur-xl bg-white/70 border-b border-white shadow-sm p-4 px-8 flex justify-between items-center sticky top-0 z-50 transition-all">
+      <nav className="backdrop-blur-xl bg-white/90 border-b border-slate-200 shadow-sm p-4 px-8 flex justify-between items-center sticky top-0 z-50 transition-all">
         <div className="flex items-center">
-          <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">ServeWell Admin</h1>
+          <div className="flex items-center gap-2"><img src="/logo.png" alt="ZyncoBill Logo" className="w-8 h-8 object-contain" /><h1 className="text-2xl font-black text-blue-950 tracking-tight">Zynco<span className="text-amber-500">Bill</span> SuperAdmin</h1></div>
           <span className="ml-4 text-[10px] bg-red-50 text-red-600 font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-red-100 flex items-center gap-1.5 shadow-sm shadow-red-100">
             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
             Super Access
@@ -377,7 +440,7 @@ export default function SuperAdminDashboard() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setSelectedSoftware(null)}
-            className="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all"
+            className="text-sm font-bold text-blue-950 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all"
           >
             Switch Software
           </button>
@@ -390,15 +453,70 @@ export default function SuperAdminDashboard() {
         </div>
       </nav>
 
+      {/* Pending Registrations Section */}
+      {pendingRequests.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 animate-in fade-in slide-in-from-top-4 duration-700 ease-out">
+          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-amber-200/50 border border-amber-100">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-extrabold text-amber-800 tracking-tight flex items-center gap-3">
+                <div className="p-2.5 bg-amber-100 text-amber-600 rounded-xl shadow-inner">
+                  <Inbox className="w-5 h-5" />
+                </div>
+                Pending Registrations
+              </h2>
+              <span className="bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 rounded-full shadow-inner">
+                {pendingRequests.length} pending
+              </span>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pendingRequests.map(req => (
+                <div key={req._id} className="bg-amber-50/50 border border-amber-100 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-bold text-slate-800 text-lg">{req.businessName}</h3>
+                      <p className="text-sm text-slate-500">{req.name}</p>
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-md ${req.businessType === 'dress' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      {req.businessType === 'dress' ? 'Retail' : 'Restaurant'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-600 mb-4 space-y-1">
+                    <p><span className="font-semibold text-slate-400">Email:</span> {req.email}</p>
+                    <p><span className="font-semibold text-slate-400">Phone:</span> {req.phone}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleApproveRequest(req._id)}
+                      disabled={loading}
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                    >
+                      <Check className="w-4 h-4" /> Approve
+                    </button>
+                    <button 
+                      onClick={() => handleRejectRequest(req._id)}
+                      disabled={loading}
+                      className="bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-3 py-2 rounded-xl text-sm transition-colors disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto p-4 sm:p-8 grid lg:grid-cols-[1.5fr_1fr] gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
         
         {/* Create / Edit Restaurant Form */}
         <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white h-fit relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 rounded-[2rem] -z-10 opacity-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-[2rem] -z-10 opacity-50"></div>
           
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
-              <span className="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl shadow-inner">
+              <span className="p-2.5 bg-blue-100 text-blue-950 rounded-xl shadow-inner">
                 {editingTenantId ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
               </span>
               {editingTenantId ? 'Edit Tenant' : 'Create New Tenant'}
@@ -425,30 +543,30 @@ export default function SuperAdminDashboard() {
             {/* 1. Basic Details */}
             <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
               <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
-                <Server className="w-4 h-4 text-indigo-500" /> 1. Business Details
+                <Server className="w-4 h-4 text-blue-950" /> 1. Business Details
               </h3>
               <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Name *</label>
-                  <input name="name" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder={selectedSoftware === 'dress' ? "Sri Murugan Silks" : "ServeWell Cafe"} />
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Restaurant/Shop Name *</label>
+                  <input name="name" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder={selectedSoftware === 'dress' ? "Sri Murugan Silks" : "ZyncoBill Cafe"} />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Phone *</label>
-                  <input name="phone" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="+91 9876543210" />
+                  <input name="phone" required className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="+91 9876543210" />
                 </div>
                 <div className={selectedSoftware === 'dress' ? "col-span-2" : ""}>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">GSTIN</label>
-                  <input name="gstin" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
+                  <input name="gstin" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
                 </div>
                 {selectedSoftware === 'restaurant' && (
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">FSSAI</label>
-                    <input name="fssai" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
+                    <input name="fssai" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" />
                   </div>
                 )}
                 <div className="col-span-2">
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Address</label>
-                  <input name="address" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="123 Shopping Street, City" />
+                  <input name="address" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm placeholder:text-slate-400" placeholder="123 Shopping Street, City" />
                 </div>
               </div>
             </div>
@@ -456,17 +574,17 @@ export default function SuperAdminDashboard() {
             {/* 2. Admin Credentials */}
             <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
               <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
-                <Key className="w-4 h-4 text-violet-500" /> 2. Master Login 
+                <Key className="w-4 h-4 text-amber-500" /> 2. Master Login 
                 {editingTenantId && <span className="text-slate-400 text-[10px] ml-2 normal-case tracking-normal bg-slate-200 px-2 py-0.5 rounded-md">(Leave blank to keep unchanged)</span>}
               </h3>
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Email {!editingTenantId && "*"}</label>
-                  <input name="email" type="email" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm disabled:opacity-50 disabled:bg-slate-100" />
+                  <input name="email" type="email" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm disabled:opacity-50 disabled:bg-slate-100" />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Password {!editingTenantId && "*"}</label>
-                  <input name="password" type="text" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm disabled:opacity-50 disabled:bg-slate-100" />
+                  <input name="password" type="text" required={!editingTenantId} disabled={!!editingTenantId} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm disabled:opacity-50 disabled:bg-slate-100" />
                 </div>
               </div>
             </div>
@@ -474,7 +592,7 @@ export default function SuperAdminDashboard() {
             {/* 3. POS Configuration */}
             <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
               <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2 uppercase tracking-wide">
-                <LayoutGrid className="w-4 h-4 text-fuchsia-500" /> 3. POS Setup
+                <LayoutGrid className="w-4 h-4 text-amber-500" /> 3. POS Setup
               </h3>
               
               {selectedSoftware === 'restaurant' ? (
@@ -482,19 +600,19 @@ export default function SuperAdminDashboard() {
                   <div className="grid grid-cols-2 gap-5 mb-6">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Captains (Comma separated)</label>
-                      <input name="captains" placeholder="Rahul, Suresh" defaultValue="Captain, Rahul, Priya, Self Service" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="captains" placeholder="Rahul, Suresh" defaultValue="Captain, Rahul, Priya, Self Service" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Tables (Comma separated)</label>
-                      <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="tables" placeholder="T1, T2, T3" defaultValue="T1, T2, T3, T4, T5, Parcel" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Dining Areas (Comma separated)</label>
-                      <input name="diningAreas" placeholder="AC, Non-AC" defaultValue="AC, Non-AC" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="diningAreas" placeholder="AC, Non-AC" defaultValue="AC, Non-AC" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Menu Categories (Comma separated)</label>
-                      <input name="menuCategories" placeholder="Starters, Mains" value={currentCategories} onChange={(e) => setCurrentCategories(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="menuCategories" placeholder="Starters, Mains" value={currentCategories} onChange={(e) => setCurrentCategories(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                   </div>
                   
@@ -503,9 +621,9 @@ export default function SuperAdminDashboard() {
                     {RESTAURANT_SIDEBAR_FEATURES.map(feature => (
                       <label key={feature} className="flex items-center space-x-3 text-sm font-medium text-slate-700 cursor-pointer group">
                         <div className="relative flex items-center">
-                          <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-fuchsia-500 border-slate-300 rounded focus:ring-fuchsia-500 focus:ring-2 transition-all cursor-pointer" />
+                          <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-amber-500 border-slate-300 rounded focus:ring-amber-500 focus:ring-2 transition-all cursor-pointer" />
                         </div>
-                        <span className="group-hover:text-fuchsia-600 transition-colors">{feature}</span>
+                        <span className="group-hover:text-amber-600 transition-colors">{feature}</span>
                       </label>
                     ))}
                   </div>
@@ -515,11 +633,11 @@ export default function SuperAdminDashboard() {
                   <div className="grid grid-cols-2 gap-5 mb-6">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Salespersons (Comma separated)</label>
-                      <input name="captains" placeholder="Salesperson 1, Salesperson 2" defaultValue="Ramesh, Suresh, Priya" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="captains" placeholder="Salesperson 1, Salesperson 2" defaultValue="Ramesh, Suresh, Priya" className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Product Categories (Comma separated)</label>
-                      <input name="menuCategories" placeholder="Shirts, Sarees, Kurtis" value={currentCategories} onChange={(e) => setCurrentCategories(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
+                      <input name="menuCategories" placeholder="Shirts, Sarees, Kurtis" value={currentCategories} onChange={(e) => setCurrentCategories(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 rounded-xl transition-all duration-200 text-slate-800 text-sm shadow-sm" />
                     </div>
                   </div>
                   
@@ -550,9 +668,9 @@ export default function SuperAdminDashboard() {
                     {DRESS_SIDEBAR_FEATURES.map(feature => (
                       <label key={feature} className="flex items-center space-x-3 text-sm font-medium text-slate-700 cursor-pointer group">
                         <div className="relative flex items-center">
-                          <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-fuchsia-500 border-slate-300 rounded focus:ring-fuchsia-500 focus:ring-2 transition-all cursor-pointer" />
+                          <input type="checkbox" name={`feature_${feature}`} defaultChecked className="peer w-4 h-4 text-amber-500 border-slate-300 rounded focus:ring-amber-500 focus:ring-2 transition-all cursor-pointer" />
                         </div>
-                        <span className="group-hover:text-fuchsia-600 transition-colors">{feature}</span>
+                        <span className="group-hover:text-amber-600 transition-colors">{feature}</span>
                       </label>
                     ))}
                   </div>
@@ -571,14 +689,14 @@ export default function SuperAdminDashboard() {
                   <button 
                     type="button" 
                     onClick={() => setIsBulkPasting(!isBulkPasting)}
-                    className="text-[11px] uppercase tracking-wider bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-indigo-600 font-bold transition-all shadow-sm"
+                    className="text-[11px] uppercase tracking-wider bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-blue-800 font-bold transition-all shadow-sm"
                   >
                     Paste Excel
                   </button>
                   <button 
                     type="button" 
                     onClick={handleLoadDefaultMenu}
-                    className="text-[11px] uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg hover:bg-indigo-100 font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                    className="text-[11px] uppercase tracking-wider bg-blue-50 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-100 font-bold flex items-center gap-1.5 transition-all shadow-sm"
                   >
                     <Download className="w-3.5 h-3.5" /> {selectedSoftware === 'dress' ? 'Default Items' : 'Default Menu'}
                   </button>
@@ -695,7 +813,7 @@ export default function SuperAdminDashboard() {
             <button 
               type="submit" 
               disabled={loading} 
-              className="w-full py-4 mt-8 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-400 disabled:to-slate-500 text-white font-bold text-base tracking-wide rounded-xl shadow-lg shadow-indigo-500/30 transform hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2"
+              className="w-full py-4 mt-8 bg-gradient-to-r from-blue-600 to-amber-600 hover:from-blue-500 hover:to-amber-500 disabled:from-slate-400 disabled:to-slate-500 text-white font-bold text-base tracking-wide rounded-xl shadow-lg shadow-blue-500/30 transform hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2"
             >
               {loading ? 'Processing...' : editingTenantId ? 'Save Tenant Updates' : 'Create & Provision Tenant'}
               {!loading && <ChevronRight className="w-5 h-5" />}
@@ -722,13 +840,13 @@ export default function SuperAdminDashboard() {
               </div>
             ) : (
               restaurants.filter(r => (r.businessType || 'restaurant') === selectedSoftware).map(rest => (
-                <div key={rest._id} className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-100 transform hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-50 to-transparent -z-10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div key={rest._id} className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-blue-100/50 hover:border-blue-100 transform hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-50 to-transparent -z-10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   
                   <div className="absolute top-4 right-4 flex gap-1 opacity-0 translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
                     <button 
                       onClick={() => handleEditTenant(rest)}
-                      className="text-indigo-500 hover:text-white hover:bg-indigo-500 p-2 rounded-lg transition-all shadow-sm"
+                      className="text-blue-950 hover:text-white hover:bg-blue-500 p-2 rounded-lg transition-all shadow-sm"
                       title="Edit Tenant"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -743,7 +861,7 @@ export default function SuperAdminDashboard() {
                   </div>
                   
                   <div className="flex justify-between items-start mb-2 pr-16">
-                    <h3 className="font-extrabold text-lg text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors">{rest.name}</h3>
+                    <h3 className="font-extrabold text-lg text-slate-800 tracking-tight group-hover:text-blue-800 transition-colors">{rest.name}</h3>
                   </div>
                   
                   <div className="flex items-center gap-2 mb-3">
@@ -765,8 +883,8 @@ export default function SuperAdminDashboard() {
                   <div className="mt-4 pt-3 border-t border-slate-50 text-[10px] text-slate-400 flex justify-between items-center font-medium">
                     <span className="font-mono text-slate-300">ID: {rest._id.substring(rest._id.length - 6)}</span>
                     <div className="flex gap-2">
-                      <span className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md font-bold">{rest.captains?.length || 0} Capt.</span>
-                      <span className="bg-violet-50 text-violet-600 px-2 py-1 rounded-md font-bold">{rest.defaultMenu?.length || 0} Items</span>
+                      <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold">{rest.captains?.length || 0} Capt.</span>
+                      <span className="bg-amber-50 text-amber-600 px-2 py-1 rounded-md font-bold">{rest.defaultMenu?.length || 0} Items</span>
                     </div>
                   </div>
                 </div>

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.servewell.pos',
-  appName: 'ServeWell POS',
+  appId: 'com.zyncobill.pos',
+  appName: 'ZyncoBill POS',
   webDir: 'out',
   plugins: {
     CapacitorUpdater: {

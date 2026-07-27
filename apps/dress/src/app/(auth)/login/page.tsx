@@ -56,11 +56,11 @@ const Login = () => {
         localStorage.setItem('restaurantId', rid || 'local-shop');
 
         if (data.sidebarFeatures) {
-          localStorage.setItem('servewell_sidebar', JSON.stringify(data.sidebarFeatures));
+          localStorage.setItem('zyncobill_sidebar', JSON.stringify(data.sidebarFeatures));
         }
 
         // Clear old cached data so fresh data is always shown
-        localStorage.removeItem('servewell_restaurant_details');
+        localStorage.removeItem('zyncobill_restaurant_details');
 
         // Fetch tenant details to sync DB
         if (rid && rid !== 'local-shop') {
@@ -83,7 +83,7 @@ const Login = () => {
                 whatsappToken: t.whatsappToken || '',
                 whatsappBusinessId: t.whatsappBusinessId || ''
               };
-              localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
+              localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(normalized));
 
 
             }
@@ -207,7 +207,7 @@ const Login = () => {
           
           <div className="mt-8 text-center">
             <p className="text-xs text-slate-400 font-medium tracking-wide">
-              Protected by ServeWell Security &copy; 2026
+              Protected by ZyncoBill Security &copy; 2026
             </p>
           </div>
         </div>

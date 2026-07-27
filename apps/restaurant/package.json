@@ -1,8 +1,8 @@
 {
   "name": "restaurant-next",
   "version": "0.1.5",
-  "description": "ServeWell POS System",
-  "author": "ServeWell",
+  "description": "ZyncoBill POS System",
+  "author": "ZyncoBill",
   "private": true,
   "main": "main.js",
   "scripts": {
@@ -74,8 +74,8 @@
     "typescript": "^5"
   },
   "build": {
-    "appId": "com.servewell.pos",
-    "productName": "ServeWell POS",
+    "appId": "com.zyncobill.pos",
+    "productName": "ZyncoBill POS",
     "electronVersion": "31.7.7",
     "directories": {
       "output": "dist"
@@ -90,6 +90,6 @@
     }
   },
   "capgo": {
-    "appId": "com.servewell.pos"
+    "appId": "com.zyncobill.pos"
   }
 }

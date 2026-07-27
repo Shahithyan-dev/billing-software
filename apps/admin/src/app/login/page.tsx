@@ -46,7 +46,7 @@ export default function SuperAdminLogin() {
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-gray-900 mb-2">ServeWell</h1>
+          <h1 className="text-3xl font-black text-gray-900 mb-2">ZyncoBill</h1>
           <p className="text-sm font-bold text-red-600 uppercase tracking-widest">
             Super Admin Portal
           </p>

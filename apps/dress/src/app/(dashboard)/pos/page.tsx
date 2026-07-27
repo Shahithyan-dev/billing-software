@@ -114,7 +114,7 @@ export default function POSPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // For this local retail version, we bypass backend fetch to prevent "Failed to fetch" errors.
-      const stored = localStorage.getItem('servewell_restaurant_details');
+      const stored = localStorage.getItem('zyncobill_restaurant_details');
       if (stored) {
         const parsed = JSON.parse(stored);
         // If it accidentally loaded old restaurant data like SUVAI, we can override or let them update via settings.

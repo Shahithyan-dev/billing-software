@@ -32,13 +32,13 @@ export interface RestaurantConfig {
   fssai: string;
 }
 
-export class ServeWellDB extends Dexie {
+export class ZyncoBillDB extends Dexie {
   orders!: Table<Order, number>;
   menuItems!: Table<MenuItem, string>;
   config!: Table<RestaurantConfig, string>;
 
   constructor() {
-    super('ServeWellDB');
+    super('ZyncoBillDB');
     this.version(1).stores({
       orders: '++id, uuid, syncStatus, timestamp', // Primary key and indexed props
       menuItems: 'id, category', // Primary key and indexed props
@@ -47,4 +47,4 @@ export class ServeWellDB extends Dexie {
   }
 }
 
-export const db = new ServeWellDB();
+export const db = new ZyncoBillDB();
