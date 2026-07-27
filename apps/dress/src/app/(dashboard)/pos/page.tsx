@@ -533,10 +533,10 @@ export default function POSPage() {
 
         setToastMessage(
           copiedToClipboard
-            ? "WhatsApp opened! Invoice image copied — press Ctrl+V to attach."
+            ? "WhatsApp opened! Right-click in the chat and select 'Paste' (or press Ctrl+V on your keyboard) to attach the image."
             : "WhatsApp opened! Attach the downloaded invoice image."
         );
-        setTimeout(() => setToastMessage(''), 5000);
+        setTimeout(() => setToastMessage(''), 8000);
       }
     } catch (err) {
       console.error(err);
