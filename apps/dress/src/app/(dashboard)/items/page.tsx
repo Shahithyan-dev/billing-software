@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '@/config/api';
+import { db } from '@/lib/db';
 import { MenuItem } from '@/app/(dashboard)/pos/page';
 import { 
   Package, 
@@ -37,6 +38,31 @@ export default function ItemsPage() {
   }, []);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
+
+  // Local DB Migration Hook
+  useEffect(() => {
+    const migrateLocalData = async () => {
+      const restaurantId = localStorage.getItem('restaurantId');
+      if (!restaurantId) return;
+      if (localStorage.getItem('inventory_migrated')) return;
+      
+      try {
+        const localItems = await db.menuItems.toArray();
+        if (localItems.length > 0) {
+           await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
+             method: 'PUT',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ items: localItems }),
+           });
+           setItems(localItems);
+           localStorage.setItem('inventory_migrated', 'true');
+        }
+      } catch(e) {
+        console.error("Migration failed", e);
+      }
+    };
+    migrateLocalData();
+  }, []);
 
   const saveItems = async (updatedItems: MenuItem[]) => {
     const restaurantId = localStorage.getItem('restaurantId');

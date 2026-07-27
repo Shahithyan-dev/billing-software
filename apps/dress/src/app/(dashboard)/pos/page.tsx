@@ -92,6 +92,31 @@ export default function POSPage() {
     };
     fetchMenu();
   }, []);
+
+  // Local DB Migration Hook
+  useEffect(() => {
+    const migrateLocalData = async () => {
+      const restaurantId = localStorage.getItem('restaurantId');
+      if (!restaurantId) return;
+      if (localStorage.getItem('inventory_migrated')) return;
+      
+      try {
+        const localItems = await db.menuItems.toArray();
+        if (localItems.length > 0) {
+           await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
+             method: 'PUT',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ items: localItems }),
+           });
+           setDbMenuItems(localItems);
+           localStorage.setItem('inventory_migrated', 'true');
+        }
+      } catch(e) {
+        console.error("Migration failed", e);
+      }
+    };
+    migrateLocalData();
+  }, []);
   
   const [restaurantData, setRestaurantData] = useState({
     name: "Sri Murugan Silks",
