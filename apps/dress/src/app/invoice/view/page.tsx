@@ -157,6 +157,7 @@ function InvoiceViewContent() {
              <div className="bg-[#0b1a30] text-white p-8 pb-10 flex-[0.6] rounded-br-[5rem] flex flex-col justify-center relative z-10">
                  <div className="flex items-center gap-6">
                     <Shirt className="w-16 h-16 text-white stroke-[1.5]" />
+                    <div>
                        <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none line-clamp-1 max-w-[300px]">{store.name || 'RETAIL STORE'}</h1>
                        <div className="flex items-center gap-2 mt-1">
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>

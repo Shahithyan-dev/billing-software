@@ -925,6 +925,7 @@ export default function POSPage() {
                     <div className="w-16 h-16 bg-white/10 rounded-2xl p-2 border border-white/20">
                       <Logo className="w-full h-full drop-shadow-md" />
                     </div>
+                    <div>
                        <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none line-clamp-1 max-w-[300px]">{restaurantData.name || 'RETAIL STORE'}</h1>
                        <div className="flex items-center gap-2 mt-1">
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
