@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { db } from '@/lib/db';
-import { useLiveQuery } from 'dexie-react-hooks';
+import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { MenuItem } from '@/app/(dashboard)/pos/page';
 import { 
   Package, 
@@ -14,11 +13,41 @@ import {
   Trash2, 
   X, 
   Image as ImageIcon,
-  Camera
+  Camera,
+  RefreshCw
 } from 'lucide-react';
 
 export default function ItemsPage() {
-  const items = useLiveQuery(() => db.menuItems.toArray()) || [];
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchItems = useCallback(async () => {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`);
+      const data = await res.json();
+      if (data.success) setItems(data.data || []);
+    } catch (e) {
+      console.error('Failed to fetch items', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchItems(); }, [fetchItems]);
+
+  const saveItems = async (updatedItems: MenuItem[]) => {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+    await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: updatedItems }),
+    });
+    setItems(updatedItems);
+  };
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,16 +99,20 @@ export default function ItemsPage() {
       stock: variants.length > 0 ? variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0) : (parseInt(stock) || 0),
       variants,
       category,
-      type: (barcode || 'standard') as any, // Barcode maps to 'type' property in schema
+      type: (barcode || 'standard') as any,
       img: img || 'https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?q=80&w=200'
     };
 
     try {
-      await db.menuItems.put(itemData);
+      const updatedItems = editingId
+        ? items.map(i => i.id === editingId ? itemData : i)
+        : [...items, itemData];
+      await saveItems(updatedItems);
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
       console.error("Failed to save item:", err);
+      alert("Failed to save item to server.");
     }
   };
 
@@ -105,7 +138,8 @@ export default function ItemsPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this item from inventory?")) {
-      await db.menuItems.delete(id);
+      const updatedItems = items.filter(i => i.id !== id);
+      await saveItems(updatedItems);
     }
   };
 

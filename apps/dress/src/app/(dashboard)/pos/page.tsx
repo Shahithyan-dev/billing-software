@@ -74,8 +74,24 @@ function numberToWords(num: number): string {
 }
 
 export default function POSPage() {
-  const dbMenuItems = useLiveQuery(() => db.menuItems.toArray()) || [];
+  const [dbMenuItems, setDbMenuItems] = useState<MenuItem[]>([]);
   const dbParties = useLiveQuery(() => db.parties.toArray()) || [];
+  
+  useEffect(() => {
+    const fetchMenu = async () => {
+      const rid = localStorage.getItem('restaurantId');
+      if (rid) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/v1/inventory/${rid}`);
+          const data = await res.json();
+          if (data.success) setDbMenuItems(data.data || []);
+        } catch (e) {
+          console.error('Failed to fetch menu:', e);
+        }
+      }
+    };
+    fetchMenu();
+  }, []);
   
   const [restaurantData, setRestaurantData] = useState({
     name: "Sri Murugan Silks",
@@ -243,7 +259,7 @@ export default function POSPage() {
   const grandTotal = Math.round(rawTotal);
   const roundOff = grandTotal - rawTotal;
 
-  // Save Order to IndexedDB
+  // Save Order to MongoDB backend
   const handleSaveOrder = async (preGeneratedUuid?: string) => {
     const validRows = rows.filter(r => r.name.trim() !== '');
     if (validRows.length === 0) {
@@ -251,12 +267,15 @@ export default function POSPage() {
       return false;
     }
 
+    const restaurantId = localStorage.getItem('restaurantId') || 'default';
+    const uuid = preGeneratedUuid || crypto.randomUUID();
+
     const orderData = {
-      uuid: preGeneratedUuid || crypto.randomUUID(),
-      restaurantId: localStorage.getItem('restaurantId') || 'default',
+      uuid,
+      restaurantId,
       items: validRows.map(r => ({
         id: r.itemId || 'custom',
-        name: `${r.name} ${r.size ? `(${r.size})` : ''}`,
+        name: `${r.name}${r.size ? ` (${r.size})` : ''}`,
         price: r.mrp,
         quantity: r.qty
       })),
@@ -267,61 +286,31 @@ export default function POSPage() {
       paymentMethod: isCredit ? 'CREDIT' : paymentMethod,
       orderType: 'Retail Invoice',
       timestamp: Date.now(),
-      syncStatus: 'pending' as const
     };
 
     try {
-      await db.orders.add(orderData);
-      
-      // Deduct stock for each sold item
-      for (const row of validRows) {
-        try {
-          console.log("[STOCK DEDUCTION] Processing row:", row.name, "qty:", row.qty, "itemId:", row.itemId);
-          let itemToUpdate = undefined;
-          
-          if (row.itemId) {
-            itemToUpdate = await db.menuItems.get(row.itemId);
-            console.log("[STOCK DEDUCTION] Searched by itemId. Found:", !!itemToUpdate);
-          } else if (row.name) {
-            // Fallback: match by name if user manually typed it in the row
-            const allItems = await db.menuItems.toArray();
-            const baseNameMatch = row.name.replace(/\(.*?\)/g, '').trim().toLowerCase();
-            itemToUpdate = allItems.find(m => m.name.toLowerCase().trim() === baseNameMatch || m.name.toLowerCase().trim() === row.name.toLowerCase().trim());
-            console.log("[STOCK DEDUCTION] Searched by name. Found:", !!itemToUpdate);
-          }
+      // 1. Save order to backend MongoDB
+      const orderRes = await fetch(`${API_BASE_URL}/api/v1/sync/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+      if (!orderRes.ok) throw new Error('Failed to save order to server');
 
-          if (itemToUpdate) {
-            const currentStock = Number(itemToUpdate.stock) || 0;
-            const newStock = Math.max(0, currentStock - Number(row.qty));
-            console.log(`[STOCK DEDUCTION] Item ${itemToUpdate.name}: Current stock: ${currentStock}, Qty sold: ${row.qty}, New stock: ${newStock}`);
-            
-            // Use PUT to completely overwrite the object with the new stock
-            // This is foolproof against Dexie missing field or type mismatch errors
-            const updatedItem = { ...itemToUpdate, stock: newStock };
-            await db.menuItems.put(updatedItem);
-            console.log(`[STOCK DEDUCTION] PUT successful for item:`, updatedItem.name);
-          } else {
-            console.warn(`[STOCK DEDUCTION] Could not find item in DB for row:`, row.name);
-          }
-        } catch (stockErr) {
-          console.error(`[STOCK DEDUCTION] Error processing row ${row.name}:`, stockErr);
-        }
+      // 2. Deduct stock in backend MongoDB
+      const deductions = validRows
+        .filter(r => r.itemId || r.name)
+        .map(r => ({ itemId: r.itemId || '', name: r.name, qty: r.qty }));
+
+      if (deductions.length > 0 && restaurantId !== 'default') {
+        await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}/deduct`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deductions }),
+        });
       }
 
-      // If customer phone is set and not existing, save customer to parties
-      if (customerPhone && customerName) {
-        const partyExists = dbParties.some(p => p.phone === customerPhone);
-        if (!partyExists) {
-          await db.parties.add({
-            type: 'customer',
-            name: customerName,
-            phone: customerPhone,
-            openingBalance: 0
-          });
-        }
-      }
-
-      // Increment invoice number and reset rows
+      // 3. Reset POS form
       setInvoiceNo(prev => prev + 1);
       setRows([{ id: '1', name: '', size: '', mrp: 0, qty: 1, discountPercent: 0, taxPercent: 5, total: 0 }]);
       setCustomerName('');
@@ -330,10 +319,11 @@ export default function POSPage() {
       return true;
     } catch (err) {
       console.error(err);
-      alert("Failed to save invoice.");
+      alert("Failed to save invoice to server. Please check your internet connection.");
       return false;
     }
   };
+
 
   // WhatsApp formatted receipt
   const getWhatsAppBillText = (uuid: string) => {
