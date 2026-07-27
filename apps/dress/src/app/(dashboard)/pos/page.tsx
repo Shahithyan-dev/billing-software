@@ -952,7 +952,7 @@ export default function POSPage() {
                     </div>
                  </div>
                  {/* Contact info row - always below store name */}
-                 <div style={{display:'flex',alignItems:'center',gap:'24px',fontSize:'11px',color:'#cbd5e1'}}>
+                 <div style={{display:'flex',alignItems:'center',gap:'24px',fontSize:'11px',color:'#cbd5e1',flexWrap:'wrap',wordBreak:'break-word'}}>
                     <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
                       <div style={{background:'#1e293b',padding:'6px',borderRadius:'50%',flexShrink:0,display:'flex'}}><Phone style={{width:'12px',height:'12px',color:'#94a3b8'}}/></div>
                       <span>{restaurantData.phone || '9876543210'}</span>
