@@ -78,15 +78,15 @@ export default function POSPage() {
   const dbParties = useLiveQuery(() => db.parties.toArray()) || [];
   
   const [restaurantData, setRestaurantData] = useState({
-    name: "Retail Store",
-    tagline: "",
-    phone: "",
-    gstin: "",
+    name: "Sri Murugan Silks",
+    tagline: "Premium Clothing Store",
+    phone: "9876543210",
+    gstin: "33ABCDE1234F1Z5",
     logo: "",
     whatsappNumber: "",
     whatsappToken: "",
     whatsappBusinessId: "",
-    address: ""
+    address: "123 Shopping Street, City"
   });
 
   // Load store config
