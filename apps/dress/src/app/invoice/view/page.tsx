@@ -157,14 +157,12 @@ function InvoiceViewContent() {
              <div className="bg-[#0b1a30] text-white p-8 pb-10 flex-[0.6] rounded-br-[5rem] flex flex-col justify-center relative z-10">
                  <div className="flex items-center gap-6">
                     <Shirt className="w-16 h-16 text-white stroke-[1.5]" />
-                    <div>
-                       <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none">HEY BRO</h1>
+                       <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none line-clamp-1 max-w-[300px]">{store.name || 'RETAIL STORE'}</h1>
                        <div className="flex items-center gap-2 mt-1">
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                         <span className="text-blue-300 italic text-xl font-serif">Clothing</span>
+                         <span className="text-blue-300 italic text-xl font-serif line-clamp-1 max-w-[250px]">{store.tagline || 'Premium Quality'}</span>
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                        </div>
-                       <p className="text-slate-300 italic text-[11px] mt-1 tracking-widest text-center">Style That Speaks</p>
                     </div>
                  </div>
                  
@@ -274,8 +272,8 @@ function InvoiceViewContent() {
                </div>
 
                <div className="pt-2">
-                 <p className="text-[10px] font-bold text-slate-800">For : {store.name}</p>
-                 <div className="h-10 mt-1 italic text-3xl font-serif text-slate-800 opacity-80" style={{ fontFamily: 'Brush Script MT, cursive' }}>Hey Bro</div>
+                 <p className="text-[10px] font-bold text-slate-800">For : {store.name || 'RETAIL STORE'}</p>
+                 <div className="h-10 mt-1 italic text-3xl font-serif text-slate-800 opacity-80 line-clamp-1" style={{ fontFamily: 'Brush Script MT, cursive' }}>{store.name || 'Retail Store'}</div>
                  <div className="h-px bg-slate-400 w-48 mb-1"></div>
                  <p className="text-[10px] font-bold text-slate-800">Authorized Signatory</p>
                </div>

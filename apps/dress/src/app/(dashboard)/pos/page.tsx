@@ -925,14 +925,12 @@ export default function POSPage() {
                     <div className="w-16 h-16 bg-white/10 rounded-2xl p-2 border border-white/20">
                       <Logo className="w-full h-full drop-shadow-md" />
                     </div>
-                    <div>
-                       <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none">HEY BRO</h1>
+                       <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none line-clamp-1 max-w-[300px]">{restaurantData.name || 'RETAIL STORE'}</h1>
                        <div className="flex items-center gap-2 mt-1">
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                         <span className="text-blue-300 italic text-xl font-serif">Clothing</span>
+                         <span className="text-blue-300 italic text-xl font-serif line-clamp-1 max-w-[250px]">{restaurantData.tagline || 'Premium Quality'}</span>
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                        </div>
-                       <p className="text-slate-300 italic text-[11px] mt-1 tracking-widest text-center">Style That Speaks</p>
                     </div>
                  </div>
                  
@@ -1045,8 +1043,8 @@ export default function POSPage() {
                </div>
 
                <div className="pt-2">
-                 <p className="text-[10px] font-bold text-slate-800">For : {restaurantData.name || 'HEY BRO CLOTHINGS'}</p>
-                 <div className="h-10 mt-1 italic text-3xl font-serif text-slate-800 opacity-80" style={{ fontFamily: 'Brush Script MT, cursive' }}>Hey Bro</div>
+                 <p className="text-[10px] font-bold text-slate-800">For : {restaurantData.name || 'RETAIL STORE'}</p>
+                 <div className="h-10 mt-1 italic text-3xl font-serif text-slate-800 opacity-80 line-clamp-1" style={{ fontFamily: 'Brush Script MT, cursive' }}>{restaurantData.name || 'Retail Store'}</div>
                  <div className="h-px bg-slate-400 w-48 mb-1"></div>
                  <p className="text-[10px] font-bold text-slate-800">Authorized Signatory</p>
                </div>
