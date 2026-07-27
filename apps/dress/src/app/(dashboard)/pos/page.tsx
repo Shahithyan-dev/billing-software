@@ -882,8 +882,32 @@ export default function POSPage() {
             <button
               type="button"
               onClick={async () => {
-                const saved = await handleSaveOrder();
-                if (saved) window.print();
+                // Step 1: Generate the UUID for this invoice
+                const printUuid = crypto.randomUUID();
+                
+                // Step 2: Listen for AFTER print - only save the order if the user actually printed
+                // onafterprint fires whether user clicked Print OR Cancel, but we differentiate
+                // by using a flag that gets set only when printing actually started
+                let didPrint = false;
+                
+                const handleAfterPrint = async () => {
+                  window.removeEventListener('afterprint', handleAfterPrint);
+                  if (didPrint) {
+                    await handleSaveOrder(printUuid);
+                  }
+                };
+                
+                // onbeforeprint fires only when the print is actually submitted
+                const handleBeforePrint = () => {
+                  didPrint = true;
+                  window.removeEventListener('beforeprint', handleBeforePrint);
+                };
+                
+                window.addEventListener('beforeprint', handleBeforePrint);
+                window.addEventListener('afterprint', handleAfterPrint);
+                
+                // Step 3: Open the print dialog
+                window.print();
               }}
               className="py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-black text-sm tracking-wide shadow-lg transition-all flex justify-center items-center gap-2 rounded-xl active:scale-95"
             >
