@@ -920,30 +920,30 @@ export default function POSPage() {
           {/* Header Section */}
           <div className="flex relative bg-slate-50 border-b border-slate-200">
               {/* Left Deep Blue area */}
-             <div className="bg-[#0b1a30] text-white p-6 sm:p-8 pb-8 sm:pb-10 flex-[0.7] rounded-br-[3rem] sm:rounded-br-[5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between relative z-10 gap-4 sm:gap-0">
-                 <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/10 rounded-2xl p-2 border border-white/20 shrink-0">
+             <div className="bg-[#0b1a30] text-white px-8 py-6 flex-[0.65] rounded-br-[4rem] flex flex-col justify-center relative z-10">
+                 {/* Store name row */}
+                 <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 bg-white/10 rounded-2xl p-2 border border-white/20 shrink-0">
                       <Logo className="w-full h-full drop-shadow-md" />
                     </div>
                     <div>
-                       <h1 className="text-xl sm:text-2xl font-black tracking-widest uppercase leading-tight line-clamp-2 max-w-[220px]">{restaurantData.name || 'RETAIL STORE'}</h1>
+                       <h1 className="text-2xl font-black tracking-widest uppercase leading-tight">{restaurantData.name || 'RETAIL STORE'}</h1>
                        <div className="flex items-center gap-2 mt-1">
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                         <span className="text-blue-300 italic text-sm sm:text-lg font-serif line-clamp-1 max-w-[180px]">{restaurantData.tagline || 'Premium Quality'}</span>
+                         <span className="text-blue-300 italic text-base font-serif">{restaurantData.tagline || 'Premium Quality'}</span>
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                        </div>
                     </div>
                  </div>
-                 
-                 {/* Contact section */}
-                 <div className="flex flex-col gap-2 sm:gap-3 text-[10px] text-slate-200 shrink-0 ml-0 sm:ml-4">
+                 {/* Contact info row - always below store name */}
+                 <div className="flex items-center gap-6 text-[11px] text-slate-300">
                     <div className="flex items-center gap-2">
-                      <div className="bg-slate-800 p-1.5 rounded-full"><Phone className="w-3.5 h-3.5 text-slate-300"/></div>
+                      <div className="bg-slate-800 p-1.5 rounded-full shrink-0"><Phone className="w-3 h-3 text-slate-300"/></div>
                       <span>{restaurantData.phone || '9876543210'}</span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="bg-slate-800 p-1.5 rounded-full"><MapPin className="w-3.5 h-3.5 text-slate-300"/></div> 
-                      <span className="max-w-[150px] leading-tight">{restaurantData.address || '123 Retail Street, City, State'}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-slate-800 p-1.5 rounded-full shrink-0"><MapPin className="w-3 h-3 text-slate-300"/></div>
+                      <span>{restaurantData.address || '123 Retail Street, City, State'}</span>
                     </div>
                  </div>
              </div>
