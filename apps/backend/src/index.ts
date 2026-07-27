@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import User from './models/User';
 
 import path from 'path';
 
@@ -52,6 +54,23 @@ httpServer.listen(PORT, async () => {
   try {
     await mongoose.connect(process.env.DATABASE_URL as string);
     console.log(`[Database] Connected to MongoDB via Mongoose`);
+
+    // Auto-seed default superadmin for production databases
+    try {
+      const existingUser = await User.findOne({ email: 'admin@servewell.com' });
+      if (!existingUser) {
+        const hashedPassword = await bcrypt.hash('servewelladmin', 10);
+        await User.create({
+          email: 'admin@servewell.com',
+          password: hashedPassword,
+          role: 'superadmin'
+        });
+        console.log('[System] Default superadmin created (admin@servewell.com)');
+      }
+    } catch (seedErr) {
+      console.error('[System] Failed to seed superadmin:', seedErr);
+    }
+
     console.log(`[Server] Core POS Server running on port ${PORT}`);
   } catch (error) {
     console.error(`[Database Error] Connection failed:`, error);
