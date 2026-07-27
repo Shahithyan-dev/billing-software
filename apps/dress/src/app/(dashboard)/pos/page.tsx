@@ -105,6 +105,7 @@ export default function POSPage() {
   // Form Header State
   const [isCredit, setIsCredit] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showPrintConfirm, setShowPrintConfirm] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [invoiceNo, setInvoiceNo] = useState(11590);
@@ -881,40 +882,41 @@ export default function POSPage() {
             </button>
             <button
               type="button"
-              onClick={async () => {
-                // Step 1: Generate the UUID for this invoice
-                const printUuid = crypto.randomUUID();
-                
-                // Step 2: Listen for AFTER print - only save the order if the user actually printed
-                // onafterprint fires whether user clicked Print OR Cancel, but we differentiate
-                // by using a flag that gets set only when printing actually started
-                let didPrint = false;
-                
-                const handleAfterPrint = async () => {
-                  window.removeEventListener('afterprint', handleAfterPrint);
-                  if (didPrint) {
-                    await handleSaveOrder(printUuid);
-                  }
-                };
-                
-                // onbeforeprint fires only when the print is actually submitted
-                const handleBeforePrint = () => {
-                  didPrint = true;
-                  window.removeEventListener('beforeprint', handleBeforePrint);
-                };
-                
-                window.addEventListener('beforeprint', handleBeforePrint);
-                window.addEventListener('afterprint', handleAfterPrint);
-                
-                // Step 3: Open the print dialog
-                window.print();
-              }}
+              onClick={() => setShowPrintConfirm(true)}
               className="py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-black text-sm tracking-wide shadow-lg transition-all flex justify-center items-center gap-2 rounded-xl active:scale-95"
             >
               <Printer className="w-4 h-4" />
               Print
             </button>
           </div>
+
+          {/* Print Confirm Modal */}
+          {showPrintConfirm && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm print:hidden">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-sm w-full">
+                <h3 className="text-lg font-black text-slate-800 mb-1">Confirm Sale?</h3>
+                <p className="text-sm text-slate-500 mb-6">This will save the invoice to Sales records and open the Print dialog.</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowPrintConfirm(false)}
+                    className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setShowPrintConfirm(false);
+                      const saved = await handleSaveOrder();
+                      if (saved) window.print();
+                    }}
+                    className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-black"
+                  >
+                    Save &amp; Print
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
@@ -944,30 +946,30 @@ export default function POSPage() {
           {/* Header Section */}
           <div className="flex relative bg-slate-50 border-b border-slate-200">
               {/* Left Deep Blue area */}
-             <div className="bg-[#0b1a30] text-white px-8 py-6 flex-[0.65] rounded-br-[4rem] flex flex-col justify-center relative z-10">
+             <div style={{background:'#0b1a30',color:'white',padding:'24px 32px',flex:'0.65',borderBottomRightRadius:'4rem',display:'flex',flexDirection:'column',justifyContent:'center',position:'relative',zIndex:10}}>
                  {/* Store name row */}
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-white/10 rounded-2xl p-2 border border-white/20 shrink-0">
+                 <div style={{display:'flex',alignItems:'center',gap:'16px',marginBottom:'16px'}}>
+                    <div style={{width:'56px',height:'56px',background:'rgba(255,255,255,0.1)',borderRadius:'16px',padding:'8px',border:'1px solid rgba(255,255,255,0.2)',flexShrink:0}}>
                       <Logo className="w-full h-full drop-shadow-md" />
                     </div>
                     <div>
-                       <h1 className="text-2xl font-black tracking-widest uppercase leading-tight">{restaurantData.name || 'RETAIL STORE'}</h1>
-                       <div className="flex items-center gap-2 mt-1">
-                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                         <span className="text-blue-300 italic text-base font-serif">{restaurantData.tagline || 'Premium Quality'}</span>
-                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                       <h1 style={{fontSize:'1.5rem',fontWeight:900,letterSpacing:'0.1em',textTransform:'uppercase',lineHeight:1.2,margin:0}}>{restaurantData.name || 'RETAIL STORE'}</h1>
+                       <div style={{display:'flex',alignItems:'center',gap:'8px',marginTop:'4px'}}>
+                         <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#60a5fa',display:'inline-block'}}></span>
+                         <span style={{color:'#93c5fd',fontStyle:'italic',fontSize:'1rem',fontFamily:'Georgia, serif'}}>{restaurantData.tagline || 'Premium Quality'}</span>
+                         <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#60a5fa',display:'inline-block'}}></span>
                        </div>
                     </div>
                  </div>
                  {/* Contact info row - always below store name */}
-                 <div className="flex items-center gap-6 text-[11px] text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-slate-800 p-1.5 rounded-full shrink-0"><Phone className="w-3 h-3 text-slate-300"/></div>
+                 <div style={{display:'flex',alignItems:'center',gap:'24px',fontSize:'11px',color:'#cbd5e1'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                      <div style={{background:'#1e293b',padding:'6px',borderRadius:'50%',flexShrink:0,display:'flex'}}><Phone style={{width:'12px',height:'12px',color:'#94a3b8'}}/></div>
                       <span>{restaurantData.phone || '9876543210'}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="bg-slate-800 p-1.5 rounded-full shrink-0"><MapPin className="w-3 h-3 text-slate-300"/></div>
-                      <span>{restaurantData.address || '123 Retail Street, City, State'}</span>
+                    <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                      <div style={{background:'#1e293b',padding:'6px',borderRadius:'50%',flexShrink:0,display:'flex'}}><MapPin style={{width:'12px',height:'12px',color:'#94a3b8'}}/></div>
+                      <span>{restaurantData.address || '123 Retail Street, City'}</span>
                     </div>
                  </div>
              </div>

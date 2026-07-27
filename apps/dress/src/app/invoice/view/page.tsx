@@ -154,27 +154,27 @@ function InvoiceViewContent() {
           {/* Header Section */}
           <div className="flex relative bg-slate-50 border-b border-slate-200">
              {/* Left Deep Blue area */}
-             <div className="bg-[#0b1a30] text-white px-8 py-6 flex-[0.65] rounded-br-[4rem] flex flex-col justify-center relative z-10">
+             <div style={{background:'#0b1a30',color:'white',padding:'24px 32px',flex:'0.65',borderBottomRightRadius:'4rem',display:'flex',flexDirection:'column',justifyContent:'center',position:'relative',zIndex:10}}>
                  {/* Store name row */}
-                 <div className="flex items-center gap-4 mb-4">
-                    <Shirt className="w-14 h-14 text-white stroke-[1.5] shrink-0" />
+                 <div style={{display:'flex',alignItems:'center',gap:'16px',marginBottom:'16px'}}>
+                    <Shirt style={{width:'56px',height:'56px',flexShrink:0}} className="text-white stroke-[1.5]" />
                     <div>
-                       <h1 className="text-2xl font-black tracking-widest uppercase leading-tight">{store.name || 'RETAIL STORE'}</h1>
-                       <div className="flex items-center gap-2 mt-1">
-                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                         <span className="text-blue-300 italic text-base font-serif">{store.tagline || 'Premium Quality'}</span>
-                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                       <h1 style={{fontSize:'1.5rem',fontWeight:900,letterSpacing:'0.1em',textTransform:'uppercase',lineHeight:1.2,margin:0}}>{store.name || 'RETAIL STORE'}</h1>
+                       <div style={{display:'flex',alignItems:'center',gap:'8px',marginTop:'4px'}}>
+                         <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#60a5fa',display:'inline-block'}}></span>
+                         <span style={{color:'#93c5fd',fontStyle:'italic',fontSize:'1rem',fontFamily:'Georgia, serif'}}>{store.tagline || 'Premium Quality'}</span>
+                         <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#60a5fa',display:'inline-block'}}></span>
                        </div>
                     </div>
                  </div>
                  {/* Contact info row - always below store name */}
-                 <div className="flex items-center gap-6 text-[11px] text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-slate-800 p-1.5 rounded-full shrink-0"><Phone className="w-3 h-3 text-slate-300"/></div>
+                 <div style={{display:'flex',alignItems:'center',gap:'24px',fontSize:'11px',color:'#cbd5e1'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                      <div style={{background:'#1e293b',padding:'6px',borderRadius:'50%',flexShrink:0,display:'flex'}}><Phone style={{width:'12px',height:'12px',color:'#94a3b8'}}/></div>
                       <span>{store.phone}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="bg-slate-800 p-1.5 rounded-full shrink-0"><MapPin className="w-3 h-3 text-slate-300"/></div>
+                    <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                      <div style={{background:'#1e293b',padding:'6px',borderRadius:'50%',flexShrink:0,display:'flex'}}><MapPin style={{width:'12px',height:'12px',color:'#94a3b8'}}/></div>
                       <span>{store.address}</span>
                     </div>
                  </div>
