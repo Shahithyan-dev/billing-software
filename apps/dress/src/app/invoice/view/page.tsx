@@ -154,28 +154,28 @@ function InvoiceViewContent() {
           {/* Header Section */}
           <div className="flex relative bg-slate-50 border-b border-slate-200">
              {/* Left Deep Blue area */}
-             <div className="bg-[#0b1a30] text-white p-8 pb-10 flex-[0.6] rounded-br-[5rem] flex flex-col justify-center relative z-10">
-                 <div className="flex items-center gap-6">
-                    <Shirt className="w-16 h-16 text-white stroke-[1.5]" />
+             <div className="bg-[#0b1a30] text-white p-8 pb-10 flex-[0.7] rounded-br-[5rem] flex items-center justify-between relative z-10">
+                 <div className="flex items-center gap-4 sm:gap-6">
+                    <Shirt className="w-12 h-12 sm:w-16 sm:h-16 text-white stroke-[1.5] shrink-0" />
                     <div>
-                       <h1 className="text-[2.25rem] font-black tracking-widest uppercase leading-none line-clamp-1 max-w-[300px]">{store.name || 'RETAIL STORE'}</h1>
+                       <h1 className="text-xl sm:text-2xl font-black tracking-widest uppercase leading-tight line-clamp-2 max-w-[220px]">{store.name || 'RETAIL STORE'}</h1>
                        <div className="flex items-center gap-2 mt-1">
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                         <span className="text-blue-300 italic text-xl font-serif line-clamp-1 max-w-[250px]">{store.tagline || 'Premium Quality'}</span>
+                         <span className="text-blue-300 italic text-sm sm:text-lg font-serif line-clamp-1 max-w-[180px]">{store.tagline || 'Premium Quality'}</span>
                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                        </div>
                     </div>
                  </div>
                  
-                 {/* Contact section absolute positioned to the right of the blue area */}
-                 <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col gap-3 text-[10px] text-slate-200">
+                 {/* Contact section */}
+                 <div className="flex flex-col gap-3 text-[10px] text-slate-200 shrink-0 ml-4">
                     <div className="flex items-center gap-2">
                       <div className="bg-slate-800 p-1.5 rounded-full"><Phone className="w-3.5 h-3.5 text-slate-300"/></div>
                       <span>{store.phone}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="bg-slate-800 p-1.5 rounded-full"><MapPin className="w-3.5 h-3.5 text-slate-300"/></div> 
-                      <span className="max-w-[100px] leading-tight">{store.address}</span>
+                      <span className="max-w-[120px] leading-tight">{store.address}</span>
                     </div>
                  </div>
              </div>
