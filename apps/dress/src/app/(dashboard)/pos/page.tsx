@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { API_BASE_URL } from '@/config/api';
-import { db, Party } from '@/lib/db';
 import { Logo } from '@/components/Logo';
-import { useLiveQuery } from 'dexie-react-hooks';
 export interface MenuItem {
   id: string;
   name: string;
@@ -75,22 +73,27 @@ function numberToWords(num: number): string {
 
 export default function POSPage() {
   const [dbMenuItems, setDbMenuItems] = useState<MenuItem[]>([]);
-  const dbParties = useLiveQuery(() => db.parties.toArray()) || [];
+  const [dbParties, setDbParties] = useState<any[]>([]);
   
   useEffect(() => {
-    const fetchMenu = async () => {
+    const fetchMenuAndParties = async () => {
       const rid = localStorage.getItem('restaurantId');
       if (rid) {
         try {
-          const res = await fetch(`${API_BASE_URL}/api/v1/inventory/${rid}`);
-          const data = await res.json();
-          if (data.success) setDbMenuItems(data.data || []);
+          const [invRes, parRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/v1/inventory/${rid}`),
+            fetch(`${API_BASE_URL}/api/v1/parties?restaurantId=${rid}`)
+          ]);
+          const invData = await invRes.json();
+          const parData = await parRes.json();
+          if (invData.success) setDbMenuItems(invData.data || []);
+          if (parData.success) setDbParties(parData.data || []);
         } catch (e) {
-          console.error('Failed to fetch menu:', e);
+          console.error('Failed to fetch data:', e);
         }
       }
     };
-    fetchMenu();
+    fetchMenuAndParties();
   }, []);
 
 
@@ -149,8 +152,18 @@ export default function POSPage() {
   // Load next Invoice Number
   useEffect(() => {
     const fetchNextInvoiceNo = async () => {
-      const ordersCount = await db.orders.count();
-      setInvoiceNo(11500 + ordersCount + 1);
+      const rid = localStorage.getItem('restaurantId');
+      if (!rid) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/orders?restaurantId=${rid}`);
+        const data = await res.json();
+        if (data.success) {
+          const ordersCount = data.data.length || 0;
+          setInvoiceNo(11500 + ordersCount + 1);
+        }
+      } catch (e) {
+        console.error('Failed to fetch orders count for invoice no', e);
+      }
     };
     fetchNextInvoiceNo();
   }, []);
@@ -242,7 +255,7 @@ export default function POSPage() {
   };
 
   // Select Party from dropdown
-  const handleSelectParty = (party: Party) => {
+  const handleSelectParty = (party: any) => {
     setCustomerName(party.name);
     setCustomerPhone(party.phone);
     setShowPartyDropdown(false);

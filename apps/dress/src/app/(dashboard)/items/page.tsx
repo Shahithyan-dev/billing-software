@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '@/config/api';
-import { db } from '@/lib/db';
 import { MenuItem } from '@/app/(dashboard)/pos/page';
 import { 
   Package, 
@@ -14,8 +13,7 @@ import {
   Trash2, 
   X, 
   Image as ImageIcon,
-  Camera,
-  RefreshCw
+  Camera
 } from 'lucide-react';
 
 export default function ItemsPage() {
@@ -38,35 +36,6 @@ export default function ItemsPage() {
   }, []);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
-
-
-
-  // Manual Recovery Function
-  const handleManualRecovery = async () => {
-    const restaurantId = localStorage.getItem('restaurantId');
-    if (!restaurantId) return;
-    
-    try {
-      const localItems = await db.menuItems.toArray();
-      if (localItems.length > 0) {
-         setLoading(true);
-         await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
-           method: 'PUT',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ items: localItems }),
-         });
-         setItems(localItems);
-         alert(`Successfully recovered ${localItems.length} products from local storage!`);
-      } else {
-         alert("No local products found to recover.");
-      }
-    } catch(e) {
-      console.error("Recovery failed", e);
-      alert("Failed to recover products.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const saveItems = async (updatedItems: MenuItem[]) => {
     const restaurantId = localStorage.getItem('restaurantId');
@@ -201,13 +170,7 @@ export default function ItemsPage() {
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Apparel Inventory</h1>
           <p className="text-slate-500 text-sm font-medium mt-1">Manage your dress catalog, pricing, and barcodes</p>
           <div className="flex items-center gap-3 w-full md:w-auto mt-3">
-            <button 
-              onClick={handleManualRecovery}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Recover Local Products
-            </button>
+
             <button
               onClick={() => {
                 resetForm();

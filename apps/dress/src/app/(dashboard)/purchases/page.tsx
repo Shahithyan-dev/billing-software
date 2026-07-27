@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { db, Party, Purchase, PurchaseItem } from '@/lib/db';
-import { useLiveQuery } from 'dexie-react-hooks';
+import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { 
   ShoppingBag, 
   Plus, 
@@ -16,9 +15,45 @@ import {
   FileText
 } from 'lucide-react';
 
+interface PurchaseItem {
+  name: string;
+  qty: number;
+  rate: number;
+  total: number;
+}
+
 export default function PurchasesPage() {
-  const purchases = useLiveQuery(() => db.purchases.orderBy('timestamp').reverse().toArray()) || [];
-  const suppliers = useLiveQuery(() => db.parties.filter(p => p.type === 'supplier').toArray()) || [];
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+    setLoading(true);
+    try {
+      const [purRes, parRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/purchases?restaurantId=${restaurantId}`),
+        fetch(`${API_BASE_URL}/api/v1/parties?restaurantId=${restaurantId}`)
+      ]);
+      const purData = await purRes.json();
+      const parData = await parRes.json();
+      
+      if (purData.success) setPurchases(purData.data || []);
+      if (parData.success) {
+        const allParties = parData.data || [];
+        setSuppliers(allParties.filter((p: any) => p.type === 'supplier'));
+      }
+    } catch (e) {
+      console.error('Failed to fetch data', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +69,7 @@ export default function PurchasesPage() {
 
   const filteredPurchases = purchases.filter(p => {
     const matchesSearch = p.supplierName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.items.some(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
+                          p.items.some((i: any) => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesSearch;
   });
 
@@ -79,56 +114,85 @@ export default function PurchasesPage() {
 
     const selectedSupplierDetails = suppliers.find(s => s.name === supplierName);
     
-    if (!selectedSupplierDetails) {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+
+    let finalSupplier = selectedSupplierDetails;
+    if (!finalSupplier) {
       try {
-        await db.parties.add({
-          type: 'supplier',
-          name: supplierName,
-          phone: '',
+        const res = await fetch(`${API_BASE_URL}/api/v1/parties`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'supplier', name: supplierName, phone: '', restaurantId })
         });
+        const data = await res.json();
+        if (data.success) finalSupplier = data.data;
       } catch(e) {
         console.error("Failed to auto-create supplier", e);
       }
     }
 
-    const newPurchase: Purchase = {
+    const newPurchase = {
+      restaurantId,
+      supplier: finalSupplier?._id || supplierName,
       supplierName,
-      phone: selectedSupplierDetails?.phone || '',
       items: itemsList,
-      subtotal,
-      tax,
       total,
-      paymentMethod,
-      timestamp: Date.now()
+      status: paymentMethod === 'CREDIT' ? 'Unpaid' : 'Paid',
     };
 
     try {
-      await db.purchases.add(newPurchase);
+      await fetch(`${API_BASE_URL}/api/v1/purchases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPurchase)
+      });
 
-      // Increase stock for each purchased item by matching name
-      for (const purchasedItem of itemsList) {
-        if (!purchasedItem.name) continue;
-        const allItems = await db.menuItems.toArray();
-        const matched = allItems.find(m =>
-          m.name.toLowerCase().trim() === purchasedItem.name.toLowerCase().trim()
-        );
-        if (matched) {
-          const newStock = (Number(matched.stock) || 0) + Number(purchasedItem.qty);
-          const updatedItem = { ...matched, stock: newStock };
-          await db.menuItems.put(updatedItem);
+      // Increase stock for each purchased item
+      try {
+        const invRes = await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`);
+        const invData = await invRes.json();
+        if (invData.success && invData.data) {
+          const allItems = invData.data;
+          let updated = false;
+          for (const purchasedItem of itemsList) {
+            if (!purchasedItem.name) continue;
+            const matched = allItems.find((m: any) =>
+              m.name.toLowerCase().trim() === purchasedItem.name.toLowerCase().trim()
+            );
+            if (matched) {
+              matched.stock = (Number(matched.stock) || 0) + Number(purchasedItem.qty);
+              updated = true;
+            }
+          }
+          if (updated) {
+            await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items: allItems })
+            });
+          }
         }
+      } catch (e) {
+        console.error("Failed to update inventory stock:", e);
       }
 
       setIsModalOpen(false);
       resetForm();
+      fetchData();
     } catch (err) {
       console.error("Failed to record purchase invoice:", err);
     }
   };
 
-  const handleDeletePurchase = async (id: number) => {
+  const handleDeletePurchase = async (id: string) => {
     if (confirm("Are you sure you want to delete this purchase invoice log?")) {
-      await db.purchases.delete(id);
+      try {
+        await fetch(`${API_BASE_URL}/api/v1/purchases/${id}`, { method: 'DELETE' });
+        fetchData();
+      } catch (err) {
+        console.error("Failed to delete purchase:", err);
+      }
     }
   };
 
@@ -197,11 +261,11 @@ export default function PurchasesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPurchases.map((purchase) => (
             <div
-              key={purchase.id}
+              key={purchase._id}
               className="bg-white border border-slate-200 rounded-[1.5rem] p-6 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 transition-all duration-300 relative group flex flex-col"
             >
               <button
-                onClick={() => purchase.id && handleDeletePurchase(purchase.id)}
+                onClick={() => purchase._id && handleDeletePurchase(purchase._id)}
                 className="absolute top-4 right-4 text-slate-300 hover:text-amber-600 hover:bg-amber-50 p-2 rounded-xl transition-all opacity-0 group-hover:opacity-100"
               >
                 <Trash2 className="w-4 h-4" />
@@ -230,7 +294,7 @@ export default function PurchasesPage() {
                 </div>
 
                 <div className="space-y-1.5 max-h-[100px] overflow-y-auto pr-1">
-                  {purchase.items.map((item, idx) => (
+                  {purchase.items.map((item: any, idx: number) => (
                     <div key={idx} className="flex justify-between text-xs text-slate-600 font-semibold">
                       <span className="line-clamp-1">{item.name}</span>
                       <div className="flex gap-8 shrink-0">

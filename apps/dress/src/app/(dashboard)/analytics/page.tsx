@@ -7,12 +7,36 @@ import {
 } from 'recharts';
 import { IndianRupee, ShoppingBag, Users, Clock, TrendingUp, MoreHorizontal } from 'lucide-react';
 
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/db';
+import { API_BASE_URL } from '@/config/api';
 
 const Dashboard = () => {
-  const allOrders = useLiveQuery(() => db.orders.toArray(), []) || [];
-  const menuItems = useLiveQuery(() => db.menuItems.toArray(), []) || [];
+  const [allOrders, setAllOrders] = React.useState<any[]>([]);
+  const [menuItems, setMenuItems] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const fetchData = React.useCallback(async () => {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+    setLoading(true);
+    try {
+      const [ordRes, invRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/orders?restaurantId=${restaurantId}`),
+        fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`)
+      ]);
+      const ordData = await ordRes.json();
+      const invData = await invRes.json();
+      if (ordData.success) setAllOrders(ordData.data || []);
+      if (invData.success) setMenuItems(invData.data || []);
+    } catch (e) {
+      console.error('Failed to fetch analytics data', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
   
   // Calculate today's metrics
   const today = new Date().setHours(0,0,0,0);
@@ -21,7 +45,7 @@ const Dashboard = () => {
   const totalSales = todayOrders.reduce((sum, order) => sum + order.total, 0);
   
   const todayProfit = todayOrders.reduce((sum, order) => {
-    const cost = order.items.reduce((c, item) => {
+    const cost = order.items.reduce((c: number, item: any) => {
       const invItem = menuItems.find(mi => mi.name === item.name);
       return c + ((invItem?.purchasePrice || 0) * item.quantity);
     }, 0);
@@ -48,7 +72,7 @@ const Dashboard = () => {
   // Compute Top Items
   const itemMap = new Map();
   allOrders.forEach(o => {
-    o.items.forEach(item => {
+    o.items.forEach((item: any) => {
       const existing = itemMap.get(item.name) || { qty: 0, rev: 0 };
       itemMap.set(item.name, {
         qty: existing.qty + item.quantity,

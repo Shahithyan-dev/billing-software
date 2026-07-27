@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/db';
+
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -187,24 +187,7 @@ export default function DashboardLayout({
           };
           localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
 
-          if (t.defaultMenu && t.defaultMenu.length > 0) {
-            const currentCount = await db.menuItems.count();
-            // Only sync from backend if local DB is completely empty. 
-            // This prevents overwriting local stock deductions during local testing.
-            if (currentCount === 0) {
-              await db.menuItems.clear();
-              const itemsToInsert = t.defaultMenu.map((m: any) => ({
-                ...m,
-                id: String(m.id || crypto.randomUUID()),
-                price: Number(m.price) || 0,
-                purchasePrice: Number(m.purchasePrice) || 0,
-                stock: Number(m.stock) || 0,
-                type: m.type || 'standard',
-                img: m.img || ''
-              }));
-              await db.menuItems.bulkPut(itemsToInsert);
-            }
-          }
+
         }
       } catch (e) {
         // Ignore network errors silently

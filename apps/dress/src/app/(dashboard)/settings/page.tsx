@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Database
 } from 'lucide-react';
-import { db } from '@/lib/db';
+
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
@@ -101,15 +101,27 @@ export default function SettingsPage() {
     setGstin(demoDetails.gstin);
     setAddress(demoDetails.address);
 
-    // Seed Dexie DB with Dress Items
-    await db.menuItems.clear();
-    await db.menuItems.bulkAdd([
+    // Push Demo Data to Cloud
+    const demoItems = [
       { id: crypto.randomUUID(), name: 'Kanchipuram Silk Saree', price: 15000, purchasePrice: 12000, category: 'Sarees', type: 'standard', stock: 10, img: 'https://images.unsplash.com/photo-1610189013233-018fcc13dc4e?auto=format&fit=crop&q=80&w=200' },
       { id: crypto.randomUUID(), name: 'Cotton Kurti', price: 850, purchasePrice: 500, category: 'Kurtis', type: 'standard', stock: 50, img: 'https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?auto=format&fit=crop&q=80&w=200' },
       { id: crypto.randomUUID(), name: 'Designer Lehenga', price: 25000, purchasePrice: 18000, category: 'Lehengas', type: 'standard', stock: 5, img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=200' },
       { id: crypto.randomUUID(), name: 'Mens Casual Shirt', price: 1200, purchasePrice: 800, category: 'Shirts', type: 'standard', stock: 30, img: 'https://images.unsplash.com/photo-1596755094514-f87e32f6b717?auto=format&fit=crop&q=80&w=200' },
       { id: crypto.randomUUID(), name: 'Denim Jeans', price: 1800, purchasePrice: 1000, category: 'Jeans', type: 'standard', stock: 25, img: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&q=80&w=200' }
-    ]);
+    ];
+
+    try {
+      const restaurantId = localStorage.getItem('restaurantId');
+      if (restaurantId) {
+        await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: demoItems })
+        });
+      }
+    } catch(e) {
+      console.error("Failed to push demo data", e);
+    }
     
     setSuccess("Demo Data loaded successfully! Go to the POS dashboard to see the items.");
     setLoading(false);

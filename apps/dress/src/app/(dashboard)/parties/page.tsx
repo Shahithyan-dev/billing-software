@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { db, Party } from '@/lib/db';
-import { useLiveQuery } from 'dexie-react-hooks';
+import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { 
   Users, 
   Plus, 
@@ -18,7 +17,29 @@ import {
 } from 'lucide-react';
 
 export default function PartiesPage() {
-  const parties = useLiveQuery(() => db.parties.toArray()) || [];
+  const [parties, setParties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchParties = useCallback(async () => {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/parties?restaurantId=${restaurantId}`);
+      const data = await res.json();
+      if (data.success) {
+        setParties(data.data || []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch parties', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchParties();
+  }, [fetchParties]);
   
   const [activeTab, setActiveTab] = useState<'customer' | 'supplier'>('customer');
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,11 +63,11 @@ export default function PartiesPage() {
   // Totals calculations
   const totalReceivable = parties
     .filter(p => p.type === 'customer')
-    .reduce((sum, p) => sum + (Number(p.openingBalance) || 0), 0);
+    .reduce((sum, p) => sum + (Number(p.balance) || 0), 0);
 
   const totalPayable = parties
     .filter(p => p.type === 'supplier')
-    .reduce((sum, p) => sum + (Number(p.openingBalance) || 0), 0);
+    .reduce((sum, p) => sum + (Number(p.balance) || 0), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,28 +76,42 @@ export default function PartiesPage() {
       return;
     }
 
-    const newParty: Party = {
+    const restaurantId = localStorage.getItem('restaurantId');
+    if (!restaurantId) return;
+
+    const newParty = {
+      restaurantId,
       type: activeTab,
       name,
       phone,
       email: email || undefined,
       gstin: gstin || undefined,
       address: address || undefined,
-      openingBalance: parseFloat(openingBalance) || 0
+      balance: parseFloat(openingBalance) || 0
     };
 
     try {
-      await db.parties.add(newParty);
+      await fetch(`${API_BASE_URL}/api/v1/parties`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newParty)
+      });
       setIsModalOpen(false);
       resetForm();
+      fetchParties();
     } catch (err) {
       console.error("Failed to add party:", err);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this party?")) {
-      await db.parties.delete(id);
+      try {
+        await fetch(`${API_BASE_URL}/api/v1/parties/${id}`, { method: 'DELETE' });
+        fetchParties();
+      } catch (err) {
+        console.error("Failed to delete party:", err);
+      }
     }
   };
 
@@ -175,11 +210,11 @@ export default function PartiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredParties.map((party) => (
             <div
-              key={party.id}
+              key={party._id}
               className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-100/80 transition-all duration-300 relative group overflow-hidden"
             >
               <button
-                onClick={() => party.id && handleDelete(party.id)}
+                onClick={() => party._id && handleDelete(party._id)}
                 className="absolute top-4 right-4 text-slate-300 hover:text-amber-600 hover:bg-amber-50 p-2 rounded-xl transition-all opacity-0 group-hover:opacity-100"
               >
                 <Trash2 className="w-4 h-4" />

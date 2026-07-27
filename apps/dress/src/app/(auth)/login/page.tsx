@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from '@/hooks/useNavigate';
-import { db } from '@/lib/db';
+
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 
@@ -85,25 +85,7 @@ const Login = () => {
               };
               localStorage.setItem('servewell_restaurant_details', JSON.stringify(normalized));
 
-              if (t.defaultMenu && t.defaultMenu.length > 0) {
-                const currentCount = await db.menuItems.count();
-                if (currentCount === 0) {
-                  await db.menuItems.clear();
-                  const itemsToInsert = t.defaultMenu.map((m: any) => ({
-                    ...m,
-                    id: String(m.id || crypto.randomUUID()),
-                    price: Number(m.price) || 0,
-                    purchasePrice: Number(m.purchasePrice) || 0,
-                    stock: Number(m.stock) || 0,
-                    type: m.type || 'standard',
-                    img: m.img || ''
-                  }));
-                  await db.menuItems.bulkPut(itemsToInsert);
-                  console.log(`✅ Synced ${itemsToInsert.length} items from backend`);
-                } else {
-                  console.log(`✅ Local DB already has items, skipping backend menu overwrite to preserve stock`);
-                }
-              }
+
             }
           } catch (e) {
             console.error("Failed to sync tenant data", e);
