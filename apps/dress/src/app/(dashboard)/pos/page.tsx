@@ -920,7 +920,7 @@ export default function POSPage() {
           {/* Header Section */}
           <div className="flex relative bg-slate-50 border-b border-slate-200">
               {/* Left Deep Blue area */}
-             <div className="bg-[#0b1a30] text-white p-8 pb-10 flex-[0.7] rounded-br-[5rem] flex items-center justify-between relative z-10">
+             <div className="bg-[#0b1a30] text-white p-6 sm:p-8 pb-8 sm:pb-10 flex-[0.7] rounded-br-[3rem] sm:rounded-br-[5rem] flex flex-col sm:flex-row items-start sm:items-center justify-between relative z-10 gap-4 sm:gap-0">
                  <div className="flex items-center gap-4 sm:gap-6">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/10 rounded-2xl p-2 border border-white/20 shrink-0">
                       <Logo className="w-full h-full drop-shadow-md" />
@@ -936,14 +936,14 @@ export default function POSPage() {
                  </div>
                  
                  {/* Contact section */}
-                 <div className="flex flex-col gap-3 text-[10px] text-slate-200 shrink-0 ml-4">
+                 <div className="flex flex-col gap-2 sm:gap-3 text-[10px] text-slate-200 shrink-0 ml-0 sm:ml-4">
                     <div className="flex items-center gap-2">
                       <div className="bg-slate-800 p-1.5 rounded-full"><Phone className="w-3.5 h-3.5 text-slate-300"/></div>
                       <span>{restaurantData.phone || '9876543210'}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="bg-slate-800 p-1.5 rounded-full"><MapPin className="w-3.5 h-3.5 text-slate-300"/></div> 
-                      <span className="max-w-[120px] leading-tight">{restaurantData.address || '123 Retail Street, City, State'}</span>
+                      <span className="max-w-[150px] leading-tight">{restaurantData.address || '123 Retail Street, City, State'}</span>
                     </div>
                  </div>
              </div>
