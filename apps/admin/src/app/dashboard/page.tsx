@@ -7,6 +7,7 @@ export default function SuperAdminDashboard() {
   const router = useRouter();
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [approvalLayouts, setApprovalLayouts] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -17,6 +18,7 @@ export default function SuperAdminDashboard() {
   const [isBulkPasting, setIsBulkPasting] = useState(false);
   const [selectedSoftware, setSelectedSoftware] = useState<'restaurant' | 'dress' | null>(null);
   const [currentCategories, setCurrentCategories] = useState<string>('');
+  const [showManualForm, setShowManualForm] = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
 
@@ -90,9 +92,14 @@ export default function SuperAdminDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
+      const layout = approvalLayouts[id];
       const res = await fetch(`${API_BASE_URL}/api/v1/auth/register-requests/${id}/approve`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(layout ? { layout } : {})
       });
       const result = await res.json();
       if (result.success) {
@@ -445,6 +452,12 @@ export default function SuperAdminDashboard() {
             Switch Software
           </button>
           <button 
+            onClick={() => setShowManualForm(!showManualForm)}
+            className={`text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-sm ${showManualForm ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200'}`}
+          >
+            {showManualForm ? 'Hide Manual Form' : 'Manual Provisioning'}
+          </button>
+          <button 
             onClick={handleLogout}
             className="text-sm font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-all"
           >
@@ -484,6 +497,32 @@ export default function SuperAdminDashboard() {
                   <div className="text-xs text-slate-600 mb-4 space-y-1">
                     <p><span className="font-semibold text-slate-400">Email:</span> {req.email}</p>
                     <p><span className="font-semibold text-slate-400">Phone:</span> {req.phone}</p>
+                    <p><span className="font-semibold text-slate-400">Address:</span> {req.address || 'N/A'}</p>
+                    <p><span className="font-semibold text-slate-400">GSTIN:</span> {req.gstNumber || 'N/A'}</p>
+                    <p><span className="font-semibold text-slate-400">Plan:</span> {req.plan ? req.plan.replace('_', ' ').toUpperCase() : 'N/A'}</p>
+                  </div>
+                  
+                  {req.rawMenuText && (
+                    <div className="mb-4 bg-white/60 rounded-lg p-2.5 border border-amber-200 shadow-inner">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bulk Uploaded Data</span>
+                        <span className="bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">{req.rawMenuText.split('\n').filter((l:string)=>l.trim()).length} items</span>
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-600 max-h-16 overflow-y-auto whitespace-pre-wrap leading-tight bg-slate-50 p-1.5 rounded border border-slate-100">
+                        {req.rawMenuText}
+                      </div>
+                    </div>
+                  )}
+                  <div className="mb-4">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Assign Layout</label>
+                    <select 
+                      value={approvalLayouts[req._id] || req.businessType}
+                      onChange={(e) => setApprovalLayouts({...approvalLayouts, [req._id]: e.target.value})}
+                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 outline-none focus:ring-2 focus:ring-amber-500/20"
+                    >
+                      <option value="restaurant">Restaurant POS</option>
+                      <option value="dress">Retail POS</option>
+                    </select>
                   </div>
                   <div className="flex gap-2">
                     <button 
@@ -508,9 +547,10 @@ export default function SuperAdminDashboard() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto p-4 sm:p-8 grid lg:grid-cols-[1.5fr_1fr] gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
+      <div className={`max-w-7xl mx-auto p-4 sm:p-8 grid ${(showManualForm || editingTenantId) ? 'lg:grid-cols-[1.5fr_1fr]' : 'grid-cols-1'} gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out`}>
         
         {/* Create / Edit Restaurant Form */}
+        {(showManualForm || editingTenantId) && (
         <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white h-fit relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-[2rem] -z-10 opacity-50"></div>
           
@@ -820,6 +860,7 @@ export default function SuperAdminDashboard() {
             </button>
           </form>
         </div>
+        )}
 
         {/* Existing Tenants */}
         <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white h-fit sticky top-[100px]">

@@ -4,3 +4,5 @@ build/
 .env
 .gemini/
 .DS_Store
+
+*.exe

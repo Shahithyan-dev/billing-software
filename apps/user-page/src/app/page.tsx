@@ -10,62 +10,12 @@ import {
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<'restaurant' | 'dress'>('restaurant');
   const [pricingIndustry, setPricingIndustry] = useState<'restaurant' | 'retail'>('restaurant');
   const [pricingTier, setPricingTier] = useState<'standard' | 'unlimited'>('unlimited');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
   
   // Mock variables for available lifetime spots (fetch from backend later)
   const lifetimeSpotsTotal = 50;
   const lifetimeSpotsSold = 30;
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
-
-  const openRegistration = (type: 'restaurant' | 'dress') => {
-    setSelectedType(type);
-    setIsModalOpen(true);
-    setSuccess(false);
-    setError('');
-  };
-
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const formData = new FormData(e.currentTarget);
-    const payload = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      businessName: formData.get('businessName') as string,
-      password: formData.get('password') as string,
-      businessType: selectedType
-    };
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/register-request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setSuccess(true);
-        (e.target as HTMLFormElement).reset();
-      } else {
-        setError(result.error || 'Failed to submit registration');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans selection:bg-blue-900/30 overflow-x-hidden">
@@ -153,18 +103,20 @@ export default function LandingPage() {
               </p>
               
               <div className="flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-4 animate-fade-in-up delay-300">
-                <button 
-                  onClick={() => window.scrollTo({ top: document.getElementById('industries')?.offsetTop || 0, behavior: 'smooth' })} 
+                <a 
+                  href="/downloads/ZyncoBill-Windows-Setup.exe"
+                  download
                   className="w-full sm:w-auto px-8 py-4 bg-blue-950 hover:bg-blue-900 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-blue-900/20 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
                 >
-                  <Monitor className="w-5 h-5" /> Desktop App
-                </button>
-                <button 
-                  onClick={() => window.scrollTo({ top: document.getElementById('industries')?.offsetTop || 0, behavior: 'smooth' })} 
+                  <Monitor className="w-5 h-5" /> Download for Windows
+                </a>
+                <a 
+                  href="/downloads/ZyncoBill-Android-App.apk"
+                  download
                   className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 hover:border-blue-950 text-blue-950 font-bold rounded-xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
                 >
-                  <Smartphone className="w-5 h-5" /> Mobile App
-                </button>
+                  <Smartphone className="w-5 h-5" /> Download for Android
+                </a>
               </div>
               <p className="mt-6 text-sm font-bold text-slate-500 animate-fade-in-up delay-400">Available for Windows, macOS, Android, and iOS.</p>
             </div>
@@ -240,9 +192,9 @@ export default function LandingPage() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {[
-              { icon: Printer, title: "Professional Invoicing", desc: "Create GST and non-GST bills in seconds. Choose from multiple professional templates and print directly." },
+              { icon: Printer, title: "Universal Printer Support", desc: "Create GST and non-GST bills in seconds. Fully supports 2-inch, 3-inch, and 4-inch thermal printers, plus standard A4 sizes." },
               { icon: PackageOpen, title: "Inventory Management", desc: "Track stock in real-time. Get low stock alerts, manage batches, and handle returns effortlessly." },
-              { icon: MessageSquare, title: "WhatsApp Integration", desc: "Send invoices, payment reminders, and greetings directly to your customers' WhatsApp." },
+              { icon: MessageSquare, title: "WhatsApp Billing", desc: "Send invoices directly to your customers' WhatsApp. Basic plans include 100 messages/month, unlimited plans have no limits." },
               { icon: BarChart3, title: "Business Reports", desc: "Access 20+ comprehensive reports including Sales, Profit & Loss, GST reports, and Day Book." },
               { icon: Smartphone, title: "Multi-Device Sync", desc: "Use on Mobile, Desktop, and Web. Your data syncs instantly and securely across all devices." },
               { icon: Shield, title: "100% Data Security", desc: "Your data is end-to-end encrypted with automatic daily cloud backups. Never lose a single invoice." }
@@ -281,21 +233,25 @@ export default function LandingPage() {
                 <ChefHat className="w-10 h-10 text-blue-600" />
               </div>
               <h3 className="text-3xl font-black text-blue-950 mb-4">Restaurant POS</h3>
-              <ul className="space-y-3 mb-10 w-full">
-                {["Dine-in Table Management", "Kitchen Display System (KDS)", "Recipe & Raw Material Tracking", "Swiggy/Zomato Integration Support"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-600 font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" /> {item}
+              <ul className="space-y-3 mb-10 w-full grid grid-cols-2 gap-x-2">
+                {[
+                  "Advanced POS", "Kitchen Display (KDS)", "Inventory & Recipes", 
+                  "Table Reservations", "Analytics Dashboard", "Staff Management", 
+                  "Customer Loyalty", "Hardware Integration", "Role Security", "Online Orders"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-slate-600 font-medium text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
               
-              {/* <button 
-                onClick={() => openRegistration('restaurant')}
+               {/* <button 
+                onClick={() => router.push('/register?industry=restaurant&plan=monthly_standard')}
                 className="mt-auto w-full bg-blue-950 hover:bg-blue-900 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:-translate-y-1"
               >
                 Start Restaurant Free Trial
               </button> */}
-            </div>
+            </div> 
 
             {/* Retail POS */}
             <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-2xl flex flex-col items-start group">
@@ -303,16 +259,20 @@ export default function LandingPage() {
                 <PackageOpen className="w-10 h-10 text-amber-500" />
               </div>
               <h3 className="text-3xl font-black text-blue-950 mb-4">Retail & Garments POS</h3>
-              <ul className="space-y-3 mb-10 w-full">
-                {["Barcode Generation & Scanning", "Size & Color Variant Management", "Customer Loyalty Points", "Supplier Ledger & Payables"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-600 font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0" /> {item}
+              <ul className="space-y-3 mb-10 w-full grid grid-cols-2 gap-x-2">
+                {[
+                  "Smart Dashboard", "Parties & Suppliers", "Items & Categories", 
+                  "Sale Invoices", "Purchase Orders", "Barcode Scanning", 
+                  "Customer Loyalty", "Discount Management", "Detailed Settings", "Analytics"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-slate-600 font-medium text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0" /> {item}
                   </li>
                 ))}
               </ul>
               
               {/* <button 
-                onClick={() => openRegistration('dress')}
+                onClick={() => router.push('/register?industry=retail&plan=monthly_standard')}
                 className="mt-auto w-full bg-amber-500 hover:bg-amber-600 text-blue-950 font-black py-4 rounded-xl transition-all shadow-lg hover:-translate-y-1"
               >
                 Start Retail Free Trial
@@ -331,7 +291,7 @@ export default function LandingPage() {
             <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10">Choose the plan that best fits your business. No hidden fees.</p>
             
             {/* Industry Toggle */}
-            <div className="inline-flex bg-slate-100 p-1.5 rounded-full shadow-inner mb-4">
+             <div className="inline-flex bg-slate-100 p-1.5 rounded-full shadow-inner mb-4">
               <button 
                 onClick={() => setPricingIndustry('restaurant')}
                 className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${pricingIndustry === 'restaurant' ? 'bg-white text-blue-950 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
@@ -344,7 +304,7 @@ export default function LandingPage() {
               >
                 Retail & Boutique
               </button>
-            </div>
+            </div> 
 
             <div className="w-full mb-8">
               {/* Tier Toggle */}
@@ -377,15 +337,15 @@ export default function LandingPage() {
               <ul className="space-y-4 mb-8 flex-1">
                 {(pricingIndustry === 'restaurant' ? (
                   pricingTier === 'standard' ? [
-                    'Basic Invoicing', 'Table Management', 'Standard KOTs', 'Basic Inventory', 'Email Receipts'
+                    'Standard POS Invoicing', 'Basic Table Management', 'Standard KOTs', 'Basic Inventory', 'Basic Staff Roles', 'Standard Analytics', '100 WhatsApp Receipts/mo', 'Supports 2", 3", 4" & A4 Printers'
                   ] : [
-                    'Unlimited Invoicing', 'Advanced Table & KOT', 'Kitchen Display System', 'Advanced Inventory', 'WhatsApp Receipts'
+                    'Advanced POS Invoicing', 'Table Reservations', 'Kitchen Display System', 'Recipe & Inventory', 'Advanced Staff Roles', 'Detailed Analytics', 'Hardware Integration', 'Unlimited WhatsApp Receipts', 'Supports 2", 3", 4" & A4 Printers'
                   ]
                 ) : (
                   pricingTier === 'standard' ? [
-                    'Basic Invoicing', 'Barcode Scanning', 'Simple Inventory', 'Supplier List', 'Email Receipts'
+                    'Standard Invoicing', 'Barcode Scanning', 'Simple Inventory', 'Parties & Suppliers', 'Basic Purchases', 'Standard Analytics', '100 WhatsApp Receipts/mo', 'Supports 2", 3", 4" & A4 Printers'
                   ] : [
-                    'Unlimited Invoicing', 'Advanced Barcode', 'Variant Inventory (Sizes/Colors)', 'Supplier Management', 'WhatsApp Receipts'
+                    'Unlimited Sale Invoices', 'Advanced Barcode', 'Advanced Inventory', 'Detailed Parties', 'Advanced Purchases', 'Detailed Analytics', 'Loyalty Programs', 'Unlimited WhatsApp Receipts', 'Supports 2", 3", 4" & A4 Printers'
                   ]
                 )).map((feat, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -394,7 +354,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <button onClick={() => { setSelectedType(pricingIndustry === 'restaurant' ? 'restaurant' : 'dress'); setIsModalOpen(true); }} className="w-full py-4 rounded-xl font-bold text-blue-950 bg-white border-2 border-slate-200 hover:border-blue-950 transition-all">Start Free Trial</button>
+              <button onClick={() => router.push(`/register?industry=${pricingIndustry}&plan=monthly_${pricingTier}`)} className="w-full py-4 rounded-xl font-bold text-blue-950 bg-white border-2 border-slate-200 hover:border-blue-950 transition-all">Start Free Trial</button>
             </div>
 
             {/* Yearly Plan */}
@@ -411,15 +371,15 @@ export default function LandingPage() {
               <ul className="space-y-4 mb-8 flex-1">
                 {(pricingIndustry === 'restaurant' ? (
                   pricingTier === 'standard' ? [
-                    'Everything in Monthly', 'Basic Recipe Costing', 'Single-user Access', 'Standard Support'
+                    'Everything in Monthly', 'Basic Recipe Costing', 'Single-user Access', 'Standard Online Orders', 'Standard Support'
                   ] : [
-                    'Everything in Monthly', 'Advanced Recipe Costing', 'Waiter Ordering App', 'Multi-user Access', 'Priority Support'
+                    'Everything in Monthly', 'Advanced Recipe Costing', 'Waiter Ordering App', 'Multi-user Access', 'Advanced Online Orders', 'Priority Support'
                   ]
                 ) : (
                   pricingTier === 'standard' ? [
-                    'Everything in Monthly', 'Basic Stock Alerts', 'Single-user Access', 'Standard Support'
+                    'Everything in Monthly', 'Basic Stock Alerts', 'Single-user Access', 'Standard Device Sync', 'Standard Support'
                   ] : [
-                    'Everything in Monthly', 'Advanced Stock Alerts', 'Sales Analytics', 'Multi-user Access', 'Priority Support'
+                    'Everything in Monthly', 'Advanced Stock Alerts', 'Sales Analytics', 'Multi-user Access', 'Cloud Multi-Device Sync', 'Priority Support'
                   ]
                 )).map((feat, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -428,7 +388,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <button onClick={() => { setSelectedType(pricingIndustry === 'restaurant' ? 'restaurant' : 'dress'); setIsModalOpen(true); }} className="w-full py-4 rounded-xl font-black text-blue-950 bg-amber-500 hover:bg-amber-400 shadow-lg shadow-amber-500/20 transition-all">Get Yearly Plan</button>
+              <button onClick={() => router.push(`/register?industry=${pricingIndustry}&plan=yearly_${pricingTier}`)} className="w-full py-4 rounded-xl font-black text-blue-950 bg-amber-500 hover:bg-amber-400 shadow-lg shadow-amber-500/20 transition-all">Get Yearly Plan</button>
             </div>
 
             {/* Lifetime Plan */}
@@ -466,7 +426,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => { setSelectedType(pricingIndustry === 'restaurant' ? 'restaurant' : 'dress'); setIsModalOpen(true); }} className="w-full py-4 rounded-xl font-bold text-amber-900 bg-amber-200 hover:bg-amber-300 transition-all relative z-10">Start Free Trial & Lock Price</button>
+                <button onClick={() => router.push(`/register?industry=${pricingIndustry}&plan=lifetime`)} className="w-full py-4 rounded-xl font-black text-white bg-blue-950 hover:bg-blue-900 shadow-lg shadow-blue-900/20 transition-all">Claim Lifetime Access</button>
               </div>
             )}
           </div>
@@ -532,88 +492,7 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Registration Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity duration-300">
-          <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden transform transition-all scale-100 border border-slate-100">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-slate-50/50">
-              <h2 className="text-xl font-extrabold text-blue-950 flex items-center gap-2 tracking-tight">
-                <span className="w-2 h-6 rounded-full bg-amber-500 block"></span>
-                Join ZyncoBill {selectedType === 'restaurant' ? 'Dining' : 'Retail'}
-              </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-2 rounded-full transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-8">
-              {success ? (
-                <div className="text-center py-6">
-                  <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-100">
-                    <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-                  </div>
-                  <h3 className="text-2xl font-extrabold text-blue-950 mb-3 tracking-tight">Welcome to ZyncoBill!</h3>
-                  <p className="text-slate-500 mb-8 leading-relaxed font-medium">
-                    Your registration request has been successfully submitted. Our team will review your application and provision your workspace shortly.
-                  </p>
-                  <button 
-                    onClick={() => setIsModalOpen(false)}
-                    className="w-full bg-blue-950 hover:bg-blue-900 text-white font-bold py-4 rounded-xl transition-colors shadow-lg shadow-blue-900/20 text-lg"
-                  >
-                    Done
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleRegister} className="space-y-5">
-                  {error && (
-                    <div className="bg-rose-50 text-rose-600 p-4 rounded-xl text-sm font-bold border border-rose-100 flex items-center gap-2 shadow-inner">
-                      <Shield className="w-4 h-4 shrink-0" /> {error}
-                    </div>
-                  )}
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-blue-900/70 uppercase tracking-wider mb-2 ml-1">Full Name</label>
-                    <input name="name" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none bg-slate-50 focus:bg-white text-blue-950" placeholder="John Doe" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-blue-900/70 uppercase tracking-wider mb-2 ml-1">Business Name</label>
-                    <input name="businessName" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none bg-slate-50 focus:bg-white text-blue-950" placeholder={selectedType === 'restaurant' ? 'The Golden Spoon Cafe' : 'Aura Boutique'} />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-blue-900/70 uppercase tracking-wider mb-2 ml-1">Phone</label>
-                      <input name="phone" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none bg-slate-50 focus:bg-white text-blue-950" placeholder="10-digit number" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-blue-900/70 uppercase tracking-wider mb-2 ml-1">Email</label>
-                      <input name="email" type="email" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none bg-slate-50 focus:bg-white text-blue-950" placeholder="john@example.com" />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-blue-900/70 uppercase tracking-wider mb-2 ml-1">Secure Password</label>
-                    <input name="password" type="password" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none bg-slate-50 focus:bg-white text-blue-950" placeholder="Create a strong password" />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={loading}
-                    className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-blue-950 font-black text-lg py-4 rounded-xl mt-4 transition-all shadow-xl shadow-amber-500/30 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
-                  >
-                    {loading ? 'Processing Request...' : 'Start Free Trial'} <ArrowRight className="w-5 h-5" />
-                  </button>
-                  
-                  <p className="text-center text-xs text-slate-400 font-medium mt-4">
-                    By registering, you agree to our Terms of Service & Privacy Policy.
-                  </p>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Registration Modal Removed - Redirected to /register */}
     </div>
   );
 }

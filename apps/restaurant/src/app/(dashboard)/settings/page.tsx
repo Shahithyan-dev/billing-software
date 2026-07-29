@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Settings as SettingsIcon, CloudSync, DatabaseBackup, Store, Shield, Key } from 'lucide-react';
+import { Settings as SettingsIcon, CloudSync, DatabaseBackup, Store, Shield, Key, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Settings = () => {
@@ -21,7 +21,34 @@ const Settings = () => {
       </header>
 
       <div className="flex-1 overflow-auto bg-card border border-border rounded-xl shadow-sm p-8 flex flex-col gap-8">
-        
+        {/* Hardware & Printing */}
+        <section>
+          <h3 className="text-lg font-bold flex items-center gap-2 mb-4 border-b border-border pb-2">
+            <Printer className="w-5 h-5 text-blue-500" />
+            Hardware & Printing
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Default Paper Size (Thermal & A4)</label>
+              <select 
+                className="w-full bg-background border border-input rounded-md px-4 py-2"
+                defaultValue={typeof window !== 'undefined' ? localStorage.getItem('zyncobill_print_size') || '80mm' : '80mm'}
+                onChange={(e) => {
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('zyncobill_print_size', e.target.value);
+                  }
+                }}
+              >
+                <option value="58mm">58mm (Small Thermal)</option>
+                <option value="80mm">80mm (Standard 3-inch Thermal)</option>
+                <option value="100mm">100mm (Wide 4-inch Thermal)</option>
+                <option value="A4">A4 / A5 (Standard Printer)</option>
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">Changes the dynamic width of your receipts and invoices globally.</p>
+            </div>
+          </div>
+        </section>
+
         {/* Multi-Branch Configuration */}
         <section>
           <h3 className="text-lg font-bold flex items-center gap-2 mb-4 border-b border-border pb-2">

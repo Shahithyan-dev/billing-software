@@ -24,6 +24,10 @@ const RestaurantSchema = new mongoose.Schema({
   whatsappBusinessId: { type: String, default: '' },
   defaultMenu: { type: Array, default: [] },
   menuPdfUrl: { type: String },
+  subscriptionStatus: { type: String, enum: ['trial', 'active', 'expired', 'cancelled'], default: 'trial' },
+  trialEndsAt: { type: Date },
+  subscriptionEndsAt: { type: Date },
+  planTier: { type: String, enum: ['standard', 'unlimited'], default: 'standard' },
 }, { timestamps: true });
 
 export default mongoose.model('Restaurant', RestaurantSchema);

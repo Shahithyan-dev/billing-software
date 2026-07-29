@@ -4,6 +4,7 @@ import { API_BASE_URL } from '@/config/api';
 import React, { useState } from 'react';
 import { Search, Plus, Minus, Trash2, User, CreditCard, Smartphone, Banknote, MoreHorizontal, SplitSquareHorizontal, PauseCircle, Printer, Pencil, X, ShoppingBag } from 'lucide-react';
 import { MenuManagerModal } from '@/components/MenuManagerModal';
+import { printInvoice, InvoiceData } from '@/utils/printEngine';
 import { db } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 
@@ -13,7 +14,11 @@ export interface MenuItem {
   price: number;
   category: string;
   img: string; 
-  type: 'veg' | 'non-veg';
+  type: 'veg' | 'non-veg' | string;
+  purchasePrice?: number;
+  size?: string;
+  stock?: number;
+  variants?: any[];
 }
 
 const mockMenu: MenuItem[] = [
@@ -632,7 +637,7 @@ const POS = () => {
           <div className="bg-white border border-[#e3e3df] rounded-2xl shadow-2xl z-10 w-full max-w-[420px] max-h-[90vh] flex flex-col m-4 overflow-hidden animate-in fade-in zoom-in duration-200 print:shadow-none print:border-none print:m-0 print:max-h-none print:h-auto print:w-full print:max-w-none">
             <div className="p-4 border-b border-[#e3e3df] flex justify-between items-center bg-gray-50 print:hidden">
               <h2 className="text-lg font-bold text-[#2c332c] flex items-center gap-2">
-                <Printer className="w-5 h-5 text-[#4a7b47]" />
+                <Printer className="w-5 h-5 text-[#f59e0b]" />
                 Print Preview
               </h2>
               <button 
@@ -749,21 +754,37 @@ const POS = () => {
               </button>
               <button 
                 onClick={() => {
+                  const invoiceData: InvoiceData = {
+                    businessName: restaurantData.name,
+                    address: "Thank you for your visit!",
+                    phone: restaurantData.phone,
+                    gstin: restaurantData.gstin,
+                    invoiceNo: billNo.toString().padStart(4, '0'),
+                    date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                    items: cart.map(i => ({ name: i.name, qty: i.quantity, price: i.price, total: i.price * i.quantity })),
+                    subtotal: subtotal,
+                    tax: tax,
+                    discount: discount,
+                    total: total
+                  };
+                  
                   if (typeof window !== 'undefined' && (window as any).require) {
                     try {
+                      // Desktop Native Print
                       const { ipcRenderer } = (window as any).require('electron');
-                      ipcRenderer.send('print-bill');
+                      ipcRenderer.send('print-bill', invoiceData);
                     } catch (e) {
-                      window.print();
+                      printInvoice(invoiceData);
                     }
                   } else {
-                    window.print(); 
+                    // Web Print Engine
+                    printInvoice(invoiceData); 
                   }
                   
                   setTimeout(() => handleCharge(), 500);
                   setIsPreviewOpen(false);
                 }}
-                className="flex-1 py-2.5 rounded-xl font-bold text-white bg-[#4a7b47] hover:bg-[#3d663b] shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
+                className="flex-1 py-2.5 rounded-xl font-bold text-white bg-[#f59e0b] hover:bg-[#d97706] shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
               >
                 <Printer className="w-5 h-5" />
                 Print Bill

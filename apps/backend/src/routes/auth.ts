@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Restaurant from '../models/Restaurant';
 import RegistrationRequest from '../models/RegistrationRequest';
+import { sendApprovalEmail } from '../utils/mailer';
 
 const router = Router();
 
@@ -95,7 +96,7 @@ router.post('/register', async (req: any, res: any) => {
 // Submit a new registration request (Public)
 router.post('/register-request', async (req: any, res: any) => {
   try {
-    const { name, email, phone, businessName, businessType, password } = req.body;
+    const { name, email, phone, businessName, businessType, password, address, gstNumber, plan, rawMenuText } = req.body;
     
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -104,7 +105,7 @@ router.post('/register-request', async (req: any, res: any) => {
     }
 
     const newRequest = new RegistrationRequest({
-      name, email, phone, businessName, businessType, password
+      name, email, phone, businessName, businessType, password, address, gstNumber, plan, rawMenuText
     });
     await newRequest.save();
     res.status(201).json({ success: true, message: 'Registration request submitted successfully' });
@@ -155,22 +156,60 @@ router.post('/register-requests/:id/approve', async (req: any, res: any) => {
       return res.status(404).json({ success: false, error: 'Request not found or not pending' });
     }
 
+    const { layout } = req.body;
+    const finalLayout = layout || request.businessType;
+    request.businessType = finalLayout; // override if admin selected a different layout
+
+    let defaultMenu: any[] = [];
+    if (request.rawMenuText) {
+      const lines = request.rawMenuText.split('\n');
+      lines.forEach((line: string) => {
+        if (!line.trim()) return;
+        // Split by tab (Excel paste) or comma
+        const parts = line.split(/\t|,/);
+        if (parts.length >= 3) {
+          const name = parts[0].trim();
+          const price = parseFloat(parts[1].trim()) || 0;
+          const category = parts[2].trim();
+          const type = parts.length >= 4 ? parts[3].trim() : (finalLayout === 'dress' ? 'N/A' : 'veg');
+          const stock = (finalLayout === 'dress' && parts.length >= 5) ? parseInt(parts[4].trim()) || 0 : undefined;
+          
+          let item: any = {
+            id: Math.random().toString(36).substr(2, 9),
+            name,
+            price,
+            category,
+            type,
+            img: ''
+          };
+          if (stock !== undefined) {
+            item.stock = stock;
+          }
+          defaultMenu.push(item);
+        }
+      });
+    }
+
     // Provision the tenant
     const restaurant = new Restaurant({
       name: request.businessName,
-      businessType: request.businessType,
+      businessType: finalLayout,
       phone: request.phone,
-      captains: request.businessType === 'dress' ? ['Salesperson 1'] : ['Captain', 'Self Service'],
-      tables: request.businessType === 'dress' ? [] : ['T1', 'T2', 'T3'],
-      diningAreas: request.businessType === 'dress' ? [] : ['AC', 'Non-AC'],
-      menuCategories: request.businessType === 'dress' 
+      address: request.address || '',
+      gstin: request.gstNumber || '',
+      captains: finalLayout === 'dress' ? ['Salesperson 1'] : ['Captain', 'Self Service'],
+      tables: finalLayout === 'dress' ? [] : ['T1', 'T2', 'T3'],
+      diningAreas: finalLayout === 'dress' ? [] : ['AC', 'Non-AC'],
+      menuCategories: finalLayout === 'dress' 
         ? ['Sarees', 'Kurtis', 'Lehengas', 'Shirts', 'Jeans', 'Churidar', 'Kids Wear']
         : ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'],
-      sidebarFeatures: request.businessType === 'dress'
+      sidebarFeatures: finalLayout === 'dress'
         ? ['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings']
         : ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'],
-      preferences: { showGstin: true, showFssai: true, showPhone: true },
-      defaultMenu: []
+      preferences: { showGstin: !!request.gstNumber, showFssai: true, showPhone: true },
+      defaultMenu,
+      subscriptionStatus: 'trial',
+      trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
     await restaurant.save();
 
@@ -185,6 +224,9 @@ router.post('/register-requests/:id/approve', async (req: any, res: any) => {
 
     request.status = 'approved';
     await request.save();
+
+    // Send the welcome email with credentials
+    await sendApprovalEmail(request.email, request.password);
 
     res.json({ success: true, message: 'Request approved and tenant provisioned' });
   } catch (error: any) {

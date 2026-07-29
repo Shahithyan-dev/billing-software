@@ -75,7 +75,7 @@
   },
   "build": {
     "appId": "com.zyncobill.pos",
-    "productName": "ZyncoBill POS",
+    "productName": "ZyncoBill",
     "electronVersion": "31.7.7",
     "directories": {
       "output": "dist"
@@ -86,7 +86,8 @@
       "package.json"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/icon.png"
     }
   },
   "capgo": {

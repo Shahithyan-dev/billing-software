@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ZyncoBill - Restaurant OS',
-  description: 'Better Management. Better Business.',
+  title: 'ZyncoBill',
+  description: 'Smart Point of Sale and Billing System',
 };
 
 export default function RootLayout({

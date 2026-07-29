@@ -90,13 +90,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center bg-[#f8f6f0] p-4 md:p-8 relative">
-      {/* Background Image Setup */}
-      <div 
-        className="absolute inset-0 z-0 opacity-40 bg-cover bg-center"
-        style={{ backgroundImage: "url('/bg.png')" }}
-      />
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#f8f6f0] via-[#f8f6f0]/80 to-transparent" />
+    <div className="min-h-screen w-full flex items-center bg-gradient-to-br from-blue-950 via-[#0b1a30] to-amber-950 p-4 md:p-8 relative">
+      {/* Background styling */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent" />
 
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 md:p-12 ml-0 md:ml-12 border border-[#e3e3df]">
@@ -106,7 +102,7 @@ const Login = () => {
           </div>
           <h1 className="text-3xl font-black text-[#2c332c] mb-2 tracking-tight">ZyncoBill</h1>
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center">
-            Restaurant Management System
+            Smart Billing System
           </p>
         </div>
 
@@ -130,7 +126,7 @@ const Login = () => {
               type="email" 
               required
               placeholder="Email address" 
-              className="w-full pl-12 pr-4 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-[#4a7b47] focus:ring-1 focus:ring-[#4a7b47] transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
             />
           </div>
           
@@ -141,12 +137,12 @@ const Login = () => {
               type={showPassword ? "text" : "password"} 
               required
               placeholder="Password" 
-              className="w-full pl-12 pr-12 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-[#4a7b47] focus:ring-1 focus:ring-[#4a7b47] transition-all"
+              className="w-full pl-12 pr-12 py-3 bg-[#f9f7f1] border border-[#e3e3df] rounded-xl focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
             />
             <button 
               type="button" 
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-[#4a7b47] focus:outline-none"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-amber-500 focus:outline-none"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -154,13 +150,13 @@ const Login = () => {
 
           <div className="flex items-center justify-between text-sm py-2">
             <label className="flex items-center gap-2 cursor-pointer text-muted-foreground">
-              <input type="checkbox" className="rounded text-[#4a7b47] border-[#e3e3df] focus:ring-[#4a7b47]" />
+              <input type="checkbox" className="rounded text-amber-500 border-[#e3e3df] focus:ring-amber-500" />
               Remember Me
             </label>
-            <a href="#" className="text-[#4a7b47] font-medium hover:underline">Forgot Password?</a>
+            <a href="#" className="text-blue-900 font-bold hover:underline">Forgot Password?</a>
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-bold rounded-xl bg-[#4a7b47] hover:bg-[#3d663b] shadow-lg shadow-[#4a7b47]/20">
+          <Button type="submit" disabled={loading} className="w-full py-6 text-lg font-black rounded-xl bg-blue-900 hover:bg-blue-800 text-white shadow-lg shadow-blue-900/20 transition-all">
             {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
