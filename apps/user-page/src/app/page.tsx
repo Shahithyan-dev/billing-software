@@ -104,15 +104,15 @@ export default function LandingPage() {
               
               <div className="flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-4 animate-fade-in-up delay-300">
                 <a 
-                  href="/downloads/ZyncoBill-Windows-Setup.exe"
-                  download
+                  href="https://github.com/Shahithyan-dev/billing-software/releases/latest/download/ZyncoBill-Windows-Setup.exe"
+                  target="_blank" rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 bg-blue-950 hover:bg-blue-900 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-blue-900/20 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
                 >
                   <Monitor className="w-5 h-5" /> Download for Windows
                 </a>
                 <a 
-                  href="/downloads/ZyncoBill-Android-App.apk"
-                  download
+                  href="https://github.com/Shahithyan-dev/billing-software/releases/latest/download/ZyncoBill-Android-App.apk"
+                  target="_blank" rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 hover:border-blue-950 text-blue-950 font-bold rounded-xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
                 >
                   <Smartphone className="w-5 h-5" /> Download for Android
