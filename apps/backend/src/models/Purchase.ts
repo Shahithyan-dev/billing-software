@@ -3,7 +3,10 @@ import mongoose from 'mongoose';
 const PurchaseItemSchema = new mongoose.Schema({
   id: { type: String, required: true },
   name: { type: String, required: true },
+  batchNo: { type: String },
+  expiryDate: { type: String },
   purchasePrice: { type: Number, required: true },
+  gstPercent: { type: Number, default: 0 },
   qty: { type: Number, required: true },
   total: { type: Number, required: true }
 });

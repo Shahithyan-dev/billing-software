@@ -130,7 +130,12 @@ export default function POSPage() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [invoiceNo, setInvoiceNo] = useState(11590);
-  const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [invoiceDate, setInvoiceDate] = useState('');
+  
+  useEffect(() => {
+    setInvoiceDate(new Date().toISOString().split('T')[0]);
+  }, []);
+
   const [stateOfSupply, setStateOfSupply] = useState('Local');
   const [paymentMethod, setPaymentMethod] = useState('CASH');
 
@@ -142,7 +147,7 @@ export default function POSPage() {
 
   // Billing Rows state (Cart)
   const [rows, setRows] = useState<BillingRow[]>([
-    { id: crypto.randomUUID(), name: '', size: '', mrp: 0, qty: 1, discountPercent: 0, taxPercent: 5, total: 0 }
+    { id: '1', name: '', size: '', mrp: 0, qty: 1, discountPercent: 0, taxPercent: 5, total: 0 }
   ]);
   
   // POS Grid States

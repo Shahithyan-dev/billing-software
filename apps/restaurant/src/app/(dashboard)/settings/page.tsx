@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Settings as SettingsIcon, CloudSync, DatabaseBackup, Store, Shield, Key, Printer } from 'lucide-react';
+import { Settings as SettingsIcon, CloudSync, DatabaseBackup, Store, Shield, Key, Printer, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Settings = () => {
@@ -45,6 +45,34 @@ const Settings = () => {
                 <option value="A4">A4 / A5 (Standard Printer)</option>
               </select>
               <p className="text-xs text-muted-foreground mt-1">Changes the dynamic width of your receipts and invoices globally.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Online Orders Integrations */}
+        <section>
+          <h3 className="text-lg font-bold flex items-center gap-2 mb-4 border-b border-border pb-2">
+            <Globe className="w-5 h-5 text-orange-500" />
+            Online Orders Integrations (Swiggy, Zomato)
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Aggregator Provider</label>
+              <select className="w-full bg-background border border-input rounded-md px-4 py-2">
+                <option>UrbanPiper</option>
+                <option>Thrive</option>
+                <option>Swiggy Direct API</option>
+                <option>Zomato Direct API</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Store ID</label>
+              <input type="text" className="w-full bg-background border border-input rounded-md px-4 py-2" placeholder="e.g. store_987654" />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-medium text-muted-foreground">Secret API Key</label>
+              <input type="password" className="w-full bg-background border border-input rounded-md px-4 py-2" placeholder="sk_live_........................." />
+              <p className="text-xs text-muted-foreground mt-1">This key is used to securely authenticate incoming orders to your webhook.</p>
             </div>
           </div>
         </section>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight, ChefHat, PackageOpen, Inbox, Check, X } from 'lucide-react';
+import { Trash2, Plus, Download, Edit2, Server, Key, LayoutGrid, CheckCircle2, ChevronRight, ChefHat, PackageOpen, Inbox, Check, X, Activity } from 'lucide-react';
 export default function SuperAdminDashboard() {
   const router = useRouter();
   const [restaurants, setRestaurants] = useState<any[]>([]);
@@ -16,17 +16,19 @@ export default function SuperAdminDashboard() {
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
   const [bulkMenuText, setBulkMenuText] = useState('');
   const [isBulkPasting, setIsBulkPasting] = useState(false);
-  const [selectedSoftware, setSelectedSoftware] = useState<'restaurant' | 'dress' | null>(null);
+  const [selectedSoftware, setSelectedSoftware] = useState<'restaurant' | 'dress' | 'pharmacy' | null>(null);
   const [currentCategories, setCurrentCategories] = useState<string>('');
   const [showManualForm, setShowManualForm] = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
 
   const DRESS_SIDEBAR_FEATURES = ['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings'];
-  const RESTAURANT_SIDEBAR_FEATURES = ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'];
+  const RESTAURANT_SIDEBAR_FEATURES = ['POS', 'Kitchen', 'Inventory', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'];
+  const PHARMACY_SIDEBAR_FEATURES = ['POS', 'Medicines', 'Categories', 'Inventory', 'Purchase', 'Purchase Return', 'Sales', 'Sales Return', 'Customers', 'Prescriptions', 'Suppliers', 'Manufacturers', 'Batch Management', 'Expiry Alerts', 'Barcode Printing', 'Analytics', 'Reports', 'Staff', 'Settings'];
 
   const DRESS_MENU_CATEGORIES = ['Sarees', 'Kurtis', 'Lehengas', 'Shirts', 'Jeans', 'Churidar', 'Kids Wear'];
   const RESTAURANT_MENU_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'];
+  const PHARMACY_MENU_CATEGORIES = ['Tablets', 'Capsules', 'Syrups', 'Injections', 'Ointments', 'Drops', 'Surgicals', 'General'];
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -103,7 +105,7 @@ export default function SuperAdminDashboard() {
       });
       const result = await res.json();
       if (result.success) {
-        setSuccess('Registration approved and tenant provisioned successfully.');
+        setSuccess('Registration approved! (Note: In local testing without SMTP, the mock email is logged to the backend console. The user can log in with their credentials).');
         fetchPendingRequests();
         fetchRestaurants();
       } else {
@@ -392,7 +394,7 @@ export default function SuperAdminDashboard() {
           <h2 className="text-3xl font-black text-slate-800 mb-2">Select Software Module</h2>
           <p className="text-slate-500 mb-12">Which software application would you like to manage?</p>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
             {/* Restaurant Software Card */}
             <div 
               onClick={() => { setSelectedSoftware('restaurant'); setCurrentCategories(RESTAURANT_MENU_CATEGORIES.join(', ')); }}
@@ -424,6 +426,22 @@ export default function SuperAdminDashboard() {
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
+
+            {/* Pharmacy Software Card */}
+            <div 
+              onClick={() => { setSelectedSoftware('pharmacy'); setCurrentCategories(PHARMACY_MENU_CATEGORIES.join(', ')); }}
+              className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-blue-100/50 hover:shadow-blue-200 cursor-pointer transform hover:-translate-y-2 transition-all duration-300 group"
+            >
+              <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Activity className="w-8 h-8 text-blue-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-3">Pharmacy Billing</h3>
+              <p className="text-slate-500 mb-6 line-clamp-2">Manage medicines, prescriptions, batches, expiries, and GST billing.</p>
+              <div className="flex justify-between items-center text-sm font-bold text-blue-600">
+                <span>Manage Tenants</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -441,7 +459,7 @@ export default function SuperAdminDashboard() {
             Super Access
           </span>
           <span className="ml-4 text-[10px] bg-slate-100 text-slate-600 font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-slate-200">
-            Managing: {selectedSoftware === 'restaurant' ? 'Restaurant Billing' : 'Dress Shop Billing'}
+            Managing: {selectedSoftware === 'restaurant' ? 'Restaurant Billing' : selectedSoftware === 'dress' ? 'Dress Shop Billing' : 'Pharmacy Billing'}
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -522,6 +540,7 @@ export default function SuperAdminDashboard() {
                     >
                       <option value="restaurant">Restaurant POS</option>
                       <option value="dress">Retail POS</option>
+                      <option value="pharmacy">Pharmacy POS</option>
                     </select>
                   </div>
                   <div className="flex gap-2">

@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import { MenuItem } from '@/app/(dashboard)/pos/page';
+import { MenuItem } from '@/app/(dashboard)/pos/StandardPOS';
 
 export interface OrderItem {
   id: string;
@@ -21,6 +21,7 @@ export interface Order {
   orderType: string;
   timestamp: number;
   syncStatus: 'pending' | 'synced' | 'failed';
+  kitchenStatus?: 'pending' | 'preparing' | 'ready' | 'served';
 }
 
 export interface RestaurantConfig {
@@ -39,8 +40,8 @@ export class ZyncoBillDB extends Dexie {
 
   constructor() {
     super('ZyncoBillDB');
-    this.version(1).stores({
-      orders: '++id, uuid, syncStatus, timestamp', // Primary key and indexed props
+    this.version(2).stores({
+      orders: '++id, uuid, syncStatus, timestamp, kitchenStatus', // Primary key and indexed props
       menuItems: 'id, category', // Primary key and indexed props
       config: 'id'
     });

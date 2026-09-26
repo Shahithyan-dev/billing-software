@@ -12,6 +12,7 @@ export interface IOrder extends Document {
   paymentMethod: string;
   orderType: string;
   timestamp: number;
+  kitchenStatus?: string;
 }
 
 const OrderSchema = new Schema({
@@ -30,7 +31,8 @@ const OrderSchema = new Schema({
   total: { type: Number, required: true },
   paymentMethod: { type: String, required: true },
   orderType: { type: String, default: 'Retail Invoice' },
-  timestamp: { type: Number, required: true }
+  timestamp: { type: Number, required: true },
+  kitchenStatus: { type: String, default: 'pending' }
 });
 
 export default mongoose.model<IOrder>('Order', OrderSchema);

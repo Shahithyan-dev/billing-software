@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Plus, Pencil, Trash2, Image as ImageIcon } from 'lucide-react';
-import type { MenuItem } from '../app/(dashboard)/pos/page';
+import { Save, Plus, Trash2, Edit2, Pencil, X, Image as ImageIcon, CheckCircle, Barcode } from 'lucide-react';
+import { MenuItem } from '../app/(dashboard)/pos/StandardPOS';
+import { API_BASE_URL } from '@/config/api';
 
 interface MenuManagerModalProps {
   isOpen: boolean;

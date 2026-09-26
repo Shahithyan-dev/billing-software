@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ZyncoBill Admin - Portal",
   description: "Centralized tenant management for ZyncoBill POS software.",
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({

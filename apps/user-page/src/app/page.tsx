@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { 
   ChefHat, PackageOpen, Monitor, Smartphone, CheckCircle2, X, ArrowRight, 
   Zap, Shield, TrendingUp, Calculator, BarChart3, Cloud, MessageSquare, 
-  Printer, UserCheck, Play, ArrowUpRight
+  Printer, UserCheck, Play, ArrowUpRight, Activity
 } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [pricingIndustry, setPricingIndustry] = useState<'restaurant' | 'retail'>('restaurant');
+  const [pricingIndustry, setPricingIndustry] = useState<'restaurant' | 'retail' | 'pharmacy'>('restaurant');
   const [pricingTier, setPricingTier] = useState<'standard' | 'unlimited'>('unlimited');
   
   // Mock variables for available lifetime spots (fetch from backend later)
@@ -44,37 +44,38 @@ export default function LandingPage() {
       `}} />
 
       {/* Enhanced SaaS Navigation */}
-      <nav className="fixed w-full bg-white border-b border-gray-200 shadow-sm p-4 px-4 sm:px-8 flex justify-between items-center z-50 transition-all">
+      <nav className="fixed w-full bg-white/80 backdrop-blur-md border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.05)] p-4 px-4 sm:px-8 flex justify-between items-center z-50 transition-all duration-300">
         <div className="flex items-center gap-8">
           {/* ZyncoBill Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-            <img src="/logo.png" alt="ZyncoBill Logo" className="w-10 h-10 object-contain" />
-            <h1 className="text-2xl font-black text-blue-950 tracking-tight">
-              Zynco<span className="text-amber-500">Bill</span>
+          <div className="flex items-center gap-2 cursor-pointer group" onClick={() => window.scrollTo(0,0)}>
+            <img src="/logo.png" alt="ZyncoBill Logo" className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-sm" />
+            <h1 className="text-2xl font-black text-blue-950 tracking-tight group-hover:text-blue-900 transition-colors">
+              Zynco<span className="text-amber-500 drop-shadow-sm">Bill</span>
             </h1>
           </div>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-6 text-sm font-bold text-blue-900/70">
-            <a href="#features" className="hover:text-blue-950 transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-blue-950 transition-colors">How it Works</a>
-            <a href="#industries" className="hover:text-blue-950 transition-colors">Industries</a>
-            <a href="#" className="hover:text-blue-950 transition-colors flex items-center gap-1">Pricing <ArrowUpRight className="w-3 h-3"/></a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
+            <a href="#features" className="hover:text-amber-600 hover:-translate-y-0.5 transition-all duration-300 relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-amber-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Features</a>
+            <a href="/how-it-works" className="hover:text-amber-600 hover:-translate-y-0.5 transition-all duration-300 relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-amber-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">How it Works</a>
+            <a href="#industries" className="hover:text-amber-600 hover:-translate-y-0.5 transition-all duration-300 relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-amber-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Industries</a>
+            <a href="#" className="hover:text-amber-600 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1 group/pricing">Pricing <ArrowUpRight className="w-3 h-3 group-hover/pricing:translate-x-0.5 group-hover/pricing:-translate-y-0.5 transition-transform"/></a>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           <button 
             onClick={() => router.push('http://localhost:3001/login')}
-            className="text-sm font-bold text-blue-900 hover:text-blue-950 hidden sm:block transition-colors"
+            className="text-sm font-bold text-slate-700 hover:text-blue-950 hidden sm:block transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:-bottom-1 after:left-0 after:bg-blue-950 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left"
           >
             Log In
           </button>
           <button 
             onClick={() => window.scrollTo({ top: document.getElementById('industries')?.offsetTop || 0, behavior: 'smooth' })}
-            className="text-sm font-bold text-white bg-blue-950 hover:bg-blue-900 px-6 py-2.5 rounded-full transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            className="text-sm font-bold text-white bg-gradient-to-r from-blue-950 to-blue-900 hover:from-blue-900 hover:to-blue-800 px-7 py-2.5 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgb(23,37,84,0.39)] hover:shadow-[0_6px_20px_rgba(23,37,84,0.23)] transform hover:-translate-y-0.5 border border-blue-800/50 relative overflow-hidden group/btn"
           >
-            Get Started Free
+            <span className="relative z-10">Get Started Free</span>
+            <div className="absolute inset-0 h-full w-full bg-white/20 scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
           </button>
         </div>
       </nav>
@@ -108,14 +109,14 @@ export default function LandingPage() {
                   target="_blank" rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 bg-blue-950 hover:bg-blue-900 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-blue-900/20 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
                 >
-                  <Monitor className="w-5 h-5" /> Download for Windows
+                  <Monitor className="w-5 h-5" />  Windows
                 </a>
                 <a 
                   href="https://github.com/Shahithyan-dev/billing-software/releases/latest/download/ZyncoBill-Android-App.apk"
                   target="_blank" rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 hover:border-blue-950 text-blue-950 font-bold rounded-xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
                 >
-                  <Smartphone className="w-5 h-5" /> Download for Android
+                  <Smartphone className="w-5 h-5" />  Android
                 </a>
               </div>
               <p className="mt-6 text-sm font-bold text-slate-500 animate-fade-in-up delay-400">Available for Windows, macOS, Android, and iOS.</p>
@@ -226,7 +227,7 @@ export default function LandingPage() {
             <p className="text-blue-200 font-medium max-w-2xl mx-auto">Get a specialized dashboard with tools built specifically for how you work.</p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {/* Restaurant POS */}
             <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-2xl flex flex-col items-start group">
               <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-8 border border-blue-100 group-hover:scale-105 transition-transform">
@@ -278,6 +279,25 @@ export default function LandingPage() {
                 Start Retail Free Trial
               </button> */}
             </div>
+            
+            {/* Pharmacy POS */}
+            <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-2xl flex flex-col items-start group">
+              <div className="w-20 h-20 bg-teal-50 rounded-2xl flex items-center justify-center mb-8 border border-teal-100 group-hover:scale-105 transition-transform">
+                <Activity className="w-10 h-10 text-teal-500" />
+              </div>
+              <h3 className="text-3xl font-black text-blue-950 mb-4">Pharmacy POS</h3>
+              <ul className="space-y-3 mb-10 w-full grid grid-cols-2 gap-x-2">
+                {[
+                  "Dense Tabular UI", "Barcode Centric", "Batch Management", 
+                  "Expiry Alerts", "Schedule H Compliance", "Patient Records", 
+                  "Doctor Records", "Stock Management", "Invoice Generation", "Analytics"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-slate-600 font-medium text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-teal-500 shrink-0" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -303,6 +323,12 @@ export default function LandingPage() {
                 className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${pricingIndustry === 'retail' ? 'bg-white text-blue-950 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Retail & Boutique
+              </button>
+              <button 
+                onClick={() => setPricingIndustry('pharmacy')}
+                className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${pricingIndustry === 'pharmacy' ? 'bg-white text-blue-950 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Pharmacy & Clinic
               </button>
             </div> 
 
@@ -341,6 +367,12 @@ export default function LandingPage() {
                   ] : [
                     'Advanced POS Invoicing', 'Table Reservations', 'Kitchen Display System', 'Recipe & Inventory', 'Advanced Staff Roles', 'Detailed Analytics', 'Hardware Integration', 'Unlimited WhatsApp Receipts', 'Supports 2", 3", 4" & A4 Printers'
                   ]
+                ) : pricingIndustry === 'pharmacy' ? (
+                  pricingTier === 'standard' ? [
+                    'Tabular POS Invoicing', 'Barcode Scanning', 'Basic Batch & Expiry', 'Patient Records', 'Basic Purchases', 'Standard Analytics', '100 WhatsApp Receipts/mo', 'Supports 2", 3", 4" & A4 Printers'
+                  ] : [
+                    'Unlimited Sale Invoices', 'Advanced Barcode', 'Advanced Batch & Expiry', 'Schedule H Compliance', 'Advanced Purchases', 'Detailed Analytics', 'Loyalty Programs', 'Unlimited WhatsApp Receipts', 'Supports 2", 3", 4" & A4 Printers'
+                  ]
                 ) : (
                   pricingTier === 'standard' ? [
                     'Standard Invoicing', 'Barcode Scanning', 'Simple Inventory', 'Parties & Suppliers', 'Basic Purchases', 'Standard Analytics', '100 WhatsApp Receipts/mo', 'Supports 2", 3", 4" & A4 Printers'
@@ -374,6 +406,12 @@ export default function LandingPage() {
                     'Everything in Monthly', 'Basic Recipe Costing', 'Single-user Access', 'Standard Online Orders', 'Standard Support'
                   ] : [
                     'Everything in Monthly', 'Advanced Recipe Costing', 'Waiter Ordering App', 'Multi-user Access', 'Advanced Online Orders', 'Priority Support'
+                  ]
+                ) : pricingIndustry === 'pharmacy' ? (
+                  pricingTier === 'standard' ? [
+                    'Everything in Monthly', 'Basic Expiry Alerts', 'Single-user Access', 'Standard Device Sync', 'Standard Support'
+                  ] : [
+                    'Everything in Monthly', 'Advanced Expiry Tracking', 'Clinic Analytics', 'Multi-user Access', 'Cloud Multi-Device Sync', 'Priority Support'
                   ]
                 ) : (
                   pricingTier === 'standard' ? [
@@ -412,6 +450,12 @@ export default function LandingPage() {
                       'Everything in Yearly', 'No Recurring Fees', 'Standard Updates', 'Community Support'
                     ] : [
                       'Everything in Yearly', 'No Recurring Fees', 'Free Lifetime Updates', 'Dedicated Account Manager', 'Custom Data Export'
+                    ]
+                  ) : pricingIndustry === 'pharmacy' ? (
+                    pricingTier === 'standard' ? [
+                      'Everything in Yearly', 'No Recurring Fees', 'Standard Updates', 'Community Support'
+                    ] : [
+                      'Everything in Yearly', 'No Recurring Fees', 'Free Lifetime Updates', 'Dedicated Account Manager', 'Data Export for Audits'
                     ]
                   ) : (
                     pricingTier === 'standard' ? [

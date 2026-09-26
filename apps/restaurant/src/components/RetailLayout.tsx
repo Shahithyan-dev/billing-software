@@ -5,39 +5,51 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
-  ShoppingCart, 
-  ChefHat, 
-  Users, 
-  Calendar, 
-  Settings, 
-  ShieldCheck, 
-  Wallet,
-  Activity,
-  Cpu,
-  PackageOpen,
-  Menu,
-  LogOut,
-  ShoppingBag
+  ShoppingCart, Activity, Users, Settings, LogOut, PackageOpen, LayoutGrid, X, Search, FileText, ChevronDown, CheckCircle2, AlertCircle, ShoppingBag, BarChart2, Globe, AlignJustify, Calendar 
 } from 'lucide-react';
 
 const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [allowedFeatures, setAllowedFeatures] = useState<string[]>([]);
+  const [planName, setPlanName] = useState<string>('lifetime');
+  const [daysLeft, setDaysLeft] = useState<number | null>(null);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedFeatures = localStorage.getItem('zyncobill_sidebar');
       if (storedFeatures) {
-        setAllowedFeatures(JSON.parse(storedFeatures));
+        const parsed = JSON.parse(storedFeatures);
+        if (!parsed.includes('Analytics')) parsed.push('Analytics');
+        if (!parsed.includes('Online Orders')) parsed.push('Online Orders');
+        setAllowedFeatures(parsed);
       } else {
         // Fallback to all if not set
-        setAllowedFeatures(['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings']);
+        setAllowedFeatures(['Home', 'Analytics', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings']);
+      }
+
+      const storedRestaurant = localStorage.getItem('zyncobill_restaurant_details');
+      if (storedRestaurant) {
+        try {
+          const details = JSON.parse(storedRestaurant);
+          if (details.subscriptionPlan) {
+            setPlanName(details.subscriptionPlan);
+          }
+          if (details.subscriptionPlan !== 'lifetime') {
+            const endDate = details.subscriptionStatus === 'trial' ? details.trialEndsAt : details.subscriptionEndsAt;
+            if (endDate) {
+              const diffTime = new Date(endDate).getTime() - new Date().getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              setDaysLeft(diffDays > 0 ? diffDays : 0);
+            }
+          }
+        } catch (e) {}
       }
     }
   }, []);
   const menuItems = [
     { name: 'Home', icon: Activity, path: '/pos' },
+    { name: 'Analytics', icon: BarChart2, path: '/analytics' },
     { name: 'Parties', icon: Users, path: '/parties' },
     { name: 'Items', icon: PackageOpen, path: '/items' },
     { name: 'Sale Invoices', icon: ShoppingCart, path: '/sales' },
@@ -50,8 +62,8 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
   return (
     <aside className={`bg-[#0b1a30] border-r border-slate-700 h-screen flex-col z-50 ${className}`}>
       <div className="h-20 flex items-center px-6 gap-3 pt-4 border-b border-slate-700 pb-4">
-        <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-amber-400/10 rounded-lg p-1.5 border border-amber-400/30">
-          <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain mix-blend-multiply" />
+        <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-slate-800/80 rounded-lg p-1 border border-slate-700/50 shadow-inner">
+          <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain drop-shadow-md" />
         </div>
         <div>
           <h1 className="text-xl font-black tracking-tight text-white leading-none">ZyncoBill</h1>
@@ -84,8 +96,12 @@ const Sidebar = ({ className = "w-64 flex" }: { className?: string }) => {
       
       <div className="p-5 border-t border-slate-700">
         <div className="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-400/20 p-4 mb-4">
-          <h3 className="text-white text-xs font-bold mb-1">Lifetime Plan</h3>
-          <p className="text-amber-400 font-bold text-[10px] mb-3">Active Forever</p>
+          <h3 className="text-white text-xs font-bold mb-1 capitalize">{planName} Plan</h3>
+          <p className="text-amber-400 font-bold text-[10px] mb-3">
+            {planName === 'lifetime' 
+              ? 'Active Forever' 
+              : (daysLeft !== null ? `${daysLeft} days left` : 'Active Subscription')}
+          </p>
           <button className="w-full bg-amber-500 hover:bg-amber-400 shadow-md shadow-amber-500/20 text-[#0b1a30] text-xs font-black py-2 transition-colors">
             Support
           </button>
@@ -114,6 +130,30 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const [planName, setPlanName] = useState<string>('lifetime');
+  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedRestaurant = localStorage.getItem('zyncobill_restaurant_details');
+      if (storedRestaurant) {
+        try {
+          const details = JSON.parse(storedRestaurant);
+          if (details.subscriptionPlan) {
+            setPlanName(details.subscriptionPlan);
+          }
+          if (details.subscriptionPlan !== 'lifetime') {
+            const endDate = details.subscriptionStatus === 'trial' ? details.trialEndsAt : details.subscriptionEndsAt;
+            if (endDate) {
+              const diffTime = new Date(endDate).getTime() - new Date().getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              setDaysLeft(diffDays > 0 ? diffDays : 0);
+            }
+          }
+        } catch (e) {}
+      }
+    }
+  }, []);
 
   const getPageTitle = (path: string) => {
     if (path.startsWith('/pos')) return 'POS Dashboard';
@@ -144,7 +184,7 @@ export default function DashboardLayout({
         });
         if (res.status === 401) {
           localStorage.removeItem('token');
-          alert('You have been logged out because your account was accessed from another device.');
+          alert('Your session has expired or is invalid. Please log in again.');
           router.push('/login');
         }
       } catch (e) {
@@ -173,7 +213,11 @@ export default function DashboardLayout({
         const data = await res.json();
         if (data.success && data.data) {
           const t = data.data;
+          const existingStr = localStorage.getItem('zyncobill_restaurant_details');
+          const existing = existingStr ? JSON.parse(existingStr) : {};
           const normalized = {
+            ...existing,
+            ...t,
             name: t.name || t.restaurantName || t.shopName || 'Retail Store',
             tagline: t.tagline || '',
             phone: t.phone || '',
@@ -182,7 +226,8 @@ export default function DashboardLayout({
             logo: t.logo || '',
             whatsappNumber: t.whatsappNumber || '',
             whatsappToken: t.whatsappToken || '',
-            whatsappBusinessId: t.whatsappBusinessId || ''
+            whatsappBusinessId: t.whatsappBusinessId || '',
+            businessType: t.businessType || existing.businessType || 'retail'
           };
           localStorage.setItem('zyncobill_restaurant_details', JSON.stringify(normalized));
 
@@ -218,12 +263,12 @@ export default function DashboardLayout({
                 onClick={() => setIsSidebarOpen(true)}
                 className="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 transition-all"
               >
-                <Menu className="w-5 h-5" />
+                <AlignJustify className="w-5 h-5" />
               </button>
               {/* Desktop Logo */}
               <div className="hidden sm:flex items-center gap-3 cursor-pointer group">
-                <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all rounded-md p-1">
-                  <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain" />
+                <div className="w-10 h-10 bg-slate-800/80 flex items-center justify-center shadow-lg shadow-black/20 group-hover:shadow-amber-500/20 transition-all rounded-md p-1 border border-slate-700/50">
+                  <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain drop-shadow-sm" />
                 </div>
                 <div>
                   <span className="font-black text-sm tracking-widest text-white block leading-none">RETAILBILL</span>
@@ -232,8 +277,8 @@ export default function DashboardLayout({
               </div>
               {/* Mobile Logo */}
               <div className="flex sm:hidden items-center gap-2 cursor-pointer">
-                <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm rounded p-0.5">
-                  <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain" />
+                <div className="w-8 h-8 bg-slate-800/80 flex items-center justify-center shadow-sm rounded-md p-1 border border-slate-700/50">
+                  <img src="/logo.png" alt="ZyncoBill" className="w-full h-full object-contain drop-shadow-sm" />
                 </div>
                 <span className="font-black text-[11px] tracking-widest text-white">RETAILBILL</span>
               </div>
@@ -253,8 +298,34 @@ export default function DashboardLayout({
           </div>
         </header>
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto print:overflow-visible p-4 md:p-6 print:p-0">
-          {children}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto print:overflow-visible p-4 md:p-6 print:p-0 relative">
+          {planName !== 'lifetime' && daysLeft !== null && daysLeft <= 0 ? (
+            <div className="absolute inset-0 z-50 bg-[#0b1a30]/90 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0f2442] border border-red-500/30 shadow-2xl rounded-2xl p-8 max-w-md w-full text-center">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+                  <AlertCircle className="w-8 h-8 text-red-400" />
+                </div>
+                <h2 className="text-2xl font-black text-white mb-2">Subscription Expired</h2>
+                <p className="text-slate-300 mb-6">Your <strong>{planName}</strong> plan has expired. Please renew your subscription to continue using RetailBill.</p>
+                <div className="space-y-3">
+                  <button className="w-full bg-amber-500 hover:bg-amber-400 text-[#0b1a30] font-black py-3 px-4 rounded-xl transition-colors shadow-lg shadow-amber-500/20">
+                    Renew Plan / Contact Support
+                  </button>
+                  <button 
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      router.push('/login');
+                    }}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition-colors border border-slate-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

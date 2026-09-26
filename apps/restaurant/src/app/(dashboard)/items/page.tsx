@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '@/config/api';
-import { MenuItem } from '@/app/(dashboard)/pos/page';
+import { MenuItem } from '@/app/(dashboard)/pos/StandardPOS';
 import { 
   Package, 
   Plus, 
@@ -19,13 +19,14 @@ import {
 export default function ItemsPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [businessType, setBusinessType] = useState('restaurant');
 
   const fetchItems = useCallback(async () => {
     const restaurantId = localStorage.getItem('restaurantId');
     if (!restaurantId) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/menu/${restaurantId}`);
       const data = await res.json();
       if (data.success) setItems(data.data || []);
     } catch (e) {
@@ -35,12 +36,21 @@ export default function ItemsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchItems(); }, [fetchItems]);
+  useEffect(() => {
+    const details = localStorage.getItem('zyncobill_restaurant_details');
+    if (details) {
+      try {
+        const parsed = JSON.parse(details);
+        setBusinessType(parsed.businessType || 'restaurant');
+      } catch (e) {}
+    }
+    fetchItems();
+  }, [fetchItems]);
 
   const saveItems = async (updatedItems: MenuItem[]) => {
     const restaurantId = localStorage.getItem('restaurantId');
     if (!restaurantId) return;
-    await fetch(`${API_BASE_URL}/api/v1/inventory/${restaurantId}`, {
+    await fetch(`${API_BASE_URL}/api/v1/menu/${restaurantId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: updatedItems }),
@@ -50,6 +60,8 @@ export default function ItemsPage() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [bulkText, setBulkText] = useState('');
   const [viewingItem, setViewingItem] = useState<MenuItem | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -59,21 +71,30 @@ export default function ItemsPage() {
   const [purchasePrice, setPurchasePrice] = useState('');
   const [size, setSize] = useState('');
   const [stock, setStock] = useState('');
-  const [variants, setVariants] = useState<{size: string, stock: number}[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
+  
+  // Pharmacy Specific Fields
+  const [pharmacyMeta, setPharmacyMeta] = useState({
+    genericName: '', brandName: '', manufacturer: '', composition: '', hsnCode: '', 
+    gstPercent: '', sku: '', mfgDate: '', mrp: '', discountPercent: '', minStock: '', 
+    rackNo: '', storageType: '', prescriptionRequired: false, schedule: '', dosage: '', strength: ''
+  });
   
   const addVariant = () => setVariants([...variants, { size: '', stock: 0 }]);
-  const updateVariant = (index: number, field: 'size'|'stock', value: any) => {
+  const updateVariant = (index: number, field: string, value: any) => {
     const newV = [...variants];
     newV[index] = { ...newV[index], [field]: value };
     setVariants(newV);
   };
   const removeVariant = (index: number) => setVariants(variants.filter((_, i) => i !== index));
-  const [category, setCategory] = useState('Sarees');
+  const [category, setCategory] = useState('');
   const [barcode, setBarcode] = useState('');
   const [img, setImg] = useState('');
 
-  // Extract categories dynamically
-  const categoriesList = Array.from(new Set(['Sarees', 'Kurtis', 'Lehengas', 'Shirts', 'Jeans', ...items.map(i => i.category)]));
+  const baseCategories = businessType === 'restaurant' 
+    ? ['Starters', 'Mains', 'Desserts', 'Beverages', 'Breads']
+    : ['Shirts', 'Pants', 'Accessories'];
+  const categoriesList = Array.from(new Set([...baseCategories, ...items.map(i => i.category)]));
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -99,7 +120,26 @@ export default function ItemsPage() {
       variants,
       category,
       type: (barcode || 'standard') as any,
-      img: img || 'https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?q=80&w=200'
+      img: img || 'https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?q=80&w=200',
+      ...(businessType === 'pharmacy' ? {
+        genericName: pharmacyMeta.genericName,
+        brandName: pharmacyMeta.brandName,
+        manufacturer: pharmacyMeta.manufacturer,
+        composition: pharmacyMeta.composition,
+        hsnCode: pharmacyMeta.hsnCode,
+        gstPercent: parseFloat(pharmacyMeta.gstPercent) || 0,
+        sku: pharmacyMeta.sku,
+        mfgDate: pharmacyMeta.mfgDate,
+        mrp: parseFloat(pharmacyMeta.mrp) || 0,
+        discountPercent: parseFloat(pharmacyMeta.discountPercent) || 0,
+        minStock: parseInt(pharmacyMeta.minStock) || 0,
+        rackNo: pharmacyMeta.rackNo,
+        storageType: pharmacyMeta.storageType,
+        prescriptionRequired: pharmacyMeta.prescriptionRequired,
+        schedule: pharmacyMeta.schedule,
+        dosage: pharmacyMeta.dosage,
+        strength: pharmacyMeta.strength,
+      } : {})
     };
 
     try {
@@ -112,6 +152,59 @@ export default function ItemsPage() {
     } catch (err) {
       console.error("Failed to save item:", err);
       alert("Failed to save item to server.");
+    }
+  };
+
+  const handleBulkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkText.trim()) return;
+
+    let newItems: MenuItem[] = [];
+    const lines = bulkText.split('\n');
+    
+    lines.forEach(line => {
+      if (!line.trim()) return;
+      const parts = line.split(/\t|,/);
+      if (parts.length >= 2) {
+        const name = parts[0].trim();
+        const price = parseFloat(parts[1].trim()) || 0;
+        
+        let item: MenuItem = {
+          id: crypto.randomUUID(),
+          name,
+          price,
+          category: parts.length >= 3 ? parts[2].trim() : 'General',
+          type: 'standard',
+          img: 'https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?q=80&w=200',
+        };
+
+        if (businessType === 'pharmacy') {
+          // Name | MRP | Category | Batch | Stock
+          item.mrp = price;
+          item.category = parts.length >= 3 ? parts[2].trim() : 'Tablets';
+          item.sku = parts.length >= 4 ? parts[3].trim() : ''; // using sku for batch
+          item.stock = parts.length >= 5 ? parseInt(parts[4].trim()) || 0 : 0;
+        } else if (businessType === 'restaurant') {
+          // Name | Price | Category | Type
+          item.type = parts.length >= 4 ? parts[3].trim() as any : 'veg';
+        } else {
+          // Dress: Name | Price | Category | Size | Quantity
+          item.size = parts.length >= 4 ? parts[3].trim() : '';
+          item.stock = parts.length >= 5 ? parseInt(parts[4].trim()) || 0 : 0;
+        }
+        
+        newItems.push(item);
+      }
+    });
+
+    try {
+      const updatedItems = [...items, ...newItems];
+      await saveItems(updatedItems);
+      setIsBulkModalOpen(false);
+      setBulkText('');
+    } catch (err) {
+      console.error("Failed to save bulk items:", err);
+      alert("Failed to save items to server.");
     }
   };
 
@@ -132,6 +225,27 @@ export default function ItemsPage() {
     setCategory(item.category);
     setBarcode(item.type === 'standard' ? '' : item.type);
     setImg(item.img || '');
+    if (businessType === 'pharmacy') {
+      setPharmacyMeta({
+        genericName: item.genericName || '',
+        brandName: item.brandName || '',
+        manufacturer: item.manufacturer || '',
+        composition: item.composition || '',
+        hsnCode: item.hsnCode || '',
+        gstPercent: item.gstPercent?.toString() || '',
+        sku: item.sku || '',
+        mfgDate: item.mfgDate || '',
+        mrp: item.mrp?.toString() || '',
+        discountPercent: item.discountPercent?.toString() || '',
+        minStock: item.minStock?.toString() || '',
+        rackNo: item.rackNo || '',
+        storageType: item.storageType || '',
+        prescriptionRequired: item.prescriptionRequired || false,
+        schedule: item.schedule || '',
+        dosage: item.dosage || '',
+        strength: item.strength || ''
+      });
+    }
     setIsModalOpen(true);
   };
 
@@ -150,9 +264,14 @@ export default function ItemsPage() {
     setSize('');
     setStock('');
     setVariants([]);
-    setCategory('Sarees');
+    setCategory(businessType === 'restaurant' ? 'Starters' : 'Shirts');
     setBarcode('');
     setImg('');
+    setPharmacyMeta({
+      genericName: '', brandName: '', manufacturer: '', composition: '', hsnCode: '', 
+      gstPercent: '', sku: '', mfgDate: '', mrp: '', discountPercent: '', minStock: '', 
+      rackNo: '', storageType: '', prescriptionRequired: false, schedule: '', dosage: '', strength: ''
+    });
   };
 
   // Calculate Inventory Values
@@ -167,10 +286,18 @@ export default function ItemsPage() {
       {/* Title Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Apparel Inventory</h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">Manage your dress catalog, pricing, and barcodes</p>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">{businessType === 'restaurant' ? 'Menu Management' : 'Items Management'}</h1>
+          <p className="text-slate-500 text-sm font-medium mt-1">Manage your {businessType === 'restaurant' ? 'dishes' : 'items'}, pricing, and categories</p>
           <div className="flex items-center gap-3 w-full md:w-auto mt-3">
 
+            <button
+              onClick={() => {
+                setIsBulkModalOpen(true);
+              }}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-5 rounded-xl shadow-lg transition-all text-sm"
+            >
+              <Package className="w-4 h-4" /> Bulk Paste Items
+            </button>
             <button
               onClick={() => {
                 resetForm();
@@ -187,8 +314,8 @@ export default function ItemsPage() {
       {/* KPI Header */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Total Stock Units</span>
-          <h3 className="text-2xl font-black text-slate-800">{totalStockItems} items</h3>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Total {businessType === 'restaurant' ? 'Menu Items' : 'Items'}</span>
+          <h3 className="text-2xl font-black text-slate-800">{items.length} {businessType === 'restaurant' ? 'dishes' : 'items'}</h3>
         </div>
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Total Cost Value</span>
@@ -301,8 +428,8 @@ export default function ItemsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl w-full max-w-md p-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-black text-slate-800">{editingId ? 'Edit Product Item' : 'Add Product Item'}</h2>
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
+              <h2 className="text-xl font-black text-slate-800">{editingId ? `Edit ${businessType === 'restaurant' ? 'Dish' : 'Item'}` : `Add ${businessType === 'restaurant' ? 'Menu Item' : 'Item'}`}</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
@@ -313,18 +440,28 @@ export default function ItemsPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Product Name *</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">{businessType === 'restaurant' ? 'Dish Name' : 'Item Name'} *</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Silk Saree, Kurtis, Jeans..."
+                  placeholder={businessType === 'pharmacy' ? "Paracetamol, Dolo 650..." : (businessType === 'restaurant' ? "Biryani, Pizza, Burger..." : "Shirt, Monitor, Keyboard...")}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Purchase Rate (₹)</label>
+                  <input
+                    type="number"
+                    value={purchasePrice}
+                    onChange={(e) => setPurchasePrice(e.target.value)}
+                    placeholder="1000"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm font-mono"
+                  />
+                </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Sale Rate (₹) *</label>
                   <input
@@ -336,77 +473,163 @@ export default function ItemsPage() {
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm font-mono"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Barcode / Code</label>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Barcode (Optional)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Barcode className="h-4 w-4 text-slate-400" />
+                  </div>
                   <input
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
-                    placeholder="SS-001"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm font-mono"
+                    placeholder="Scan or type barcode..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm font-mono"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Purchase Rate</label>
-                  <input
-                    type="number"
-                    value={purchasePrice}
-                    onChange={(e) => setPurchasePrice(e.target.value)}
-                    placeholder="1000"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm font-mono"
-                  />
+              {/* Pharmacy Extended Fields */}
+              {businessType === 'pharmacy' && (
+                <div className="space-y-4 border-t border-slate-100 pt-4 mt-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Generic Name / Composition</label>
+                      <input
+                        type="text"
+                        value={pharmacyMeta.genericName}
+                        onChange={(e) => setPharmacyMeta({...pharmacyMeta, genericName: e.target.value})}
+                        placeholder="Paracetamol 500mg"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Manufacturer</label>
+                      <input
+                        type="text"
+                        value={pharmacyMeta.manufacturer}
+                        onChange={(e) => setPharmacyMeta({...pharmacyMeta, manufacturer: e.target.value})}
+                        placeholder="Cipla, Sun Pharma..."
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">HSN Code</label>
+                      <input
+                        type="text"
+                        value={pharmacyMeta.hsnCode}
+                        onChange={(e) => setPharmacyMeta({...pharmacyMeta, hsnCode: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Schedule</label>
+                      <select
+                        value={pharmacyMeta.schedule}
+                        onChange={(e) => setPharmacyMeta({...pharmacyMeta, schedule: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                      >
+                        <option value="">None</option>
+                        <option value="H">Schedule H</option>
+                        <option value="H1">Schedule H1</option>
+                        <option value="X">Schedule X</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center pt-5">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={pharmacyMeta.prescriptionRequired}
+                          onChange={(e) => setPharmacyMeta({...pharmacyMeta, prescriptionRequired: e.target.checked})}
+                          className="w-4 h-4 text-amber-500 rounded border-slate-300"
+                        />
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">Rx Req.</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
+              )}
+
               <div className="flex flex-col gap-2 mt-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Sizes & Quantities</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">
+                    {businessType === 'pharmacy' ? 'Batches & Expiry' : (businessType === 'restaurant' ? 'Variants (e.g. Half / Full)' : 'Variants (e.g. Small / Large)')}
+                  </label>
                   <button type="button" onClick={addVariant} className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg flex items-center gap-1 hover:bg-amber-100 transition-colors">
-                    <Plus className="w-3 h-3"/> Add Size
+                    <Plus className="w-3 h-3"/> Add {businessType === 'pharmacy' ? 'Batch' : 'Variant'}
                   </button>
                 </div>
-                <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                   {variants.map((v, index) => (
-                    <div key={index} className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <div key={index} className={`flex ${businessType === 'pharmacy' ? 'flex-col sm:flex-row' : ''} gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200`}>
                       <input 
                         type="text" 
-                        placeholder="Size (e.g. XL)" 
+                        placeholder={businessType === 'pharmacy' ? "Pack (e.g. 10 Tabs)" : (businessType === 'restaurant' ? "Variant (e.g. Full)" : "Variant (e.g. Large)")} 
                         value={v.size} 
                         onChange={e => updateVariant(index, 'size', e.target.value)} 
-                        className="flex-1 px-3 py-1.5 text-sm bg-white border border-slate-200 rounded focus:border-amber-500 focus:outline-none"
+                        className="flex-1 w-full sm:w-auto px-3 py-1.5 text-sm bg-white border border-slate-200 rounded focus:border-amber-500 focus:outline-none min-w-[100px]"
                       />
-                      <input 
-                        type="number" 
-                        placeholder="Qty" 
-                        value={v.stock === 0 ? '' : v.stock} 
-                        onChange={e => updateVariant(index, 'stock', parseInt(e.target.value) || 0)} 
-                        className="w-24 px-3 py-1.5 text-sm font-mono bg-white border border-slate-200 rounded focus:border-amber-500 focus:outline-none"
-                      />
-                      <button type="button" onClick={() => removeVariant(index)} className="p-1.5 text-slate-400 hover:text-red-500 bg-white border border-slate-200 rounded hover:border-red-200 transition-colors">
-                        <Trash2 className="w-4 h-4"/>
-                      </button>
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        {businessType === 'pharmacy' && (
+                          <>
+                            <input 
+                              type="text" 
+                              placeholder="Batch" 
+                              value={v.batchNo || ''} 
+                              onChange={e => updateVariant(index, 'batchNo', e.target.value)} 
+                              className="w-16 sm:w-20 px-3 py-1.5 text-sm bg-white border border-slate-200 rounded focus:border-amber-500 focus:outline-none font-mono"
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="MM/YY" 
+                              value={v.expiryDate || ''} 
+                              onChange={e => updateVariant(index, 'expiryDate', e.target.value)} 
+                              className="w-16 px-3 py-1.5 text-sm bg-white border border-slate-200 rounded focus:border-amber-500 focus:outline-none font-mono"
+                              title="Expiry Date"
+                            />
+                          </>
+                        )}
+                        <input 
+                          type="number" 
+                          placeholder="Qty" 
+                          value={v.stock === 0 ? '' : v.stock} 
+                          onChange={e => updateVariant(index, 'stock', parseInt(e.target.value) || 0)} 
+                          className="flex-1 sm:flex-none w-16 px-3 py-1.5 text-sm font-mono bg-white border border-slate-200 rounded focus:border-amber-500 focus:outline-none"
+                        />
+                        <button type="button" onClick={() => removeVariant(index)} className="p-1.5 text-slate-400 hover:text-red-500 bg-white border border-slate-200 rounded hover:border-red-200 transition-colors shrink-0">
+                          <Trash2 className="w-4 h-4"/>
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {variants.length === 0 && (
-                    <div className="text-xs text-slate-400 text-center py-3 bg-slate-50 border border-slate-200 border-dashed rounded-xl">No sizes added. Click "Add Size" to track variants.</div>
+                    <div className="text-xs text-slate-400 text-center py-3 bg-slate-50 border border-slate-200 border-dashed rounded-xl">
+                      {businessType === 'pharmacy' ? 'No batches tracked. Click "Add Batch".' : 'No variants added. Click "Add Variant".'}
+                    </div>
                   )}
                 </div>
               </div>
 
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Category</label>
-                <select
+                <input
+                  type="text"
+                  list="category-options"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-700 text-sm cursor-pointer"
-                >
+                  placeholder={businessType === 'restaurant' ? "e.g. Starters, Main Course..." : "e.g. Electronics, Clothing..."}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-amber-500 focus:outline-none transition-all font-medium text-slate-800 text-sm"
+                />
+                <datalist id="category-options">
                   {categoriesList.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               <div>
@@ -517,6 +740,68 @@ export default function ItemsPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Paste Modal */}
+      {isBulkModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl w-full max-w-2xl p-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
+              <h2 className="text-xl font-black text-slate-800">Bulk Paste Items</h2>
+              <button
+                onClick={() => setIsBulkModalOpen(false)}
+                className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleBulkSubmit} className="space-y-4 pt-4">
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                {businessType === 'pharmacy' ? (
+                  <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
+                    Format: <strong className="text-slate-600">Name | MRP | Category | Batch | Stock</strong><br/>
+                    Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Paracetamol 500mg&#9;45&#9;Tablets&#9;B101&#9;100</span>
+                  </p>
+                ) : businessType === 'restaurant' ? (
+                  <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
+                    Format: <strong className="text-slate-600">Name | Price | Category | Type</strong><br/>
+                    Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Idli Sambar&#9;60&#9;Breakfast&#9;veg</span>
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
+                    Format: <strong className="text-slate-600">Name | Price | Category | Size | Quantity</strong><br/>
+                    Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Cotton Saree&#9;1200&#9;Sarees&#9;L&#9;10</span>
+                  </p>
+                )}
+                <textarea 
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  required
+                  rows={10} 
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-inner resize-y font-mono whitespace-pre" 
+                  placeholder={businessType === 'restaurant' ? "Idli Sambar\t60\tBreakfast\tveg\nMasala Dosa\t80\tBreakfast\tveg" : businessType === 'pharmacy' ? "Paracetamol 500mg\t45\tTablets\tB101\t100\nAmoxicillin 250mg\t120\tCapsules\tB102\t50" : "Cotton Saree\t1200\tSarees\tL\t10\nSilk Saree\t1500\tSarees\tM\t5"}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsBulkModalOpen(false)}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold text-slate-600 transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg transition-colors text-sm"
+                >
+                  Import Items
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

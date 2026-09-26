@@ -54,8 +54,8 @@ export default function SuperAdminLogin() {
       <div className="w-full max-w-md bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl shadow-black/50 p-8 sm:p-10 relative z-10 animate-in fade-in zoom-in-95 duration-500">
         
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-amber-500/30 mb-6 rotate-3 hover:rotate-6 transition-transform">
-            <Shield className="w-8 h-8 text-blue-950" strokeWidth={2.5} />
+          <div className="mx-auto flex items-center justify-center mb-6">
+            <img src="/logo.png" alt="ZyncoBill Logo" className="w-20 h-20 object-contain drop-shadow-xl" />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight mb-2">ZyncoBill <span className="text-amber-500">System</span></h1>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center justify-center gap-2">

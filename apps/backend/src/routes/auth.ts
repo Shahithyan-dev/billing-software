@@ -59,7 +59,9 @@ router.post('/register', async (req: any, res: any) => {
       whatsappToken: whatsappToken || '',
       whatsappBusinessId: whatsappBusinessId || '',
       defaultMenu: parsedInitialMenu || [],
-      menuPdfUrl
+      menuPdfUrl,
+      subscriptionPlan: (req.body.plan || 'lifetime').split('_')[0],
+      planTier: (req.body.plan || 'lifetime').includes('_') ? req.body.plan.split('_')[1] : 'standard'
     });
     await restaurant.save();
 
@@ -96,7 +98,7 @@ router.post('/register', async (req: any, res: any) => {
 // Submit a new registration request (Public)
 router.post('/register-request', async (req: any, res: any) => {
   try {
-    const { name, email, phone, businessName, businessType, password, address, gstNumber, plan, rawMenuText } = req.body;
+    const { name, email, phone, businessName, businessType, password, address, gstNumber, fssai, dlNumber, pharmacistName, plan, rawMenuText, captains, tables, diningAreas, acCharge, acBillingType, acPerHeadAmount, rawMenuTextAC } = req.body;
     
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -105,7 +107,7 @@ router.post('/register-request', async (req: any, res: any) => {
     }
 
     const newRequest = new RegistrationRequest({
-      name, email, phone, businessName, businessType, password, address, gstNumber, plan, rawMenuText
+      name, email, phone, businessName, businessType, password, address, gstNumber, fssai, dlNumber, pharmacistName, plan, rawMenuText, captains, tables, diningAreas, acCharge, acBillingType, acPerHeadAmount, rawMenuTextAC
     });
     await newRequest.save();
     res.status(201).json({ success: true, message: 'Registration request submitted successfully' });
@@ -167,10 +169,10 @@ router.post('/register-requests/:id/approve', async (req: any, res: any) => {
         if (!line.trim()) return;
         // Split by tab (Excel paste) or comma
         const parts = line.split(/\t|,/);
-        if (parts.length >= 3) {
+        if (parts.length >= 2) {
           const name = parts[0].trim();
           const price = parseFloat(parts[1].trim()) || 0;
-          const category = parts[2].trim();
+          const category = parts.length >= 3 ? parts[2].trim() : 'General';
           const type = parts.length >= 4 ? parts[3].trim() : (finalLayout === 'dress' ? 'N/A' : 'veg');
           const stock = (finalLayout === 'dress' && parts.length >= 5) ? parseInt(parts[4].trim()) || 0 : undefined;
           
@@ -190,26 +192,73 @@ router.post('/register-requests/:id/approve', async (req: any, res: any) => {
       });
     }
 
+    let acMenu: any[] = [];
+    if (request.acBillingType === 'separate_menu' && request.rawMenuTextAC) {
+      const acLines = request.rawMenuTextAC.split('\n');
+      acLines.forEach((line: string) => {
+        if (!line.trim()) return;
+        const parts = line.split(/\t|,/);
+        if (parts.length >= 2) {
+          const name = parts[0].trim();
+          const price = parseFloat(parts[1].trim()) || 0;
+          const category = parts.length >= 3 ? parts[2].trim() : 'General';
+          const type = parts.length >= 4 ? parts[3].trim() : (finalLayout === 'dress' ? 'N/A' : 'veg');
+          const stock = (finalLayout === 'dress' && parts.length >= 5) ? parseInt(parts[4].trim()) || 0 : undefined;
+          
+          let item: any = {
+            id: Math.random().toString(36).substr(2, 9),
+            name,
+            price,
+            category,
+            type,
+            img: ''
+          };
+          if (stock !== undefined) {
+            item.stock = stock;
+          }
+          acMenu.push(item);
+        }
+      });
+    }
+
     // Provision the tenant
+    const isRestaurant = finalLayout === 'restaurant';
     const restaurant = new Restaurant({
       name: request.businessName,
       businessType: finalLayout,
       phone: request.phone,
       address: request.address || '',
       gstin: request.gstNumber || '',
-      captains: finalLayout === 'dress' ? ['Salesperson 1'] : ['Captain', 'Self Service'],
-      tables: finalLayout === 'dress' ? [] : ['T1', 'T2', 'T3'],
-      diningAreas: finalLayout === 'dress' ? [] : ['AC', 'Non-AC'],
-      menuCategories: finalLayout === 'dress' 
-        ? ['Sarees', 'Kurtis', 'Lehengas', 'Shirts', 'Jeans', 'Churidar', 'Kids Wear']
-        : ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'],
-      sidebarFeatures: finalLayout === 'dress'
-        ? ['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings']
-        : ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings'],
-      preferences: { showGstin: !!request.gstNumber, showFssai: true, showPhone: true },
+      fssai: request.fssai || (isRestaurant ? 'Pending' : ''),
+      dlNumber: request.dlNumber || '',
+      pharmacistName: request.pharmacistName || '',
+      captains: request.captains ? request.captains.split(',').map((s: string) => s.trim()) : (isRestaurant ? ['Captain', 'Self Service'] : ['Salesperson 1']),
+      tables: request.tables ? request.tables.split(',').map((s: string) => s.trim()) : (isRestaurant ? ['T1', 'T2', 'T3'] : []),
+      diningAreas: request.diningAreas ? request.diningAreas.split(',').map((s: string) => s.trim()) : (isRestaurant ? ['AC', 'Non-AC'] : []),
+      menuCategories: finalLayout === 'pharmacy' 
+        ? ['Tablets', 'Capsules', 'Syrups', 'Injections', 'Ointments', 'Drops', 'Surgicals', 'General']
+        : finalLayout === 'dress' 
+          ? ['Sarees', 'Kurtis', 'Lehengas', 'Shirts', 'Jeans', 'Churidar', 'Kids Wear']
+          : (isRestaurant ? ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'] : ['Electronics', 'Clothing', 'Groceries', 'Home', 'Beauty', 'Others']),
+      sidebarFeatures: finalLayout === 'pharmacy'
+        ? ['POS', 'Medicines', 'Categories', 'Inventory', 'Purchase', 'Purchase Return', 'Sales', 'Sales Return', 'Customers', 'Prescriptions', 'Suppliers', 'Manufacturers', 'Batch Management', 'Expiry Alerts', 'Barcode Printing', 'Analytics', 'Reports', 'Staff', 'Settings']
+        : isRestaurant
+          ? ['POS', 'Kitchen', 'Inventory', 'Reservations', 'Analytics', 'Staff', 'Loyalty', 'Hardware', 'Security', 'Settings']
+          : ['Home', 'Parties', 'Items', 'Sale Invoices', 'Purchases', 'Settings'],
+      preferences: { 
+        showGstin: !!request.gstNumber, 
+        showFssai: isRestaurant, 
+        showPhone: true, 
+        acCharge: request.acCharge || '',
+        acBillingType: request.acBillingType || 'per_head',
+        acPerHeadAmount: request.acPerHeadAmount || 0
+      },
       defaultMenu,
+      acMenu,
       subscriptionStatus: 'trial',
-      trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      subscriptionPlan: (request.plan || 'lifetime').split('_')[0],
+      planTier: (request.plan || 'lifetime').includes('_') ? request.plan.split('_')[1] : 'standard'
     });
     await restaurant.save();
 
@@ -304,7 +353,11 @@ router.post('/login', async (req, res) => {
         fssai: restaurant?.fssai || '',
         logo: restaurant?.logo || '',
         diningAreas: restaurant?.diningAreas || ['AC', 'Non-AC'],
-        menuCategories: restaurant?.menuCategories || ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages']
+        menuCategories: restaurant?.menuCategories || ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Beverages'],
+        subscriptionPlan: (restaurant as any)?.subscriptionPlan || 'lifetime',
+        subscriptionStatus: restaurant?.subscriptionStatus || 'trial',
+        trialEndsAt: restaurant?.trialEndsAt || null,
+        subscriptionEndsAt: restaurant?.subscriptionEndsAt || null
       }
     });
   } catch (error: any) {

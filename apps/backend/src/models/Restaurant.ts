@@ -2,11 +2,13 @@ import mongoose from 'mongoose';
 
 const RestaurantSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  businessType: { type: String, enum: ['restaurant', 'dress'], default: 'restaurant' },
+  businessType: { type: String, enum: ['restaurant', 'dress', 'pharmacy'], default: 'restaurant' },
   tagline: { type: String },
   phone: { type: String, required: true },
   gstin: { type: String },
   fssai: { type: String },
+  dlNumber: { type: String },
+  pharmacistName: { type: String },
   logo: { type: String },
   address: { type: String },
   captains: { type: [String], default: ['Captain', 'Rahul', 'Priya', 'Self Service'] },
@@ -18,16 +20,21 @@ const RestaurantSchema = new mongoose.Schema({
     showGstin: { type: Boolean, default: true },
     showFssai: { type: Boolean, default: true },
     showPhone: { type: Boolean, default: true },
+    acCharge: { type: String, default: '' },
+    acBillingType: { type: String, enum: ['per_head', 'separate_menu'], default: 'per_head' },
+    acPerHeadAmount: { type: Number, default: 0 },
   },
   whatsappNumber: { type: String, default: '' },
   whatsappToken: { type: String, default: '' },
   whatsappBusinessId: { type: String, default: '' },
   defaultMenu: { type: Array, default: [] },
+  acMenu: { type: Array, default: [] },
   menuPdfUrl: { type: String },
   subscriptionStatus: { type: String, enum: ['trial', 'active', 'expired', 'cancelled'], default: 'trial' },
   trialEndsAt: { type: Date },
   subscriptionEndsAt: { type: Date },
+  subscriptionPlan: { type: String, enum: ['monthly', 'yearly', 'lifetime'], default: 'lifetime' },
   planTier: { type: String, enum: ['standard', 'unlimited'], default: 'standard' },
 }, { timestamps: true });
 
-export default mongoose.model('Restaurant', RestaurantSchema);
+export default mongoose.models.Restaurant || mongoose.model('Restaurant', RestaurantSchema);

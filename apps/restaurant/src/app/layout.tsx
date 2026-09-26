@@ -7,7 +7,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'ZyncoBill',
   description: 'Smart Point of Sale and Billing System',
+  icons: {
+    icon: '/logo.png',
+  },
 };
+
+import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({
   children,
@@ -16,7 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <Toaster position="bottom-right" />
+      </body>
     </html>
   );
 }

@@ -17,6 +17,8 @@ function RegistrationForm() {
   const [plan, setPlan] = useState(searchParams.get('plan') || 'monthly_standard');
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+  const [diningAreas, setDiningAreas] = useState('AC, Non-AC');
+  const [acBillingType, setAcBillingType] = useState('per_head');
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://billing-software-03up.onrender.com');
 
@@ -43,7 +45,16 @@ function RegistrationForm() {
       password,
       address: formData.get('address') as string,
       gstNumber: formData.get('gstNumber') as string,
+      fssai: formData.get('fssai') as string,
+      captains: formData.get('captains') as string,
+      tables: formData.get('tables') as string,
+      diningAreas: diningAreas,
+      acBillingType: acBillingType,
+      acPerHeadAmount: formData.get('acPerHeadAmount') ? Number(formData.get('acPerHeadAmount')) : 0,
+      rawMenuTextAC: formData.get('rawMenuTextAC') as string,
       businessType: industry,
+      dlNumber: formData.get('dlNumber') as string,
+      pharmacistName: formData.get('pharmacistName') as string,
       plan: plan
     };
 
@@ -133,9 +144,128 @@ function RegistrationForm() {
             <input name="gstNumber" className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" placeholder="Enter your GST number" />
           </div>
 
+          {industry === 'restaurant' && (
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">FSSAI NUMBER</label>
+              <input name="fssai" className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" placeholder="Enter your FSSAI license number" />
+            </div>
+          )}
+
           {/* Industry and Plan selection UI removed as it's passed via URL parameters */}
         </div>
       </div>
+
+      {industry === 'pharmacy' && (
+        <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Drug License (DL) No. *</label>
+            <input name="dlNumber" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" placeholder="Enter DL Number" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Pharmacist Name & Reg No. *</label>
+            <input name="pharmacistName" required className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" placeholder="e.g. John Doe - Reg 12345" />
+          </div>
+        </div>
+      )}
+
+      {industry === 'restaurant' && (
+        <div className="pt-6 border-t border-slate-100 mb-6">
+          <h3 className="text-sm font-black text-slate-800 tracking-wider flex items-center gap-2 mb-6 uppercase">
+            <span className="w-5 h-5 rounded-md bg-amber-500/20 text-amber-600 flex items-center justify-center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>
+            </span>
+            3. POS Setup
+          </h3>
+          <div className="grid md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Captains (Comma separated)</label>
+              <input name="captains" className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" placeholder="Captain, Rahul, Priya, Self Service" defaultValue="Captain, Rahul, Priya, Self Service" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Tables (Comma separated)</label>
+              <input name="tables" className="w-full px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" placeholder="T1, T2, T3, T4, T5, Parcel" defaultValue="T1, T2, T3, T4, T5, Parcel" />
+            </div>
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Dining Areas</label>
+              <div className="flex flex-wrap gap-4 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="diningAreas" 
+                    value="AC, Non-AC" 
+                    checked={diningAreas === 'AC, Non-AC'}
+                    onChange={(e) => setDiningAreas(e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-slate-700">AC & Non-AC</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="diningAreas" 
+                    value="Non-AC" 
+                    checked={diningAreas === 'Non-AC'}
+                    onChange={(e) => setDiningAreas(e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-slate-700">Only Non-AC</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="diningAreas" 
+                    value="AC" 
+                    checked={diningAreas === 'AC'}
+                    onChange={(e) => setDiningAreas(e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-slate-700">Only AC</span>
+                </label>
+              </div>
+            </div>
+            {diningAreas.toLowerCase().includes('ac') && (
+              <div className="col-span-1 md:col-span-2 bg-amber-50/50 p-4 rounded-xl border border-amber-200/50">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">How will you bill AC dine in?</label>
+                <div className="flex gap-4 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="acBillingType" 
+                      value="per_head" 
+                      checked={acBillingType === 'per_head'}
+                      onChange={(e) => setAcBillingType(e.target.value)}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-slate-700">Per Head Charge</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="acBillingType" 
+                      value="separate_menu" 
+                      checked={acBillingType === 'separate_menu'}
+                      onChange={(e) => setAcBillingType(e.target.value)}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-slate-700">Separate Menu for AC</span>
+                  </label>
+                </div>
+                {acBillingType === 'per_head' && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Amount Per Head (₹)</label>
+                    <input 
+                      name="acPerHeadAmount" 
+                      type="number"
+                      className="w-full md:w-1/2 px-5 py-3.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-sm" 
+                      placeholder="e.g., 50" 
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="pt-4 border-t border-slate-100">
         <div className="grid md:grid-cols-2 gap-4">
@@ -174,24 +304,57 @@ function RegistrationForm() {
           <p className="text-xs text-slate-500 font-medium mb-3">
             Please arrange your items in Excel and copy-paste them directly below.
           </p>
-          {industry === 'restaurant' ? (
-            <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
-              Format: <strong className="text-slate-600">Name | Price | Category | Type</strong><br/>
-              Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Idli Sambar&#9;60&#9;Breakfast&#9;veg</span>
-            </p>
+          
+          {industry === 'restaurant' && acBillingType === 'separate_menu' && diningAreas.toLowerCase().includes('ac') ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">Non-AC Menu</label>
+                <textarea 
+                  name="rawMenuText" 
+                  required
+                  rows={5} 
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-inner resize-y font-mono whitespace-pre" 
+                  placeholder="Idli Sambar\t60\tBreakfast\tveg"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">AC Menu (Higher Prices)</label>
+                <textarea 
+                  name="rawMenuTextAC" 
+                  required
+                  rows={5} 
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-inner resize-y font-mono whitespace-pre" 
+                  placeholder="Idli Sambar\t75\tBreakfast\tveg"
+                />
+              </div>
+            </div>
           ) : (
-            <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
-              Format: <strong className="text-slate-600">Name | Price | Category | Size | Quantity (Optional)</strong><br/>
-              Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Cotton Saree&#9;1200&#9;Sarees&#9;L&#9;10</span>
-            </p>
+            <>
+              {industry === 'restaurant' ? (
+                <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
+                  Format: <strong className="text-slate-600">Name | Price | Category | Type</strong><br/>
+                  Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Idli Sambar&#9;60&#9;Breakfast&#9;veg</span>
+                </p>
+              ) : industry === 'pharmacy' ? (
+                <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
+                  Format: <strong className="text-slate-600">Name | MRP | Category | Batch | Stock</strong><br/>
+                  Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Paracetamol 500mg&#9;45&#9;Tablets&#9;B101&#9;100</span>
+                </p>
+              ) : (
+                <p className="text-xs text-slate-400 font-medium mb-3 leading-relaxed">
+                  Format: <strong className="text-slate-600">Name | Price | Category | Size | Quantity (Optional)</strong><br/>
+                  Example: <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-mono text-[11px]">Cotton Saree&#9;1200&#9;Sarees&#9;L&#9;10</span>
+                </p>
+              )}
+              <textarea 
+                name="rawMenuText" 
+                required
+                rows={5} 
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-inner resize-y font-mono whitespace-pre" 
+                placeholder={industry === 'restaurant' ? "Idli Sambar\t60\tBreakfast\tveg\nMasala Dosa\t80\tBreakfast\tveg" : industry === 'pharmacy' ? "Paracetamol 500mg\t45\tTablets\tB101\t100\nAmoxicillin 250mg\t120\tCapsules\tB102\t50" : "Cotton Saree\t1200\tSarees\tL\t10\nSilk Saree\t1500\tSarees\tM\t5"}
+              />
+            </>
           )}
-          <textarea 
-            name="rawMenuText" 
-            required
-            rows={5} 
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none bg-white text-blue-950 shadow-inner resize-y font-mono whitespace-pre" 
-            placeholder={industry === 'restaurant' ? "Idli Sambar\t60\tBreakfast\tveg\nMasala Dosa\t80\tBreakfast\tveg" : "Cotton Saree\t1200\tSarees\tL\t10\nSilk Saree\t1500\tSarees\tM\t5"}
-          />
         </div>
       </div>
 

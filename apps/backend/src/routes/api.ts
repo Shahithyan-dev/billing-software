@@ -3,17 +3,25 @@ import { getMenu } from '../controllers/MenuController';
 import { createOrder } from '../controllers/OrderController';
 import restaurantRouter from './restaurant';
 import authRouter from './auth';
+import onlineOrdersRouter from './onlineOrders';
 import Order from '../models/Order';
 import Restaurant from '../models/Restaurant';
 import Party from '../models/Party';
 import Purchase from '../models/Purchase';
+import Prescription from '../models/Prescription';
+import PurchaseReturn from '../models/PurchaseReturn';
+import SalesReturn from '../models/SalesReturn';
+import Staff from '../models/Staff';
+import InventoryItem from '../models/InventoryItem';
 import fs from 'fs';
 import path from 'path';
+import { io } from '../index';
 
 const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/restaurants', restaurantRouter);
+apiRouter.use('/online-orders', onlineOrdersRouter);
 apiRouter.get('/menu', getMenu as any);
 apiRouter.post('/orders', createOrder as any);
 
@@ -63,11 +71,24 @@ apiRouter.post('/sync/order', async (req: any, res: any) => {
 
     const existing = await Order.findOne({ uuid: orderData.uuid });
     if (existing) {
-      return res.json({ success: true, message: 'Already synced', data: existing });
+      // Update existing order (e.g. status changes from KDS)
+      Object.assign(existing, orderData);
+      await existing.save();
+      
+      // Notify all clients of the update
+      io.emit('order-updated', existing);
+      
+      return res.json({ success: true, message: 'Order updated', data: existing });
     }
 
     const order = new Order(orderData);
     await order.save();
+    
+    // Notify kitchen that a new order arrived
+    io.emit('new-kitchen-order', {
+      kitchenOrders: [order]
+    });
+    
     res.json({ success: true, data: order });
   } catch (e: any) {
     res.status(400).json({ success: false, error: e.message });
@@ -150,21 +171,100 @@ apiRouter.delete('/purchases/:id', async (req: any, res: any) => {
   }
 });
 
-// ─── INVENTORY (stored as Restaurant.defaultMenu in MongoDB) ──────────────────
+// ─── PRESCRIPTIONS ───────────────────────────────────────────────────────────
 
-// Get inventory items for a restaurant
-apiRouter.get('/inventory/:restaurantId', async (req: any, res: any) => {
+apiRouter.get('/prescriptions', async (req: any, res: any) => {
   try {
-    const restaurant = await Restaurant.findById(req.params.restaurantId);
-    if (!restaurant) return res.status(404).json({ success: false, error: 'Restaurant not found' });
-    res.json({ success: true, data: restaurant.defaultMenu });
+    const { restaurantId } = req.query;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId required' });
+    const prescriptions = await Prescription.find({ restaurantId }).sort({ timestamp: -1 });
+    res.json({ success: true, data: prescriptions });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Replace full inventory list
-apiRouter.put('/inventory/:restaurantId', async (req: any, res: any) => {
+apiRouter.post('/prescriptions', async (req: any, res: any) => {
+  try {
+    const { restaurantId, ...data } = req.body;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId required' });
+    const rx = new Prescription({ restaurantId, ...data });
+    await rx.save();
+    res.json({ success: true, data: rx });
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+// ─── PURCHASE RETURNS ────────────────────────────────────────────────────────
+
+apiRouter.get('/purchase-returns', async (req: any, res: any) => {
+  try {
+    const { restaurantId } = req.query;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId required' });
+    const returns = await PurchaseReturn.find({ restaurantId }).sort({ timestamp: -1 });
+    res.json({ success: true, data: returns });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+apiRouter.post('/purchase-returns', async (req: any, res: any) => {
+  try {
+    const { restaurantId, ...data } = req.body;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId required' });
+    const pr = new PurchaseReturn({ restaurantId, ...data });
+    await pr.save();
+    res.json({ success: true, data: pr });
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+// ─── SALES RETURNS ───────────────────────────────────────────────────────────
+
+apiRouter.get('/sales-returns', async (req: any, res: any) => {
+  try {
+    const { restaurantId } = req.query;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId required' });
+    const returns = await SalesReturn.find({ restaurantId }).sort({ timestamp: -1 });
+    res.json({ success: true, data: returns });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+apiRouter.post('/sales-returns', async (req: any, res: any) => {
+  try {
+    const { restaurantId, ...data } = req.body;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId required' });
+    const sr = new SalesReturn({ restaurantId, ...data });
+    await sr.save();
+    res.json({ success: true, data: sr });
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+// ─── MENU (stored as Restaurant.defaultMenu in MongoDB) ──────────────────
+
+// GET /menu/:restaurantId
+apiRouter.get('/menu/:restaurantId', async (req: any, res: any) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
+    if (!restaurant) return res.status(404).json({ success: false, error: 'Restaurant not found' });
+    res.json({ 
+      success: true, 
+      data: restaurant.defaultMenu,
+      acMenu: restaurant.acMenu || []
+    });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Replace full inventory list (Menu Items)
+apiRouter.put('/menu/:restaurantId', async (req: any, res: any) => {
   try {
     const { items } = req.body;
     if (!Array.isArray(items)) return res.status(400).json({ success: false, error: 'items array required' });
@@ -180,8 +280,8 @@ apiRouter.put('/inventory/:restaurantId', async (req: any, res: any) => {
   }
 });
 
-// Deduct stock for sold items
-apiRouter.post('/inventory/:restaurantId/deduct', async (req: any, res: any) => {
+// Deduct stock for sold items (Menu Items)
+apiRouter.post('/menu/:restaurantId/deduct', async (req: any, res: any) => {
   try {
     const { deductions } = req.body; // [{ itemId, name, qty }]
     const restaurant = await Restaurant.findById(req.params.restaurantId);
@@ -223,6 +323,126 @@ apiRouter.post('/orders/upload-image/:uuid', async (req: any, res: any) => {
     fs.writeFileSync(filePath, base64Data, 'base64');
 
     res.json({ success: true, imageUrl: `/public/invoices/${uuid}.png` });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ─── STAFF ─────────────────────────────────────────────────────────────
+
+// Get staff for a restaurant
+apiRouter.get('/staff/:restaurantId', async (req: any, res: any) => {
+  try {
+    const staff = await Staff.find({ restaurantId: req.params.restaurantId }).sort({ createdAt: -1 });
+    res.json({ success: true, data: staff });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Add new staff
+apiRouter.post('/staff', async (req: any, res: any) => {
+  try {
+    const { restaurantId, ...staffData } = req.body;
+    if (!restaurantId) return res.status(400).json({ success: false, error: 'restaurantId is required' });
+    const staff = new Staff({ restaurantId, ...staffData });
+    await staff.save();
+    res.json({ success: true, data: staff });
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+// Update staff
+apiRouter.put('/staff/:id', async (req: any, res: any) => {
+  try {
+    const staff = await Staff.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    if (!staff) return res.status(404).json({ success: false, error: 'Staff not found' });
+    res.json({ success: true, data: staff });
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+// Delete Staff
+apiRouter.delete('/staff/:id', async (req: any, res: any) => {
+  try {
+    const result = await Staff.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ success: false, error: 'Staff not found' });
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ─── INVENTORY ───────────────────────────────────────────────────────────────
+
+// Get inventory for a restaurant
+apiRouter.get('/inventory/:restaurantId', async (req: any, res: any) => {
+  try {
+    const items = await InventoryItem.find({ restaurantId: req.params.restaurantId });
+    res.json({ success: true, data: items });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Add or Update Inventory Item
+apiRouter.post('/inventory', async (req: any, res: any) => {
+  try {
+    const { _id, ...updateData } = req.body;
+    let item;
+    
+    if (_id) {
+      item = await InventoryItem.findByIdAndUpdate(_id, updateData, { new: true, runValidators: true });
+    } else {
+      item = new InventoryItem(updateData);
+      await item.save();
+    }
+    
+    res.json({ success: true, data: item });
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+});
+
+// Delete Inventory Item
+apiRouter.delete('/inventory/:id', async (req: any, res: any) => {
+  try {
+    const result = await InventoryItem.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ success: false, error: 'Item not found' });
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Deduct inventory items (called by POS)
+apiRouter.post('/inventory/:restaurantId/deduct', async (req: any, res: any) => {
+  try {
+    const { deductions } = req.body; // [{ name: 'Mozzarella Cheese', qty: 2 }]
+    
+    if (!deductions || !Array.isArray(deductions)) {
+      return res.status(400).json({ success: false, error: 'Invalid deductions array' });
+    }
+
+    const updates = [];
+    for (const d of deductions) {
+      // Find item by name and restaurantId
+      const item = await InventoryItem.findOne({ 
+        restaurantId: req.params.restaurantId,
+        name: { $regex: new RegExp(`^${d.name}$`, 'i') } // case insensitive match
+      });
+
+      if (item) {
+        item.quantity = Math.max(0, item.quantity - d.qty);
+        // Save triggers the pre-save hook to update status (Low Stock/Optimal)
+        await item.save();
+        updates.push(item);
+      }
+    }
+
+    res.json({ success: true, data: updates });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
   }

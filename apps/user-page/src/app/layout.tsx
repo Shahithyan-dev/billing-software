@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZyncoBill Admin - Portal",
-  description: "Centralized tenant management for ZyncoBill POS software.",
+  title: "ZyncoBill - #1 POS & Billing Software",
+  description: "Manage your invoicing, inventory, accounting, and customers seamlessly with ZyncoBill.",
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({
