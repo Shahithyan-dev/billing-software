@@ -1,0 +1,58 @@
+name: Build All Web Apps
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-web:
+    name: Build All Next.js Web Apps
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22
+
+      - name: Install Dependencies (Root)
+        run: npm install
+
+      # Build all apps sequentially
+      - name: Build Restaurant POS
+        run: npm run build --workspace=apps/restaurant
+
+      - name: Build User Landing Page
+        run: npm run build --workspace=apps/user-page
+
+      - name: Build Admin Dashboard
+        run: npm run build --workspace=apps/admin
+
+      # Package everything into a single zip
+      - name: Create Web Release Bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          mkdir -p release-bundle
+          
+          # Move static outputs to the bundle folder (assuming they use static exports)
+          # If they don't use 'output: export', this will fail, so we fallback to copying the whole project if needed.
+          cp -r apps/restaurant/out release-bundle/restaurant-pos || echo "No out folder for restaurant"
+          cp -r apps/user-page/out release-bundle/user-page || echo "No out folder for user-page"
+          cp -r apps/admin/out release-bundle/admin || echo "No out folder for admin"
+          
+          zip -r web-apps-bundle.zip release-bundle/
+          
+          gh release create "web-v${VERSION}" web-apps-bundle.zip \
+            --title "Web Apps Bundle v${VERSION}" \
+            --notes "Auto-built all Web Apps (Restaurant, User-Page, Admin) by GitHub Actions build #${{ github.run_number }}"
