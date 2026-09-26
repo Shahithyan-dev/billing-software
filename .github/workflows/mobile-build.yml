@@ -34,14 +34,14 @@ jobs:
         run: npm install
 
       - name: Build Next.js
-        run: npm run build --workspace=apps/frontend
+        run: npm run build --workspace=apps/restaurant
 
       - name: Create GitHub Release with OTA Bundle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="0.1.${{ github.run_number }}"
-          cd apps/frontend
+          cd apps/restaurant
           zip -r bundle.zip out/
           gh release create "v${VERSION}" bundle.zip \
             --title "App Bundle v${VERSION}" \
@@ -55,11 +55,11 @@ jobs:
           git push origin HEAD:main
 
       - name: Sync Capacitor
-        working-directory: ./apps/frontend
+        working-directory: ./apps/restaurant
         run: npx cap sync android
 
       - name: Build APK
-        working-directory: ./apps/frontend/android
+        working-directory: ./apps/restaurant/android
         run: |
           chmod +x ./gradlew
           ./gradlew assembleDebug
@@ -68,4 +68,4 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: ServeWell-POS-Android-APK
-          path: apps/frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          path: apps/restaurant/android/app/build/outputs/apk/debug/app-debug.apk
